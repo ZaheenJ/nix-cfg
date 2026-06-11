@@ -9,5 +9,8 @@
     ./desktop-tools.nix
     ./theming.nix
     ./fonts.nix
+    ./apps.nix
+    ./media.nix
+    ./syncthing.nix
   ];
 }

@@ -90,7 +90,7 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 - [x] toplevel build passes (`nix build .#nixosConfigurations.home-g16.config.system.build.toplevel`)
 
 ### Phase 3 — Home-manager modules (bulk, subagent-heavy)
-- [ ] home/ skeleton + common module set (CLI per MAPPING.md; diskonaut → ncdu
+- [x] home/ skeleton + common module set (CLI per MAPPING.md; diskonaut → ncdu
       substitute; slang-server-bin DEFERRED to the very end per user)
 - [x] batch 1 (shells/editor/CLI) COMPLETE: fish, nushell, starship, ghostty
       (vendored config; hm module can't express repeated palette keys), helix
@@ -105,27 +105,44 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
       LESSON: paru -Qet hides dep-installed tools that configs rely on —
       batch 3 must check niri/mimeapps references against `paru -Q`.
       Open items from batch 2:
-      - noctalia: Arch settings.json is v4-format; flake HEAD is v5 (TOML,
-        incompatible). Decision: start with v5 defaults, user reconfigures in
-        Settings UI (hot-reloads). Revisit lock-screen PAM on NixOS.
+      - noctalia RESOLVED (user caught subagent error): user runs v5.0.0 and
+        settings.json IS the live v5 config (schema v31); the TOML switch is
+        upstream-newer than their build. Input pinned to running rev
+        bd74c3461dc3...ac4f. settings.json is runtime-mutable (Settings UI
+        writes it) so it must NOT be hm-managed — goes in the Phase 4
+        "mutable state to copy to new /home" list instead.
       - GTK theme oomox-BWnB (custom oomox output) not vendored; icon theme
         name in settings.ini was an artifact. Decide post-install (nwg-look
         or pkgs/ derivation).
       - qt6ct color_scheme_path now %APPDIR% token — verify at runtime.
 - [x] gaming: modules/nixos/gaming.nix (steam + protontricks options,
       umu-launcher/winetricks/vulkan-tools) wired into host
-- [ ] fish + starship + carapace + zoxide (port ~/.config/fish, starship.toml)
-- [ ] ghostty, helix (-git → flake or nixpkgs?), git, mpv, zathura, vimiv, cmus,
+- [x] fish + starship + carapace + zoxide (port ~/.config/fish, starship.toml)
+- [x] batch 3 (apps/media/syncthing) COMPLETE: apps (no config vendoring —
+      all runtime-written, Phase 4 copy list), mpv (hwdec port), zathura
+      (zathurarc), cmus/vimiv/picard plain packages, syncthing hm user
+      service. vesktop settings un-vendored by lead (runtime-written, was
+      already on Phase 4 copy list). Post-install check:
+      claude-code-url-handler.desktop name in mimeapps.
+- [x] ghostty, helix (-git → flake or nixpkgs?), git, mpv, zathura, vimiv, cmus,
       picard, syncthing (user service), playerctl. NOT beets (never
       installed — only a stale library.db in ~/.config/beets)
-- [ ] niri config + noctalia + vicinae + satty + nwg-displays/look + qt6ct theming
-- [ ] Apps: firefox, chromium, vesktop, prismlauncher, teams-for-linux,
+- [x] niri config + noctalia + vicinae + satty + nwg-displays/look + qt6ct theming
+- [x] Apps: firefox, chromium, vesktop, prismlauncher, teams-for-linux,
       tor-browser, cursor (code-cursor), claude-code, android-tools, gcloud
 - [ ] Per-host split: common.nix vs personal-only (browser? gaming? music)
       vs school/work
 - [ ] Full build passes; spot-check key dotfiles in ./result
 
 ### Phase 4 — Install to p8 (user-driven sudo)
+- [ ] Mutable user state to COPY from Arch /home to the new @home (not
+      Nix-managed because apps write these at runtime):
+      ~/.config/noctalia/ (settings.json, colors.json — Settings UI saves),
+      ~/.config/vicinae/, browser profiles (~/.mozilla, ~/.config/chromium),
+      ~/.config/vesktop (Discord session), ~/.config/gcloud (creds),
+      syncthing state (~/.local/state/syncthing or ~/.config/syncthing),
+      ~/.ssh, ~/.gnupg, ~/.claude + claude.json, cmus playlists, helix state,
+      plus bulk user data (Documents/Pictures/...) — final list at install.
 - [ ] Mount subvols + ESP under /mnt/nixos; generate/verify
       hardware-configuration.nix against `nixos-generate-config --root`
 - [ ] Copy sbctl keys into target /var/lib/sbctl

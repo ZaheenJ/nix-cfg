@@ -16,8 +16,11 @@
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Pinned to the exact rev running on Arch (v5.0.0, reads settings.json).
+    # Newer revs migrate config to TOML — bump deliberately, with noctalia's
+    # own migration, not as a side effect of `nix flake update`.
     noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
+      url = "github:noctalia-dev/noctalia-shell/bd74c3461dc3b36714d989789a0cc74152e7ac4f";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

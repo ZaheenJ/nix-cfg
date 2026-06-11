@@ -1,20 +1,19 @@
-# noctalia: shell bar from the flake input (v5 API, TOML config).
-# NOTE: the flake input ships noctalia v5 whose config format is TOML
-# (config.toml), incompatible with the v4 JSON (settings.json) currently on
-# disk. The module is enabled here so the package is installed and the user
-# service can be wired up; runtime settings are managed interactively via the
-# noctalia Settings UI on first launch. Do NOT vendor the v4 settings.json.
+# noctalia: shell bar from the flake input, pinned to the exact rev the user
+# runs on Arch (v5.0.0, reads ~/.config/noctalia/settings.json).
+#
+# settings.json is deliberately NOT managed by Nix: noctalia writes it at
+# runtime (Settings UI hot-saves), and a home-manager file would be a
+# read-only store symlink. It is mutable user state — copied to the new
+# /home during the Phase 4 install (see PLAN.md), like browser profiles.
 #
 # The pam/ subdirectory in ~/.config/noctalia/ contains a PAM override for
-# lock-screen auth (password.conf). NixOS manages PAM via its own module system;
-# do not vendor this file. Revisit when wiring up the lock screen on NixOS.
-{ inputs, pkgs, ... }:
+# lock-screen auth (password.conf). NixOS manages PAM via its own module
+# system; do not vendor this file. Revisit when wiring up the lock screen.
+{ inputs, ... }:
 {
   imports = [ inputs.noctalia.homeModules.default ];
 
-  programs.noctalia = {
-    enable = true;
-    # package is set to inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default
-    # by the homeModules.default wrapper — no need to re-declare it here.
-  };
+  # The homeModules wrapper sets the package from the flake input; niri's
+  # spawn-at-startup launches it (no systemd user service, matching Arch).
+  programs.noctalia.enable = true;
 }
