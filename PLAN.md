@@ -75,8 +75,10 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 - [x] modules/nixos/asus.nix: power-profiles-daemon, ananicy-cpp +
       ananicy-rules-cachyos, howdy (control=sufficient) + linux-enable-ir-emitter.
       supergfxd DROPPED per user (not needed).
-- [ ] Port remaining /etc bits: 99-power-saving.rules + ac/bat.fish scripts
-      (needs intel-lpmd story)
+- [x] Port remaining /etc bits: 99-power-saving.rules + ac/bat.fish ported
+      into asus.nix as store-pathed fish scripts + udev rules (brightness +
+      60/240 Hz switching). intel_lpmd_control calls OMITTED — re-add when
+      intel-lpmd is packaged (research item stands).
 - [x] plymouth: enabled, "spinner" theme. Requirement: black bg, logo toward
       bottom, NOT centered firmware/ASUS logo (so not bgrt). Verify look on
       first real boot; if wrong, try themePackages or disable — user is fine
