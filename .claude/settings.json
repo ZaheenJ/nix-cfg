@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(**)",
+      "Write(**)",
+      "Bash(paru -Q*)",
+      "Bash(nix flake *)",
+      "Bash(nix build *)",
+      "Bash(nix search *)",
+      "Bash(nix eval *)",
+      "Bash(nix config show *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(systemctl is-active *)",
+      "Bash(systemctl list-unit-files *)",
+      "Bash(systemctl --user list-unit-files *)",
+      "Bash(systemctl cat *)",
+      "Bash(journalctl *)",
+      "Bash(sbctl status)",
+      "Bash(hostnamectl *)",
+      "Bash(lsblk*)",
+      "Bash(lspci*)",
+      "Bash(lscpu*)",
+      "Bash(lsmod*)",
+      "Bash(getent *)",
+      "Bash(claude mcp list)",
+      "Read(//etc/**)",
+      "Read(//usr/**)",
+      "Read(//boot/**)",
+      "Read(//var/lib/sbctl/**)",
+      "Read(//home/zaheenj/.config/**)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:nix-community.github.io)",
+      "WebFetch(domain:nixos-and-flakes.thiscute.world)",
+      "mcp__nixos__nix",
+      "mcp__nixos__nix_versions"
+    ]
+  }
+}

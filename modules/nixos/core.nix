@@ -14,7 +14,8 @@
     plugins = [ pkgs.networkmanager-openvpn ];
   };
   services.resolved.enable = true;
-  # Replaces ufw; per-port rules ported in a later phase if any exist.
+  # Replaces ufw. Arch's only custom rules were KDE Connect ports for
+  # Valent, which the user no longer uses — nothing extra to open.
   networking.firewall.enable = true;
 
   # Matches Arch zram-generator: zram-size = ram, zstd.

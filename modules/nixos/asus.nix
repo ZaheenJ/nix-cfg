@@ -1,5 +1,9 @@
 { pkgs, ... }:
 {
+  # asusctl/rog-control-center were dependency-installed on Arch but are used
+  # by niri keybinds (asusctl -n/-p) and spawn-at-startup (rog-control-center).
+  services.asusd.enable = true;
+
   services.power-profiles-daemon.enable = true;
 
   services.ananicy = {

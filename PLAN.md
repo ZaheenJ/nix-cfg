@@ -92,13 +92,32 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 ### Phase 3 — Home-manager modules (bulk, subagent-heavy)
 - [ ] home/ skeleton + common module set (CLI per MAPPING.md; diskonaut → ncdu
       substitute; slang-server-bin DEFERRED to the very end per user)
-- [~] batch 1 (shells/editor/CLI): fish.nix + nushell.nix done (first
-      subagent died at session limit); helix fish-keybinding functions
-      vendored into home/common/fish/. Remaining: starship, ghostty, helix,
-      git, cli.nix + wiring
+- [x] batch 1 (shells/editor/CLI) COMPLETE: fish, nushell, starship, ghostty
+      (vendored config; hm module can't express repeated palette keys), helix
+      (-git input + vendored transparent themes; SystemVerilog LSP commented
+      out as deferred), git (faithful: gmail identity + lfs only), cli.nix
+      (zoxide/carapace fish+nu integrations, full CLI package set, ncdu sub)
+- [x] batch 2 (desktop) COMPLETE: niri (vendored KDL, dms/ excluded),
+      noctalia (flake homeModule; see open item below), vicinae, satty,
+      desktop-tools (+wl-clipboard), theming (bibata cursor, gtk, qtct,
+      mimeapps), fonts (emoji default). asusd enabled system-side (asusctl/
+      rog-control-center were dep-installed on Arch, used by niri binds).
+      LESSON: paru -Qet hides dep-installed tools that configs rely on —
+      batch 3 must check niri/mimeapps references against `paru -Q`.
+      Open items from batch 2:
+      - noctalia: Arch settings.json is v4-format; flake HEAD is v5 (TOML,
+        incompatible). Decision: start with v5 defaults, user reconfigures in
+        Settings UI (hot-reloads). Revisit lock-screen PAM on NixOS.
+      - GTK theme oomox-BWnB (custom oomox output) not vendored; icon theme
+        name in settings.ini was an artifact. Decide post-install (nwg-look
+        or pkgs/ derivation).
+      - qt6ct color_scheme_path now %APPDIR% token — verify at runtime.
+- [x] gaming: modules/nixos/gaming.nix (steam + protontricks options,
+      umu-launcher/winetricks/vulkan-tools) wired into host
 - [ ] fish + starship + carapace + zoxide (port ~/.config/fish, starship.toml)
 - [ ] ghostty, helix (-git → flake or nixpkgs?), git, mpv, zathura, vimiv, cmus,
-      beets, picard, syncthing (user service), playerctl
+      picard, syncthing (user service), playerctl. NOT beets (never
+      installed — only a stale library.db in ~/.config/beets)
 - [ ] niri config + noctalia + vicinae + satty + nwg-displays/look + qt6ct theming
 - [ ] Apps: firefox, chromium, vesktop, prismlauncher, teams-for-linux,
       tor-browser, cursor (code-cursor), claude-code, android-tools, gcloud
@@ -137,7 +156,7 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 | intel-lpmd-git | NO NixOS module, not in nixpkgs, no upstream flake. Interim: power-profiles-daemon. Custom pkg+unit deferred to Phase 5; ac/bat.fish scripts depend on it |
 | supergfxd | DROPPED per user — not needed |
 | ananicy-cpp | `services.ananicy` + ananicy-rules-cachyos package (verify name) |
-| ufw | → `networking.firewall` (check current ufw rules first: `sudo ufw status`) |
+| ufw | RESOLVED: `networking.firewall.enable`, no extra ports. Arch's only custom rules were KDE Connect 1714-1764 for Valent; user confirmed Valent unused — dropped (2026-06-11) |
 | ydotool | `programs.ydotool.enable` (verify) |
 | tzupdate | verify `services.tzupdate` exists; else timezone static |
 | sbctl/efitools/fwupd/sof-firmware/intel-ucode | lanzaboote handles signing; `services.fwupd.enable`; `hardware.enableRedistributableFirmware` + `hardware.cpu.intel.updateMicrocode` |
