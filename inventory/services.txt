@@ -1,0 +1,35 @@
+UNIT FILE                          STATE   PRESET
+cachyos-iw-set-regdomain.path      enabled disabled
+ananicy-cpp.service                enabled disabled
+avahi-daemon.service               enabled disabled
+bluetooth.service                  enabled disabled
+getty@.service                     enabled enabled
+intel_lpmd.service                 enabled disabled
+NetworkManager-dispatcher.service  enabled disabled
+NetworkManager-wait-online.service enabled disabled
+NetworkManager.service             enabled disabled
+nix-daemon.service                 enabled disabled
+nvidia-powerd.service              enabled disabled
+power-profiles-daemon.service      enabled disabled
+supergfxd.service                  enabled disabled
+systemd-resolved.service           enabled enabled
+systemd-timesyncd.service          enabled enabled
+ufw.service                        enabled disabled
+avahi-daemon.socket                enabled disabled
+systemd-userdbd.socket             enabled enabled
+remote-fs.target                   enabled enabled
+cachyos-rate-mirrors.timer         enabled disabled
+fstrim.timer                       enabled disabled
+
+21 unit files listed.
+--- USER ---
+UNIT FILE                   STATE   PRESET
+syncthing.service           enabled enabled
+wireplumber.service         enabled enabled
+xdg-user-dirs.service       enabled enabled
+gnome-keyring-daemon.socket enabled enabled
+p11-kit-server.socket       enabled enabled
+pipewire-pulse.socket       enabled enabled
+pipewire.socket             enabled enabled
+
+7 unit files listed.

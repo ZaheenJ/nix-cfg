@@ -1,0 +1,61 @@
+{ pkgs, ... }:
+{
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    auto-optimise-store = true;
+  };
+  nixpkgs.config.allowUnfree = true;
+
+  time.timeZone = "America/Chicago";
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  networking.networkmanager = {
+    enable = true;
+    plugins = [ pkgs.networkmanager-openvpn ];
+  };
+  services.resolved.enable = true;
+  # Replaces ufw; per-port rules ported in a later phase if any exist.
+  networking.firewall.enable = true;
+
+  # Matches Arch zram-generator: zram-size = ram, zstd.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 100;
+  };
+
+  hardware.bluetooth.enable = true;
+  hardware.enableRedistributableFirmware = true;
+
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
+  services.fwupd.enable = true;
+  services.fstrim.enable = true;
+
+  # VIA keyboard (4d4b:3068) and 1915:232a hidraw access (from Arch udev rules).
+  services.udev.extraRules = ''
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="4d4b", ATTRS{idProduct}=="3068", GROUP="users", MODE="0660"
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1915", ATTRS{idProduct}=="232a", GROUP="users", MODE="0660"
+  '';
+
+  users.users.zaheenj = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" "video" "input" ];
+    shell = pkgs.fish;
+  };
+  programs.fish.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    git
+    man-pages
+  ];
+}

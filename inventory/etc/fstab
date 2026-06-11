@@ -1,0 +1,16 @@
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a device; this may
+# be used with UUID= as a more robust way to name devices that works even if
+# disks are added and removed. See fstab(5).
+#
+# <file system>             <mount point>  <type>  <options>  <dump>  <pass>
+UUID=E60A-6840                            /boot          vfat    defaults   0 2
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /              btrfs   subvol=/@,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /home          btrfs   subvol=/@home,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /root          btrfs   subvol=/@root,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /srv           btrfs   subvol=/@srv,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /var/cache     btrfs   subvol=/@cache,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /var/tmp       btrfs   subvol=/@tmp,defaults,noatime,compress=zstd,commit=120 0 0
+UUID=b34a2639-b192-4add-a2ba-3deb931288ce /var/log       btrfs   subvol=/@log,defaults,noatime,compress=zstd,commit=120 0 0
+tmpfs                                     /tmp           tmpfs   defaults,noatime,mode=1777 0 0

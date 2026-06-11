@@ -1,0 +1,9 @@
+CPU(s):                                  22
+Model name:                              Intel(R) Core(TM) Ultra 9 185H
+NUMA node0 CPU(s):                       0-21
+00:02.0 VGA compatible controller: Intel Corporation Meteor Lake-P [Intel Arc Graphics] (rev 08)
+00:08.0 System peripheral: Intel Corporation Meteor Lake-P Gaussian & Neural-Network Accelerator (rev 20)
+00:14.3 Network controller: Intel Corporation Meteor Lake PCH CNVi WiFi (rev 20)
+01:00.0 VGA compatible controller: NVIDIA Corporation AD106M [GeForce RTX 4070 Max-Q / Mobile] (rev a1)
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       7.3Gi       1.9Gi       1.8Gi       7.5Gi       7.7Gi

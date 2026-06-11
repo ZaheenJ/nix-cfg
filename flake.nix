@@ -1,0 +1,39 @@
+{
+  description = "Multi-host NixOS + home-manager configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.0.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { nixpkgs, home-manager, lanzaboote, ... } @ inputs: {
+    nixosConfigurations.home-g16 = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      specialArgs = { inherit inputs; };
+      modules = [
+        ./hosts/home-g16
+        lanzaboote.nixosModules.lanzaboote
+        home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = { inherit inputs; };
+            users.zaheenj = import ./home;
+          };
+        }
+      ];
+    };
+
+    # Standalone home-manager for non-NixOS hosts (school/work), e.g.:
+    # homeConfigurations."zaheenj@school" =
+    #   home-manager.lib.homeManagerConfiguration { ... };
+  };
+}

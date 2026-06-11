@@ -1,0 +1,15 @@
+bibata-cursor-theme-bin 2.0.7-1
+carapace-bin 1.6.6-1
+cursor-bin 3.5.17-1
+google-cloud-cli 570.0.0-1
+helix-git 25.07.r670.g0805bc853-1
+howdy-git r592.d3ab993-1
+intel-lpmd-git 0.1.0.r3.gecf1de5-1
+linux-enable-ir-emitter 6.1.2-1
+noctalia-git 5.0.0.r2720.gbd74c3461-1
+powerstat 0.04.05-1
+slang-server-bin 0.2.5-1
+teams-for-linux-bin 2.7.13-1
+tor-browser-bin 15.0.9-1
+tzupdate 3.1.0-1
+vicinae-bin 0.21.2-1
