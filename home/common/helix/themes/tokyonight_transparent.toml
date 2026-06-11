@@ -1,0 +1,6 @@
+inherits = "tokyonight"
+"ui.background" = {}
+"ui.statusline".bg = ""
+"ui.menu".bg = ""
+"ui.popup".bg = ""
+"ui.help".bg = ""

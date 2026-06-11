@@ -22,17 +22,6 @@
       $env.config.cursor_shape = {emacs: line, vi_insert: line, vi_normal: block}
       $env.config.show_banner = false
 
-      # Carapace external completer
-      let carapace_completer = {|spans|
-          carapace $spans.0 nushell ...$spans | from json
-      }
-
-      $env.config.completions.external = {
-          enable: true
-          max_results: 100
-          completer: $carapace_completer
-      }
-
       # Custom commands
       def fgpl [] {
           ls
