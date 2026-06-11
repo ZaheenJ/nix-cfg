@@ -78,7 +78,7 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 - [ ] Port remaining /etc bits: 99-power-saving.rules + ac/bat.fish scripts
       (needs intel-lpmd story), plymouth decision
 - [x] `nix flake check` passes
-- [ ] toplevel build passes (`nix build .#nixosConfigurations.home-g16.config.system.build.toplevel`)
+- [x] toplevel build passes (`nix build .#nixosConfigurations.home-g16.config.system.build.toplevel`)
 
 ### Phase 3 — Home-manager modules (bulk, subagent-heavy)
 - [ ] home/ skeleton + common module set (CLI: fd ripgrep eza? bottom btop dust

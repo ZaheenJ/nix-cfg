@@ -1,18 +1,9 @@
-{ pkgs, ... }:
+# Full profile for the personal laptop (home-g16).
+# Non-NixOS hosts (school/work) will import ./common plus their own extras.
+{ ... }:
 {
-  # Common user environment for all hosts. Must stay distro-agnostic:
-  # this is also used standalone on non-NixOS machines (school/work).
-  home.username = "zaheenj";
-  home.homeDirectory = "/home/zaheenj";
-  home.stateVersion = "26.05";
-
-  programs.home-manager.enable = true;
-
-  # Skeleton only — full package set and dotfile ports land in Phase 3.
-  home.packages = with pkgs; [
-    fd
-    ripgrep
+  imports = [
+    ./common
+    ./personal
   ];
-
-  programs.fish.enable = true;
 }
