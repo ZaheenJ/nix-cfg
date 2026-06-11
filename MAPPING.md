@@ -73,7 +73,7 @@ Legend:
 | carapace-bin * | 1.6.6 | `nixpkgs:carapace` | Verified: `carapace` 1.6.3 on unstable (the -bin was prebuilt AUR; nixpkgs builds from source). Arch has 1.6.6 (see Notes) |
 | nushell | 0.113.1 | `nixpkgs:nushell` | Verified: 0.111.0 on unstable — Arch has 0.113.1 (see Notes). Secondary shell per PLAN.md pending user decision on config depth |
 | uv | 0.11.19 | `nixpkgs:uv` | Verified: 0.11.4 on unstable — Arch has 0.11.19 (see Notes) |
-| diskonaut | 0.11.0 | `RESEARCH` | Not found in nixpkgs (confirmed: no results for `diskonaut`). See RESEARCH section |
+| diskonaut | 0.11.0 | `nixpkgs:ncdu` (substitute) | Not in nixpkgs; user decision 2026-06-11: substitute ncdu (verified 2.9.2 on unstable) instead of packaging diskonaut |
 | powerstat * | 0.04.05 | `nixpkgs:powerstat` | Verified: 0.04.06 on unstable (Arch has .05; nixpkgs actually has a newer micro version) |
 | lsscsi | 0.32 | `nixpkgs:lsscsi` | Already listed above (system section); include in home packages if wanted |
 
@@ -111,26 +111,25 @@ Legend:
 | lua-language-server | 3.18.2 | `nixpkgs:lua-language-server` | Verified: 3.18.0 on unstable — Arch has 3.18.2 (minor) |
 | tinymist | 0.14.18 | `nixpkgs:tinymist` | Verified: 0.14.16 on unstable — Arch has 0.14.18 (see Notes) |
 | verilator | 5.048 | `nixpkgs:verilator` | Verified: 5.046 on unstable — Arch has 5.048 (see Notes) |
-| slang-server-bin * | 0.2.5 | `RESEARCH` | See RESEARCH section |
+| slang-server-bin * | 0.2.5 | `DEFERRED` | User decision 2026-06-11: handle after everything else is done. Provisional path: `sv-lang` (see RESEARCH section) |
 | uv | 0.11.19 | `nixpkgs:uv` | Already listed in CLI section |
 
 ---
 
 ## Gaming (cachyos-gaming-meta expansion)
 
-The Arch `cachyos-gaming-meta` package installs Steam and associated gaming tools.
-Expanded disposition per PLAN.md:
+Checked against what is ACTUALLY installed on Arch (2026-06-11): steam,
+umu-launcher, protontricks, winetricks, vulkan-tools. gamemode, gamescope and
+mangohud are NOT installed — do not add them (user confirmed).
 
 | Component | Arch equivalent | Disposition | Detail |
 |---|---|---|---|
-| Steam | (steam via meta) | `module:programs.steam.enable` | Verified option exists. Sets up Steam with correct system integration, 32-bit libs, udev rules |
-| gamemode | (steam meta dep) | `module:programs.gamemode.enable` | Verified: `programs.gamemode.enable` + `programs.gamemode.enableRenice` for niceness. pkg `gamemode` 1.8.2 verified |
-| gamescope | (steam meta dep) | `nixpkgs:gamescope` | Verified: 3.16.22 on unstable. Can use with `programs.steam.gamescopeSession.enable` |
-| mangohud | (steam meta dep) | `nixpkgs:mangohud` | Verified: 0.8.2 on unstable |
-| umu-launcher | (steam meta dep) | `nixpkgs:umu-launcher` | Verified: 1.4.0 on unstable |
-| protontricks | (steam meta dep) | `module:programs.steam.protontricks.enable` | Verified option exists. Alternatively `nixpkgs:protontricks` (1.14.0) directly |
-| winetricks | (steam meta dep) | `nixpkgs:winetricks` | Verified: 20260125 on unstable |
-| vulkan-tools | (steam meta dep) | `nixpkgs:vulkan-tools` | Verified: 1.4.341.0 on unstable |
+| Steam | steam 1.0.0.85 | `module:programs.steam.enable` | Verified option exists. Sets up Steam with correct system integration, 32-bit libs, udev rules. Standard Proton (NOT proton-cachyos); proton-ge-bin optional later |
+| umu-launcher | 1.4.0 | `nixpkgs:umu-launcher` | Verified: 1.4.0 on unstable |
+| protontricks | 1.14.1 | `module:programs.steam.protontricks.enable` | Verified option exists. Alternatively `nixpkgs:protontricks` (1.14.0) directly |
+| winetricks | 20260125 | `nixpkgs:winetricks` | Verified: 20260125 on unstable |
+| vulkan-tools | 1.4.350 | `nixpkgs:vulkan-tools` | Verified: 1.4.341.0 on unstable |
+| ~~gamemode/gamescope/mangohud~~ | not installed | `drop` | Were never installed on Arch despite being common gaming-meta companions |
 
 ---
 
@@ -288,7 +287,7 @@ Both packages have first-class NixOS module support on nixos-unstable:
 | lua-language-server | 3.18.2 | 3.18.0 | 2 patches |
 
 **Action items:**
-- `code-cursor` and `google-cloud-sdk` gaps are large enough to consider overriding in `overlays/` or accepting the older version.
+- `code-cursor` and `google-cloud-sdk` version gaps: user decision 2026-06-11 — accept nixpkgs versions, NO overlays for now.
 - `microcode-intel`: the nixpkgs version (20260227) is older than Arch's (20260512). Since this affects CPU security mitigations, monitor for nixpkgs updates. Consider pinning a newer microcode manually if security advisories require it.
 - `firefox`/`chromium`: browser security patches are significant; nixpkgs unstable usually tracks these closely. If gaps persist after migration, check if there's a newer commit to pin.
 

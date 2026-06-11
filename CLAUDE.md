@@ -48,8 +48,11 @@ Modeled on https://nixos-and-flakes.thiscute.world/ conventions.
 - Validation ladder (run on Arch, no root needed):
   1. `nix flake check` — seconds, catches most errors
   2. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
-  3. `nixos-rebuild build-vm --flake .#<host>` — boots QEMU (hw-specific
-     bits like nvidia/secure-boot won't be testable in VM)
+  Verification happens on real hardware after that. `build-vm` is NOT part
+  of the regular flow — it's a backup debugging tool, e.g. to separate
+  "config bug" from "hardware bug" if a boot issue appears.
+- Don't pipe validation commands through `tail`/`head` before `&&` — the
+  pipe masks the exit code. Run them bare or with `set -o pipefail`.
 - nixos-* tools come from `nix shell nixpkgs#nixos-install-tools` /
   `nixpkgs#nixos-rebuild` — nothing installed globally on Arch.
 - Bulk module-writing goes to the `nix-module-writer` subagent (Sonnet) to

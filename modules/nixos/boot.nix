@@ -28,5 +28,14 @@
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
 
+  # User wants: black background, distro logo toward the bottom (like the
+  # CachyOS theme), NOT the firmware/ASUS logo centered (bgrt theme).
+  # "spinner" = black bg + spinner; verify placement on first real boot and
+  # adjust theme/logo then — cosmetic, not boot-critical.
+  boot.plymouth = {
+    enable = true;
+    theme = "spinner";
+  };
+
   environment.systemPackages = [ pkgs.sbctl ];
 }

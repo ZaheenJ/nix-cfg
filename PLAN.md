@@ -76,13 +76,26 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
       ananicy-rules-cachyos, howdy (control=sufficient) + linux-enable-ir-emitter.
       supergfxd DROPPED per user (not needed).
 - [ ] Port remaining /etc bits: 99-power-saving.rules + ac/bat.fish scripts
-      (needs intel-lpmd story), plymouth decision
+      (needs intel-lpmd story)
+- [x] plymouth: enabled, "spinner" theme. Requirement: black bg, logo toward
+      bottom, NOT centered firmware/ASUS logo (so not bgrt). Verify look on
+      first real boot; if wrong, try themePackages or disable — user is fine
+      with default-or-off as fallback.
+- [x] greetd: confirmed NOT wanted (disabled on Arch too) — no DM, fish
+      launches niri-session. Settled.
+- Gaming module spec (Phase 3): programs.steam.enable +
+      programs.steam.protontricks.enable + umu-launcher, winetricks,
+      vulkan-tools packages. NO gamemode/gamescope/mangohud (never installed).
 - [x] `nix flake check` passes
 - [x] toplevel build passes (`nix build .#nixosConfigurations.home-g16.config.system.build.toplevel`)
 
 ### Phase 3 — Home-manager modules (bulk, subagent-heavy)
-- [ ] home/ skeleton + common module set (CLI: fd ripgrep eza? bottom btop dust
-      duf zoxide starship tokei termdown figlet xkcdpass diskonaut nvtop ...)
+- [ ] home/ skeleton + common module set (CLI per MAPPING.md; diskonaut → ncdu
+      substitute; slang-server-bin DEFERRED to the very end per user)
+- [~] batch 1 (shells/editor/CLI): fish.nix + nushell.nix done (first
+      subagent died at session limit); helix fish-keybinding functions
+      vendored into home/common/fish/. Remaining: starship, ghostty, helix,
+      git, cli.nix + wiring
 - [ ] fish + starship + carapace + zoxide (port ~/.config/fish, starship.toml)
 - [ ] ghostty, helix (-git → flake or nixpkgs?), git, mpv, zathura, vimiv, cmus,
       beets, picard, syncthing (user service), playerctl
