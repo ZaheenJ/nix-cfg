@@ -132,11 +132,49 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 - [x] niri config + noctalia + vicinae + satty + nwg-displays/look + qt6ct theming
 - [x] Apps: firefox, chromium, vesktop, prismlauncher, teams-for-linux,
       tor-browser, cursor (code-cursor), claude-code, android-tools, gcloud
-- [ ] Per-host split: common.nix vs personal-only (browser? gaming? music)
-      vs school/work
-- [ ] Full build passes; spot-check key dotfiles in ./result
+- [x] Per-host split: home/common (shells/editor/CLI, distro-agnostic) vs
+      home/personal (desktop+apps). school/work compose home/common + own
+      extras when scaffolded (Phase 5).
+- [x] Full build passes; dotfiles spot-checked in the closure (fish
+      niri-launch, nushell, ghostty->nu, helix themes, niri kdl, udev
+      power rules). PHASE 3 COMPLETE 2026-06-11.
 
 ### Phase 4 — Install to p8 (user-driven sudo)
+
+Runbook (user runs the sudo commands via `!`; lead verifies between steps).
+Arch + rEFInd stay untouched throughout = rollback path.
+
+1. Mount target (UUID 1198bc8f-1186-44a5-aed4-e9a0bbb80ab6 = p8):
+   ```
+   sudo mkdir -p /mnt/nixos
+   sudo mount -o subvol=@,noatime,compress=zstd:1,commit=120 /dev/nvme0n1p8 /mnt/nixos
+   sudo mkdir -p /mnt/nixos/{home,nix,var/log,boot}
+   sudo mount -o subvol=@home,noatime,compress=zstd:1,commit=120 /dev/nvme0n1p8 /mnt/nixos/home
+   sudo mount -o subvol=@nix,noatime,compress=zstd:1,commit=120 /dev/nvme0n1p8 /mnt/nixos/nix
+   sudo mount -o subvol=@log,noatime,compress=zstd:1,commit=120 /dev/nvme0n1p8 /mnt/nixos/var/log
+   sudo mount /dev/nvme0n1p1 /mnt/nixos/boot
+   ```
+2. Cross-check hardware config (lead diffs output vs ours):
+   `nix shell nixpkgs#nixos-install-tools -c sudo nixos-generate-config --root /mnt/nixos --show-hardware-config`
+3. Copy Secure Boot keys BEFORE install (lanzaboote signs during install):
+   `sudo mkdir -p /mnt/nixos/var/lib && sudo cp -a /var/lib/sbctl /mnt/nixos/var/lib/`
+4. ESP space check: `df -h /boot` (need room for ~4 generations of UKIs).
+5. Install (interactive root-password prompt at the end):
+   `sudo nix run nixpkgs#nixos-install-tools.nixos-install -- --flake /home/zaheenj/nix#home-g16 --root /mnt/nixos`
+   (equivalently `nix shell nixpkgs#nixos-install-tools -c sudo nixos-install ...`)
+6. Verify before reboot: `ls /mnt/nixos/boot/EFI/Linux/` shows signed
+   nixos-*.efi UKIs; `sudo sbctl verify` on them passes.
+7. Copy mutable user state to new home (list below), then
+   `sudo chown -R 1000:100 /mnt/nixos/home/zaheenj`.
+8. Reboot → rEFInd should auto-detect the new entries. First boot: login as
+   root (tty), `passwd zaheenj`, then login as zaheenj on tty1 → fish execs
+   niri-session.
+9. Smoke tests: WiFi, audio, nvidia-offload glxinfo, brightness keys,
+   AC/battery udev (unplug → 60 Hz + dim), howdy (`sudo howdy add` to
+   re-enroll — model migration from Arch's /etc/howdy/models is possible but
+   re-enrolling is cleaner), plymouth look (black bg, logo placement),
+   ESP free space after a couple of rebuilds.
+
 - [ ] Mutable user state to COPY from Arch /home to the new @home (not
       Nix-managed because apps write these at runtime):
       ~/.config/noctalia/ (settings.json, colors.json — Settings UI saves),
