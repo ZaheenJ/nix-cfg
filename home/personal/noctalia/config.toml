@@ -1,0 +1,88 @@
+[audio]
+enable_overdrive = true
+
+[bar.default]
+background_opacity = 0.75
+center = [ "weather", "date", "media", "notifications", "tray" ]
+end = [ "caffeine", "output_volume", "cpu", "ram", "network", "bluetooth", "brightness", "battery" ]
+margin_edge = 5.0
+margin_ends = 5.0
+shadow = false
+start = [ "taskbar" ]
+
+[desktop_widgets]
+enabled = false
+
+[idle]
+behavior_order = [ "lock", "screen-off", "suspend" ]
+
+    [idle.behavior.lock]
+    action = "lock"
+    enabled = false
+    timeout = 600
+
+    [idle.behavior.screen-off]
+    action = "screen_off"
+    enabled = true
+    timeout = 600
+
+    [idle.behavior.suspend]
+    action = "suspend"
+    enabled = false
+    lock_before_suspend = true
+    timeout = 900
+
+[notification]
+background_opacity = 0.74999998323619366
+
+[osd]
+background_opacity = 0.74999998323619366
+position = "bottom_center"
+
+[shell]
+font_family = "Iosevka NF"
+polkit_agent = true
+settings_show_advanced = true
+
+    [shell.panel]
+    control_center_placement = "floating"
+    launcher_categories = false
+    transparency_mode = "glass"
+
+[theme]
+builtin = "Tokyo-Night"
+community_palette = "Lilac AMOLED"
+source = "community"
+
+    [theme.templates]
+    builtin_ids = [ "gtk3", "gtk4", "niri", "qt" ]
+    community_ids = [ "vicinae", "steam" ]
+
+[wallpaper]
+directory = "/home/zaheenj/Pictures/wallpapers"
+
+    [wallpaper.default]
+    path = "/home/zaheenj/Pictures/wallpapers/lakeside_canoe_sunset.jpg"
+
+    [wallpaper.last]
+    path = "/home/zaheenj/Pictures/wallpapers/lakeside_canoe_sunset.jpg"
+
+    [wallpaper.monitors.HDMI-A-1]
+    path = "/home/zaheenj/Pictures/wallpapers/lakeside_canoe_sunset.jpg"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/zaheenj/Pictures/wallpapers/lakeside_canoe_sunset.jpg"
+
+[weather]
+auto_locate = true
+unit = "imperial"
+
+[widget.clock]
+format = "{:%l:%M %p}"
+
+[widget.date]
+anchor = true
+format = "{:%l:%M %p %a %d %b}"
+
+[widget.taskbar]
+group_by_workspace = true
