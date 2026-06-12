@@ -26,9 +26,8 @@ let
   acScript = powerScript "ac" "50%" "2560x1600@240.000";
 in
 {
-  # asusctl/rog-control-center were dependency-installed on Arch but are used
-  # by niri keybinds (asusctl -n/-p) and spawn-at-startup (rog-control-center).
-  services.asusd.enable = true;
+  # services.asusd comes from the nixos-hardware gu605my profile (mkDefault);
+  # asusctl/rog-control-center are used by niri keybinds + spawn-at-startup.
 
   services.power-profiles-daemon.enable = true;
 

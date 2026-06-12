@@ -294,6 +294,19 @@ Arch + rEFInd stay untouched throughout = rollback path.
 - [ ] **Noctalia greeter** — evaluate replacing the no-DM autologin+fish-exec
       flow with noctalia's greeter; interacts with howdy PAM and
       services.getty.autologinUser — revisit boot chain if adopted.
+- [~] **nixos-hardware adopted** (2026-06-12, config done, VERIFY on next
+      switch): asus-zephyrus-gu605my profile imported (MY=4090 vs our MI=4070,
+      same Ada/platform — GPU config identical). New from it: hwdb key fixes
+      (mic mute, Fn+arrows→Home/End), nvidia dynamicBoost (nvidia-powerd),
+      early-KMS i915 in initrd, Intel oneVPL+compute-runtime+32-bit VAAPI.
+      Deduped: videoDrivers/modesetting/prime/asusd/intel-media-driver now
+      come from the profile; nvidia.nix keeps powerManagement(+finegrained),
+      nvidia-vaapi-driver, intelgpu.vaapiDriver=intel-media-driver (skip
+      legacy driver). CONFLICT resolved: their shared/backlight.nix
+      (i915.enable_dpcd_backlight=1) disabledModules'd — we keep Arch-verified
+      =3; its two NVreg backlight params ported into nvidia.nix.
+      Verify after switch: brightness keys still work, nvidia-offload,
+      nvidia-powerd running, mic-mute key.
 - [ ] **CachyOS performance parity** — researched options, in rough
       value-per-effort order:
       1. `services.scx` exists in NixOS (verified): sched-ext userspace
