@@ -42,10 +42,12 @@
     platformTheme.name = "qtct";
   };
 
-  # qt6ct.conf is deliberately NOT managed: the qt6ct app writes it (scheme
-  # selection) and noctalia's qt template drops generated schemes into
-  # qt6ct/colors/ — read-only symlinks broke both. Seeded once at migration;
-  # mutable thereafter (same doctrine as noctalia/vicinae state).
+  # qt6ct.conf is declarative: it only stores a POINTER
+  # (color_scheme_path -> colors/noctalia.conf); noctalia's qt template
+  # rewrites that target file on theme changes, so colors stay dynamic while
+  # this config is read-only. Font/style/icon tweaks: edit ./qt6ct/qt6ct.conf
+  # here, not the qt6ct GUI (it can't save).
+  xdg.configFile."qt6ct/qt6ct.conf".source = ./qt6ct/qt6ct.conf;
 
   # MIME associations (ported from ~/.config/mimeapps.list).
   xdg.mimeApps = {

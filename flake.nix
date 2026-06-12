@@ -36,6 +36,9 @@
             useUserPackages = true;
             extraSpecialArgs = { inherit inputs; };
             users.zaheenj = import ./home;
+            # When a real file exists where hm wants a symlink (e.g. seeded
+            # configs later made declarative), back it up instead of failing.
+            backupFileExtension = "hm-bak";
           };
         }
       ];
