@@ -204,6 +204,14 @@ Arch + rEFInd stay untouched throughout = rollback path.
       syncthing state (~/.local/state/syncthing or ~/.config/syncthing),
       ~/.ssh, ~/.gnupg, ~/.claude + claude.json, cmus playlists, helix state,
       plus bulk user data (Documents/Pictures/...) — final list at install.
+      LESSON (2026-06-12): ~/.config is NOT the whole story — modern apps
+      keep live state in ~/.local/state and ~/.local/share. noctalia's real
+      config is ~/.local/state/noctalia/settings.toml (the .config
+      settings.json is dead legacy since its May TOML migration); vicinae's
+      themes/extensions/db live in ~/.local/share/vicinae. Copy those dirs
+      for any misbehaving app before debugging its config. Also: copied
+      NM profiles carry `interface-name=` pinned to the old machine's NIC
+      name — strip those lines (sed) or profiles refuse to activate.
 - [ ] Mount subvols + ESP under /mnt/nixos; generate/verify
       hardware-configuration.nix against `nixos-generate-config --root`
 - [ ] Copy sbctl keys into target /var/lib/sbctl
