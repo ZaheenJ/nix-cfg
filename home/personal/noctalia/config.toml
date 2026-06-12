@@ -18,7 +18,7 @@ behavior_order = [ "lock", "screen-off", "suspend" ]
 
     [idle.behavior.lock]
     action = "lock"
-    enabled = false
+    enabled = true
     timeout = 600
 
     [idle.behavior.screen-off]
@@ -27,10 +27,58 @@ behavior_order = [ "lock", "screen-off", "suspend" ]
     timeout = 600
 
     [idle.behavior.suspend]
-    action = "suspend"
+    action = "lock_and_suspend"
     enabled = false
-    lock_before_suspend = true
     timeout = 900
+
+[location]
+auto_locate = true
+
+[lockscreen]
+blurred_desktop = true
+
+[lockscreen_widgets]
+schema_version = 2
+widget_order = [ "lockscreen-login-box@HDMI-A-1", "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1"]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 960.0
+    cy = 957.0
+    output = "HDMI-A-1"
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        input_opacity = 1.0
+        input_radius = 6.0
+        show_login_button = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 854.0
+    cy = 944.0
+    output = "eDP-1"
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        input_opacity = 1.0
+        input_radius = 6.0
+        show_login_button = true
 
 [notification]
 background_opacity = 0.74999998323619366
@@ -52,6 +100,7 @@ settings_show_advanced = true
 [theme]
 builtin = "Tokyo-Night"
 community_palette = "Lilac AMOLED"
+mode = "dark"
 source = "community"
 
     [theme.templates]
