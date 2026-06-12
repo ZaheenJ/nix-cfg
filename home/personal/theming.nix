@@ -1,7 +1,6 @@
 # Cursor, GTK, Qt, and MIME theming for the personal desktop.
-# GTK theme oomox-BWnB is a custom generated theme not in nixpkgs — gtk.theme
-# is intentionally omitted; set it after first boot via nwg-look or port the
-# oomox theme as a custom package in pkgs/ (Phase 5).
+# GTK/Qt color theming comes from noctalia's theme templates (gtk3/gtk4/qt
+# in [theme.templates]); the old oomox-BWnB theme was dropped per user.
 { pkgs, ... }:
 {
   # Cursor: Bibata-Modern-Classic, 24px — matches niri config.kdl and GTK settings.

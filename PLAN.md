@@ -281,7 +281,8 @@ Arch + rEFInd stay untouched throughout = rollback path.
 - [ ] school/work hosts skeletons (+ push repo to a remote first)
 - [ ] Revisit: secrets (sops-nix), impermanence?, btrfs snapshots for /home,
       binary cache if custom builds grow, slang-server-bin (deferred),
-      oomox GTK theme (possibly moot — noctalia templates generate gtk themes)
+      ~~oomox GTK theme~~ DROPPED per user 2026-06-12 (noctalia templates
+      cover gtk/qt theming)
 
 ## Special cases / research list
 

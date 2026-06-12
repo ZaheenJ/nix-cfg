@@ -4,6 +4,14 @@
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
   };
+  # Old system generations accumulate in /nix until GC'd (the lanzaboote
+  # configurationLimit only caps ESP boot entries, not disk). Weekly GC of
+  # generations older than two weeks keeps rollback headroom without growth.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
   nixpkgs.config.allowUnfree = true;
 
   time.timeZone = "America/Chicago";
