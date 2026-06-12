@@ -116,7 +116,9 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
       - GTK theme oomox-BWnB (custom oomox output) not vendored; icon theme
         name in settings.ini was an artifact. Decide post-install (nwg-look
         or pkgs/ derivation).
-      - qt6ct color_scheme_path now %APPDIR% token — verify at runtime.
+      - qt6ct color_scheme_path %APPDIR% token: VERIFIED BROKEN 2026-06-12 —
+        qt6ct never expands it (was a subagent invention); fixed to absolute
+        path. Qt6 theming confirmed working in PrismLauncher after fix.
 - [x] gaming: modules/nixos/gaming.nix (steam + protontricks options,
       umu-launcher/winetricks/vulkan-tools) wired into host
 - [x] fish + starship + carapace + zoxide (port ~/.config/fish, starship.toml)
