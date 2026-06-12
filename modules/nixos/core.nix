@@ -9,6 +9,15 @@
   time.timeZone = "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
 
+  # Keyboard: niri's xkb config section is empty — it reads layout from
+  # locale1, which NixOS populates from these options (localectl on Arch:
+  # X11 us/altgr-intl, VC us-acentos).
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "altgr-intl";
+  };
+  console.keyMap = "us-acentos";
+
   networking.networkmanager = {
     enable = true;
     plugins = [ pkgs.networkmanager-openvpn ];
@@ -34,6 +43,9 @@
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+  # Realtime priority for audio (Arch used cachyos-settings' @audio rtprio
+  # limits; rtkit is the NixOS-idiomatic equivalent).
+  security.rtkit.enable = true;
 
   services.avahi = {
     enable = true;

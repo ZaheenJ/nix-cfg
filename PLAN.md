@@ -166,6 +166,12 @@ Arch + rEFInd stay untouched throughout = rollback path.
    nixos-*.efi UKIs; `sudo sbctl verify` on them passes.
 7. Copy mutable user state to new home (list below), then
    `sudo chown -R 1000:100 /mnt/nixos/home/zaheenj`.
+   Also system-side state (AFTER nixos-install, before reboot — both
+   runtime-written, deliberately not Nix-managed):
+   `sudo cp -a /etc/asusd /mnt/nixos/etc/` (fan curves/aura, written by
+   rog-control-center; snapshot in inventory/etc/asusd/) and
+   `sudo cp -a /etc/NetworkManager/system-connections /mnt/nixos/etc/NetworkManager/`
+   (WiFi profiles + passwords).
 8. Reboot → rEFInd should auto-detect the new entries. First boot: login as
    root (tty), `passwd zaheenj`, then login as zaheenj on tty1 → fish execs
    niri-session.
