@@ -248,10 +248,18 @@ Arch + rEFInd stay untouched throughout = rollback path.
       noctalia's templates own (qt, gtk3, gtk4, niri, vicinae, steam — see
       [theme.templates] in home/personal/noctalia/config.toml), or point
       qt6ct's color_scheme_path at noctalia's generated file.
-- [ ] **Steam "Couldn't set up Steam data" on launch** — check ownership of
-      ~/.local/share/Steam and ~/.steam (root-owned leftovers from a sudo
-      rsync?) and for Arch-absolute symlinks; if a fresh start is fine,
-      remove both dirs and let Steam regenerate, then re-login.
+- [x] **Steam "Couldn't set up Steam data" on launch** — RESOLVED 2026-06-12.
+      Root cause: noctalia's `steam` community template wrote
+      ~/.steam/steam/steamui/skins/.../matugen.css BEFORE Steam's first
+      launch; its mkdir -p created ~/.steam/steam as a REAL DIRECTORY.
+      bin_steam.sh expects that path to be a symlink → ~/.local/share/Steam;
+      its repair (`ln -fns`) onto an existing dir nests the link INSIDE
+      instead of replacing → check_bootstrap loops to failure. Fix:
+      `rm -rf ~/.steam/steam`, relaunch — bootstrap then created the link
+      and updated normally. Ownership/disk/symlinks were all fine (the
+      original suspects were wrong). CAVEAT for future hosts: enabling the
+      noctalia steam template before Steam's first-ever launch reintroduces
+      this; launch Steam once first (or pre-create the symlink).
 - [x] **PrismLauncher data** — DONE 2026-06-12 (22 GB copied; Prism used
       ApplicationTheme=system on Arch too, so its look tracks the qt6ct
       palette). Original: copy ~/.local/share/PrismLauncher (instances,
