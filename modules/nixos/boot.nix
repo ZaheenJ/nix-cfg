@@ -41,14 +41,19 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Ported from Arch cmdline; i915.enable_dpcd_backlight=3 is a G16 panel
-  # backlight quirk, zswap off because zram is used.
+  # backlight quirk, zswap off because zram is used. systemd.show_status=auto
+  # and rd.udev.log_level=3 silence systemd/udev console chatter at boot AND
+  # shutdown (consoleLogLevel only covers kernel messages, not these).
   boot.kernelParams = [
     "quiet"
     "loglevel=3"
+    "systemd.show_status=auto"
+    "rd.udev.log_level=3"
     "nowatchdog"
     "zswap.enabled=0"
     "vt.global_cursor_default=0"
     "i915.enable_dpcd_backlight=3"
+    "rcutree.enable_rcu_lazy=1"
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
 
@@ -60,7 +65,22 @@
   services.getty = {
     greetingLine = "";
     helpLine = "";
+    # Match Arch's getty@tty1 drop-in (inventory/etc/getty-tty1-autologin.conf);
+    # --autologin comes from services.getty.autologinUser in desktop-niri.nix.
+    extraArgs = [
+      "--skip-login"
+      "--nonewline"
+      "--noissue"
+      "--noclear"
+    ];
   };
+
+  # Make boot menu hidden by default
+  boot.loader.timeout = 0;
+  # lanzaboote's loader.conf reads this option; the default "keep" stays in
+  # the firmware's low-res console mode and doesn't clear the BGRT logo,
+  # making the menu render over a giant pixelated OEM logo.
+  boot.loader.systemd-boot.consoleMode = "max";
 
   # Match the CachyOS look the user wants: firmware ASUS ROG logo stays
   # centered (BGRT) with NixOS branding, instead of plain spinner which

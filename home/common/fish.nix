@@ -47,6 +47,9 @@
     '';
   };
 
+  # Silence login(1)'s "Last login: ..." line on tty login (quiet boot).
+  home.file.".hushlogin".text = "";
+
   # The helix-keybindings functions are large multi-function files (fish_helix_key_bindings
   # defines the main function plus many __fish_helix_* helpers in one file).
   # HM's programs.fish.functions only supports a single body per entry, so these

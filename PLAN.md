@@ -225,7 +225,17 @@ Arch + rEFInd stay untouched throughout = rollback path.
 
 ### Phase 5 — Post-install TODO
 
-- [~] **systemd-boot as SOLE bootloader** (decided 2026-06-12, replaces the
+- [ ] **Quiet boot round 2 + systemd-boot menu look** (2026-06-12, config
+      done, VERIFY on next reboot): consoleMode="max" (lanzaboote's loader.conf
+      reads boot.loader.systemd-boot.consoleMode; default "keep" left the
+      firmware's low-res mode + uncleared BGRT → giant pixelated OEM logo
+      under the menu). Quiet boot: systemd.show_status=auto +
+      rd.udev.log_level=3 ported (systemd/udev chatter incl. SHUTDOWN output —
+      consoleLogLevel only covers kernel msgs, watchdog unrelated);
+      rcutree.enable_rcu_lazy=1 ported too; getty extraArgs
+      --skip-login/--nonewline/--noissue/--noclear (Arch drop-in parity);
+      ~/.hushlogin kills login(1)'s "Last login" line.
+- [x] **systemd-boot as SOLE bootloader** (decided 2026-06-12, replaces the
       rEFInd/EFISTUB question). Research findings: raw EFISTUB has no NixOS
       tooling (confirmed); `boot.loader.refind` DOES exist in nixpkgs now
       (merged ~Oct 2025) but is unusable here — installs its own UNSIGNED
@@ -239,13 +249,12 @@ Arch + rEFInd stay untouched throughout = rollback path.
       overwrite the signed systemd-boot with an unsigned one).
       Done: boot.nix ships arch.conf via tmpfiles (CachyOS kernel + verbatim
       refind_linux.conf cmdline, root UUID b34a2639); Windows auto-detected
-      (same ESP). Remaining:
-      1. [ ] rebuild switch; verify /boot/loader/entries/arch.conf exists
-      2. [ ] one-shot NVRAM entry: efibootmgr -c -d /dev/nvme0n1 -p 1
-             -L "Linux Boot Manager" -l '\EFI\systemd\systemd-bootx64.efi'
-      3. [ ] reboot → systemd-boot menu: verify NixOS + CachyOS + Windows boot
-      4. [ ] only then: efibootmgr -B the rEFInd entry, delete /boot/EFI/refind
-             + /boot/refind_linux.conf; paru -R refind refind-btrfs on Arch side
+      (same ESP). COMPLETED 2026-06-12: NVRAM entry created (efibootmgr —
+      note `nixpkgs#efibootmgr^out`, plain --print-out-paths returns the man
+      output first), all three OSes verified booting from systemd-boot,
+      rEFInd NVRAM entry + /boot/EFI/refind + refind_linux.conf removed.
+      boot.loader.timeout=0 (hold key for menu). Remaining: paru -R refind
+      refind-btrfs next time in Arch.
       CAVEAT: arch.conf pins /vmlinuz-linux-cachyos by name — fine across
       updates (in-place), update if Arch's kernel package ever changes.
 - [x] **noctalia theme templates not applying / qt6ct scheme select no-op** —
