@@ -221,11 +221,67 @@ Arch + rEFInd stay untouched throughout = rollback path.
       face-auth and nvidia offload smoke tests
 - [ ] ESP space check after 2-3 generations
 
-### Phase 5 — Post-install
-- [ ] Iterate natively on NixOS (`nixos-rebuild switch --flake`)
-- [ ] school/work hosts skeletons
-- [ ] Revisit: rEFInd as sole manager?, secrets (sops-nix), impermanence?,
-      btrfs snapshots for /home, binary cache (cachix) if custom builds grow
+### Phase 5 — Post-install TODO
+
+- [ ] **rEFInd or EFISTUB as sole bootloader** — mostly already true:
+      lanzaboote generations ARE signed UKIs (EFISTUB-style) in /boot/EFI/Linux,
+      and rEFInd boots them directly today (the first-boot entry was rEFInd's
+      auto-detected UKI, not the systemd-boot menu). "Sole" would mean lzbt
+      skipping the systemd-boot install — research if supported; cost of
+      keeping it is ~100 KB + an unused fallback menu. Raw EFISTUB without any
+      manager would need per-generation NVRAM entries (no NixOS tooling — not
+      recommended).
+- [ ] **noctalia theme templates not applying / qt6ct scheme select no-op** —
+      prime suspect: OUR OWN read-only configs. theming.nix ships
+      qt6ct/qt6ct.conf + colors as hm store symlinks, so qt6ct cannot save a
+      scheme selection and noctalia's generated colors can't win; same
+      collision risk for gtk3/4 settings (hm gtk module owns settings.ini)
+      and the niri template. Fix direction: stop hm-managing whatever
+      noctalia's templates own (qt, gtk3, gtk4, niri, vicinae, steam — see
+      [theme.templates] in home/personal/noctalia/config.toml), or point
+      qt6ct's color_scheme_path at noctalia's generated file.
+- [ ] **Steam "Couldn't set up Steam data" on launch** — check ownership of
+      ~/.local/share/Steam and ~/.steam (root-owned leftovers from a sudo
+      rsync?) and for Arch-absolute symlinks; if a fresh start is fine,
+      remove both dirs and let Steam regenerate, then re-login.
+- [ ] **PrismLauncher data** — copy ~/.local/share/PrismLauncher (instances,
+      worlds, mods) from /mnt/arch; same ~/.local/share lesson as noctalia.
+- [ ] **Test nvidia-offload** — `nvidia-offload glxinfo | grep renderer`;
+      Steam launch options `nvidia-offload %command%`; PrismLauncher has a
+      wrapper-command setting for the same.
+- [ ] **Noctalia greeter** — evaluate replacing the no-DM autologin+fish-exec
+      flow with noctalia's greeter; interacts with howdy PAM and
+      services.getty.autologinUser — revisit boot chain if adopted.
+- [ ] **CachyOS performance parity** — researched options, in rough
+      value-per-effort order:
+      1. `services.scx` exists in NixOS (verified): sched-ext userspace
+         schedulers on the VANILLA kernel (6.12+ has sched-ext built in).
+         CachyOS defaults to scx_lavd/scx_bpfland for desktop/gaming — this
+         is most of the CachyOS feel without their kernel.
+      2. sysctl deltas: diff cachyos-settings' shipped sysctls (Arch mount:
+         pacman -Ql cachyos-settings) against our config; we ported printk
+         only. Candidates: vm.swappiness for zram, vm.max_map_count.
+      3. ananicy-cpp + CachyOS rules: already done.
+      4. CachyOS kernel itself (BORE, -v3): available via the chaotic-nyx
+         flake (linuxPackages_cachyos) if ever wanted — user prefers vanilla;
+         scx (1) likely captures most of the win.
+- [ ] **Validation checklist** (system function tests still unrun):
+      - the generation lifecycle: after next kernel bump, rebuild → new UKI
+        auto-signed → reboots fine (the real lanzaboote loop test)
+      - suspend/resume with nvidia (PreserveVideoMemoryAllocations path)
+      - howdy: sudo + lock screen; IR emitter after reboot
+      - AC/battery udev hooks fire (brightness 50/10%, 240/60 Hz)
+      - bluetooth pairing + audio profile switch
+      - xwayland via satellite (Steam window is the canary)
+      - screenshot bind (wl-paste | satty)
+      - syncthing device reconnects/sync
+      - SD card reader, external monitor (HDMI-A-1), webcam (normal + IR)
+      - fwupd `fwupdmgr get-updates`
+      - ESP headroom after several generations (`df -h /boot`)
+- [ ] school/work hosts skeletons (+ push repo to a remote first)
+- [ ] Revisit: secrets (sops-nix), impermanence?, btrfs snapshots for /home,
+      binary cache if custom builds grow, slang-server-bin (deferred),
+      oomox GTK theme (possibly moot — noctalia templates generate gtk themes)
 
 ## Special cases / research list
 
