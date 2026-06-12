@@ -231,7 +231,13 @@ Arch + rEFInd stay untouched throughout = rollback path.
       keeping it is ~100 KB + an unused fallback menu. Raw EFISTUB without any
       manager would need per-generation NVRAM entries (no NixOS tooling — not
       recommended).
-- [ ] **noctalia theme templates not applying / qt6ct scheme select no-op** —
+- [x] **noctalia theme templates not applying / qt6ct scheme select no-op** —
+      RESOLVED 2026-06-12: three stacked causes — (a) hm read-only symlinks on
+      qt6ct.conf/noctalia.kdl made the template engine abort the whole builtin
+      batch (one bad output kills all); (b) seeded files kept store 444 perms;
+      (c) the noctalia upgrade's settings-save dropped theme.templates
+      builtin_ids, disabling builtin templates. qt6ct.conf now declarative
+      pointer at noctalia-generated palette. Original notes:
       prime suspect: OUR OWN read-only configs. theming.nix ships
       qt6ct/qt6ct.conf + colors as hm store symlinks, so qt6ct cannot save a
       scheme selection and noctalia's generated colors can't win; same
@@ -244,7 +250,9 @@ Arch + rEFInd stay untouched throughout = rollback path.
       ~/.local/share/Steam and ~/.steam (root-owned leftovers from a sudo
       rsync?) and for Arch-absolute symlinks; if a fresh start is fine,
       remove both dirs and let Steam regenerate, then re-login.
-- [ ] **PrismLauncher data** — copy ~/.local/share/PrismLauncher (instances,
+- [x] **PrismLauncher data** — DONE 2026-06-12 (22 GB copied; Prism used
+      ApplicationTheme=system on Arch too, so its look tracks the qt6ct
+      palette). Original: copy ~/.local/share/PrismLauncher (instances,
       worlds, mods) from /mnt/arch; same ~/.local/share lesson as noctalia.
 - [ ] **Test nvidia-offload** — `nvidia-offload glxinfo | grep renderer`;
       Steam launch options `nvidia-offload %command%`; PrismLauncher has a
