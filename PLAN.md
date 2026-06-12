@@ -225,14 +225,29 @@ Arch + rEFInd stay untouched throughout = rollback path.
 
 ### Phase 5 — Post-install TODO
 
-- [ ] **rEFInd or EFISTUB as sole bootloader** — mostly already true:
-      lanzaboote generations ARE signed UKIs (EFISTUB-style) in /boot/EFI/Linux,
-      and rEFInd boots them directly today (the first-boot entry was rEFInd's
-      auto-detected UKI, not the systemd-boot menu). "Sole" would mean lzbt
-      skipping the systemd-boot install — research if supported; cost of
-      keeping it is ~100 KB + an unused fallback menu. Raw EFISTUB without any
-      manager would need per-generation NVRAM entries (no NixOS tooling — not
-      recommended).
+- [~] **systemd-boot as SOLE bootloader** (decided 2026-06-12, replaces the
+      rEFInd/EFISTUB question). Research findings: raw EFISTUB has no NixOS
+      tooling (confirmed); `boot.loader.refind` DOES exist in nixpkgs now
+      (merged ~Oct 2025) but is unusable here — installs its own UNSIGNED
+      rEFInd over our sbctl-signed one, copies unsigned kernels (no SB
+      support), excludes lanzaboote, and is broken with
+      canTouchEfiVariables=false (nixpkgs #452075). lzbt installs systemd-boot
+      unconditionally (no skip flag) and NEVER touches NVRAM; lanzaboote
+      ignores boot.loader.systemd-boot.extraEntries; lzbt GC only sweeps
+      EFI/nixos + nixos-* in EFI/Linux, so a hand-shipped
+      loader/entries/arch.conf survives. NEVER run `bootctl install` (would
+      overwrite the signed systemd-boot with an unsigned one).
+      Done: boot.nix ships arch.conf via tmpfiles (CachyOS kernel + verbatim
+      refind_linux.conf cmdline, root UUID b34a2639); Windows auto-detected
+      (same ESP). Remaining:
+      1. [ ] rebuild switch; verify /boot/loader/entries/arch.conf exists
+      2. [ ] one-shot NVRAM entry: efibootmgr -c -d /dev/nvme0n1 -p 1
+             -L "Linux Boot Manager" -l '\EFI\systemd\systemd-bootx64.efi'
+      3. [ ] reboot → systemd-boot menu: verify NixOS + CachyOS + Windows boot
+      4. [ ] only then: efibootmgr -B the rEFInd entry, delete /boot/EFI/refind
+             + /boot/refind_linux.conf; paru -R refind refind-btrfs on Arch side
+      CAVEAT: arch.conf pins /vmlinuz-linux-cachyos by name — fine across
+      updates (in-place), update if Arch's kernel package ever changes.
 - [x] **noctalia theme templates not applying / qt6ct scheme select no-op** —
       RESOLVED 2026-06-12: three stacked causes — (a) hm read-only symlinks on
       qt6ct.conf/noctalia.kdl made the template engine abort the whole builtin

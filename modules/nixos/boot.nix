@@ -1,10 +1,15 @@
 { lib, pkgs, ... }:
 {
   # Secure Boot via lanzaboote, signing with the pre-existing sbctl keys
-  # (copied from Arch's /var/lib/sbctl at install time). rEFInd remains the
-  # primary boot manager and auto-detects the signed UKIs on the shared ESP.
+  # (copied from Arch's /var/lib/sbctl at install time). systemd-boot (the
+  # lzbt-signed copy in EFI/systemd) is the sole boot manager: it auto-detects
+  # Windows (EFI/Microsoft, same ESP) and gets a hand-shipped BLS entry for
+  # Arch below. Its "Linux Boot Manager" NVRAM entry was created once with
+  # efibootmgr — lzbt never touches NVRAM, and `bootctl install` must NOT be
+  # run (it would overwrite the signed systemd-boot binary with an unsigned one).
   boot.loader.systemd-boot.enable = lib.mkForce false;
-  # rEFInd owns BootOrder; don't let NixOS add/reorder EFI variables.
+  # Ignored under boot.loader.external (lanzaboote), kept for documentation:
+  # nothing on the NixOS side may add/reorder EFI variables automatically.
   boot.loader.efi.canTouchEfiVariables = false;
   boot.lanzaboote = {
     enable = true;
@@ -12,6 +17,25 @@
     # ESP is ~930 MB shared with Windows + Arch; keep generations few.
     configurationLimit = 4;
   };
+
+  # BLS entry for Arch (CachyOS) on the shared ESP. lanzaboote ignores
+  # boot.loader.systemd-boot.extraEntries, so ship the file via tmpfiles;
+  # lzbt's ESP garbage collection only sweeps EFI/nixos and nixos-* in
+  # EFI/Linux, so loader/entries/arch.conf survives rebuilds. Kernel and
+  # cmdline taken verbatim from Arch's refind_linux.conf (2026-06-12); the
+  # kernel is sbctl-signed on the Arch side, so it verifies under Secure Boot.
+  systemd.tmpfiles.rules =
+    let
+      archEntry = pkgs.writeText "arch.conf" ''
+        title CachyOS (Arch)
+        sort-key z-arch
+        linux /vmlinuz-linux-cachyos
+        initrd /intel-ucode.img
+        initrd /initramfs-linux-cachyos.img
+        options quiet loglevel=3 systemd.show_status=auto rd.udev.log_level=3 zswap.enabled=0 nowatchdog vt.global_cursor_default=0 splash i915.enable_dpcd_backlight=3 rcutree.enable_rcu_lazy=1 rw rootflags=subvol=/@ root=UUID=b34a2639-b192-4add-a2ba-3deb931288ce
+      '';
+    in
+    [ "C+ /boot/loader/entries/arch.conf - - - - ${archEntry}" ];
 
   # Vanilla kernel per user preference (no CachyOS variants).
   boot.kernelPackages = pkgs.linuxPackages_latest;
