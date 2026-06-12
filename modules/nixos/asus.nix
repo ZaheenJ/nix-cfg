@@ -43,6 +43,19 @@ in
   services.howdy = {
     enable = true;
     control = "sufficient";
+    # Deltas from inventory/etc/howdy-config.ini that matter; the rest of the
+    # Arch config matched upstream defaults. device_path is the IR camera by
+    # stable hardware path. Face models: re-enroll post-install (howdy add).
+    settings = {
+      core.abort_if_lid_closed = true;
+      video = {
+        device_path = "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.2-video-index0";
+        certainty = 3.5;
+        timeout = 4;
+        dark_threshold = 80;
+        max_height = 320;
+      };
+    };
   };
   services.linux-enable-ir-emitter.enable = true;
 
