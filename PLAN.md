@@ -141,6 +141,16 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 
 ### Phase 4 — Install to p8 (user-driven sudo)
 
+**STATUS 2026-06-12: INSTALLED AND BOOTED.** First boot succeeded: secure
+boot chain verified, autologin→fish→niri works, user password + howdy
+re-enrolled, WiFi profiles loaded, noctalia/vicinae running on real configs
+(needed restart after state copy), repo + claude state migrated to NixOS
+home, mcp-nixos re-registered via `nix run`. Iteration now happens ON NixOS:
+`sudo nixos-rebuild switch --flake ~/nix#home-g16`.
+Remaining: first `switch` (plymouth nixos-bgrt pending), smoke tests
+(nvidia-offload, AC/battery udev switching), bulk data copy from Arch p7,
+then Phase 5.
+
 Runbook (user runs the sudo commands via `!`; lead verifies between steps).
 Arch + rEFInd stay untouched throughout = rollback path.
 
