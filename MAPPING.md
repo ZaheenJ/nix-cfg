@@ -153,7 +153,7 @@ mangohud are NOT installed — do not add them (user confirmed).
 | power-profiles-daemon | `module:services.power-profiles-daemon.enable` | Verified option exists. Conflicts with TLP; use one or the other |
 | avahi | `module:services.avahi.enable` | Verified option exists |
 | NetworkManager | `module:networking.networkmanager.enable` | Verified option. OpenVPN plugin: add `pkgs.networkmanager-openvpn` to `networking.networkmanager.plugins` |
-| networkmanager-openvpn | `nixpkgs:networkmanager-openvpn` | Verified: `networkmanager-openvpn` 1.12.3 on unstable. Use via `networking.networkmanager.plugins` option |
+| networkmanager-openvpn | `drop` | User decision 2026-06-11: installed on Arch but unused — not ported. Re-add via `networking.networkmanager.plugins` if ever needed |
 | bluetooth (bluez-utils) | `module:hardware.bluetooth.enable` | Verified option. `bluez-utils` in Arch provides CLI tools like `bluetoothctl`; those are included when `hardware.bluetooth.enable = true` |
 | pipewire | `module:services.pipewire.enable` | Verified option. Also `services.pipewire.audio.enable = true` to use as primary sound server |
 | greetd | `module:services.greetd.enable` | Verified option |

@@ -18,10 +18,7 @@
   };
   console.keyMap = "us-acentos";
 
-  networking.networkmanager = {
-    enable = true;
-    plugins = [ pkgs.networkmanager-openvpn ];
-  };
+  networking.networkmanager.enable = true;
   services.resolved.enable = true;
   # Replaces ufw. Arch's only custom rules were KDE Connect ports for
   # Valent, which the user no longer uses — nothing extra to open.
