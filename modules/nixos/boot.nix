@@ -28,13 +28,13 @@
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
 
-  # User wants: black background, distro logo toward the bottom (like the
-  # CachyOS theme), NOT the firmware/ASUS logo centered (bgrt theme).
-  # "spinner" = black bg + spinner; verify placement on first real boot and
-  # adjust theme/logo then — cosmetic, not boot-critical.
+  # Match the CachyOS look the user wants: firmware ASUS ROG logo stays
+  # centered (BGRT) with NixOS branding, instead of plain spinner which
+  # replaced the ROG image (first-boot feedback 2026-06-11).
   boot.plymouth = {
     enable = true;
-    theme = "spinner";
+    theme = "nixos-bgrt";
+    themePackages = [ pkgs.nixos-bgrt-plymouth ];
   };
 
   environment.systemPackages = [ pkgs.sbctl ];

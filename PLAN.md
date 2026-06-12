@@ -170,6 +170,9 @@ Arch + rEFInd stay untouched throughout = rollback path.
    nixos-*.efi UKIs; `sudo sbctl verify` on them passes.
 7. Copy mutable user state to new home (list below), then
    `sudo chown -R 1000:100 /mnt/nixos/home/zaheenj`.
+   LESSON (hit on 2026-06-11): rsync drops source dirs by BASENAME into the
+   destination — `rsync .config/noctalia DEST/` lands at DEST/noctalia, not
+   DEST/.config/noctalia. Sync .config items into DEST/.config/ explicitly.
    Also system-side state (AFTER nixos-install, before reboot):
    `sudo cp -a /etc/NetworkManager/system-connections /mnt/nixos/etc/NetworkManager/`
    (WiFi profiles + passwords). asusd .ron files NOT copied — user confirmed
