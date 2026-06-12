@@ -14,7 +14,9 @@
   };
   nixpkgs.config.allowUnfree = true;
 
-  time.timeZone = "America/Chicago";
+  # IP-geolocation timezone: sets tz via timedatectl at boot + hourly timer.
+  # The module forces time.timeZone = null (imperative management).
+  services.tzupdate.enable = true;
   i18n.defaultLocale = "en_US.UTF-8";
 
   # Keyboard: niri's xkb config section is empty — it reads layout from

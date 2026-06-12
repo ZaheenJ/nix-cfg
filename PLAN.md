@@ -264,9 +264,9 @@ Arch + rEFInd stay untouched throughout = rollback path.
       ApplicationTheme=system on Arch too, so its look tracks the qt6ct
       palette). Original: copy ~/.local/share/PrismLauncher (instances,
       worlds, mods) from /mnt/arch; same ~/.local/share lesson as noctalia.
-- [ ] **Test nvidia-offload** — `nvidia-offload glxinfo | grep renderer`;
-      Steam launch options `nvidia-offload %command%`; PrismLauncher has a
-      wrapper-command setting for the same.
+- [x] **Test nvidia-offload** — CONFIRMED 2026-06-12: Minecraft (Prism)
+      renders on the NVIDIA GPU; Geometry Dash runs on Steam (Proton +
+      xwayland-satellite both proven by this).
 - [ ] **Noctalia greeter** — evaluate replacing the no-DM autologin+fish-exec
       flow with noctalia's greeter; interacts with howdy PAM and
       services.getty.autologinUser — revisit boot chain if adopted.
@@ -290,7 +290,8 @@ Arch + rEFInd stay untouched throughout = rollback path.
       - howdy: sudo + lock screen; IR emitter after reboot
       - AC/battery udev hooks fire (brightness 50/10%, 240/60 Hz)
       - bluetooth pairing + audio profile switch
-      - xwayland via satellite (Steam window is the canary)
+      - ~~xwayland via satellite (Steam window is the canary)~~ DONE
+        2026-06-12 (Steam UI + Geometry Dash via Proton)
       - screenshot bind (wl-paste | satty)
       - syncthing device reconnects/sync
       - SD card reader, external monitor (HDMI-A-1), webcam (normal + IR)
@@ -319,7 +320,7 @@ Arch + rEFInd stay untouched throughout = rollback path.
 | ananicy-cpp | `services.ananicy` + ananicy-rules-cachyos package (verify name) |
 | ufw | RESOLVED: `networking.firewall.enable`, no extra ports. Arch's only custom rules were KDE Connect 1714-1764 for Valent; user confirmed Valent unused — dropped (2026-06-11) |
 | ydotool | `programs.ydotool.enable` (verify) |
-| tzupdate | verify `services.tzupdate` exists; else timezone static |
+| tzupdate | RESOLVED 2026-06-12: `services.tzupdate.enable` (IP-geolocation, boot + hourly timer). Module forces `time.timeZone = null`, so the static "America/Chicago" was removed from core.nix |
 | sbctl/efitools/fwupd/sof-firmware/intel-ucode | lanzaboote handles signing; `services.fwupd.enable`; `hardware.enableRedistributableFirmware` + `hardware.cpu.intel.updateMicrocode` |
 | cursor-bin | `code-cursor` (unfree) |
 | google-cloud-cli | `google-cloud-sdk` (with components?) |
