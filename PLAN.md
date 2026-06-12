@@ -159,9 +159,13 @@ Arch + rEFInd stay untouched throughout = rollback path.
 3. Copy Secure Boot keys BEFORE install (lanzaboote signs during install):
    `sudo mkdir -p /mnt/nixos/var/lib && sudo cp -a /var/lib/sbctl /mnt/nixos/var/lib/`
 4. ESP space check: `df -h /boot` (need room for ~4 generations of UKIs).
-5. Install (interactive root-password prompt at the end):
-   `sudo nix run nixpkgs#nixos-install-tools.nixos-install -- --flake /home/zaheenj/nix#home-g16 --root /mnt/nixos`
-   (equivalently `nix shell nixpkgs#nixos-install-tools -c sudo nixos-install ...`)
+5. Install (interactive root-password prompt at the end). NOTE: sudo resets
+   PATH (secure_path), so nix-shell-provided binaries vanish under sudo —
+   always use the absolute store path of the tools:
+   `sudo $(nix build nixpkgs#nixos-install-tools --no-link --print-out-paths)/bin/nixos-install --flake /home/zaheenj/nix#home-g16 --root /mnt/nixos`
+   Step 2 cross-check DONE 2026-06-11: adopted rtsx_pci_sdmmc initrd module +
+   hardware.cpu.intel.npu.enable; generator's other deltas were artifacts of
+   the stray /boot mount layer or intentionally-stricter choices of ours.
 6. Verify before reboot: `ls /mnt/nixos/boot/EFI/Linux/` shows signed
    nixos-*.efi UKIs; `sudo sbctl verify` on them passes.
 7. Copy mutable user state to new home (list below), then
