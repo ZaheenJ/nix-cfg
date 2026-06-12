@@ -9,6 +9,7 @@
     extraPackages = [
       pkgs.lua-language-server
       pkgs.tinymist
+      pkgs.nil # nix LSP (helix uses it for .nix by default)
     ];
 
     settings = {

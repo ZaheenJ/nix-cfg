@@ -44,5 +44,6 @@
     # Dev tools
     uv
     man-pages
+    mcp-nixos # used by Claude Code via repo .mcp.json
   ];
 }
