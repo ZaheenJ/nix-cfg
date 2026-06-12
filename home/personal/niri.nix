@@ -1,4 +1,7 @@
-# niri: vendor config.kdl, noctalia.kdl, and monitor.kdl via xdg.configFile.
+# niri: vendor config.kdl (user-edited) via xdg.configFile.
+# noctalia.kdl and monitor.kdl are deliberately NOT managed: they are
+# app-written outputs (noctalia's niri color template; nwg-displays) and
+# read-only symlinks block those writers. Seeded once at migration.
 # The niri *package* comes from programs.niri in modules/nixos/desktop-niri.nix.
 # Executables referenced by config.kdl (lead must confirm all are packaged):
 #   spawn-at-startup: rog-control-center (asusctl), noctalia, vicinae
@@ -8,6 +11,4 @@
 { ... }:
 {
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
-  xdg.configFile."niri/noctalia.kdl".source = ./niri/noctalia.kdl;
-  xdg.configFile."niri/monitor.kdl".source = ./niri/monitor.kdl;
 }

@@ -43,9 +43,10 @@
     platformTheme.name = "qtct";
   };
 
-  # qt6ct config + color scheme (vendored; SettingsWindow geometry stripped as runtime state).
-  xdg.configFile."qt6ct/qt6ct.conf".source = ./qt6ct/qt6ct.conf;
-  xdg.configFile."qt6ct/colors/oomox-BWnB.conf".source = ./qt6ct/colors/oomox-BWnB.conf;
+  # qt6ct.conf is deliberately NOT managed: the qt6ct app writes it (scheme
+  # selection) and noctalia's qt template drops generated schemes into
+  # qt6ct/colors/ — read-only symlinks broke both. Seeded once at migration;
+  # mutable thereafter (same doctrine as noctalia/vicinae state).
 
   # MIME associations (ported from ~/.config/mimeapps.list).
   xdg.mimeApps = {
