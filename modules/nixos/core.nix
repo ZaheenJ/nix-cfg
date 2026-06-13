@@ -40,6 +40,20 @@
     algorithm = "zstd";
     memoryPercent = 100;
   };
+  # Tune VM for zram (kernel-docs/CachyOS guidance): swapping to compressed
+  # RAM is nearly free, so swap aggressively (default 60 is tuned for disk)
+  # and disable readahead clustering (pointless on zram, adds latency).
+  boot.kernel.sysctl = {
+    "vm.swappiness" = 180;
+    "vm.page-cluster" = 0;
+  };
+
+  # sched-ext userspace scheduler on the vanilla kernel — CachyOS's default
+  # desktop scheduler, most of its interactivity feel without their kernel.
+  services.scx = {
+    enable = true;
+    scheduler = "scx_lavd";
+  };
 
   hardware.bluetooth.enable = true;
   hardware.enableRedistributableFirmware = true;

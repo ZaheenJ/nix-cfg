@@ -11,6 +11,7 @@
     ./fonts.nix
     ./apps.nix
     ./media.nix
+    ./power.nix
     ./syncthing.nix
   ];
 }

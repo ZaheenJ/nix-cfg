@@ -312,7 +312,15 @@ Arch + rEFInd stay untouched throughout = rollback path.
       =3; its two NVreg backlight params ported into nvidia.nix.
       Verify after switch: brightness keys still work, nvidia-offload,
       nvidia-powerd running, mic-mute key.
-- [ ] **CachyOS performance parity** — researched options, in rough
+- [~] **CachyOS performance parity** — 2026-06-12: scx_lavd enabled
+      (services.scx) + zram sysctls (vm.swappiness=180, vm.page-cluster=0)
+      in core.nix — VERIFY after switch (`systemctl status scx`, sysctl).
+      Remaining: full cachyos-settings sysctl diff (item 2 below).
+      Also: udev AC/battery RUN hooks replaced by a UPower-watching user
+      service (home/personal/power.nix) — fixes boot-on-battery state,
+      no more root→user niri-socket hack; VERIFY: unplug/replug switches
+      brightness + 60/240 Hz, and login-on-battery applies battery state.
+      Original research notes, in rough
       value-per-effort order:
       1. `services.scx` exists in NixOS (verified): sched-ext userspace
          schedulers on the VANILLA kernel (6.12+ has sched-ext built in).
