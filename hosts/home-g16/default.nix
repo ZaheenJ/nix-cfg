@@ -6,11 +6,10 @@
     # media/compute runtimes (+32-bit), prime offload + bus IDs, asusd.
     inputs.nixos-hardware.nixosModules.asus-zephyrus-gu605my
     ./hardware-configuration.nix
+    ./hardware.nix
     ../../modules/nixos/core.nix
     ../../modules/nixos/boot.nix
-    ../../modules/nixos/nvidia.nix
     ../../modules/nixos/desktop-niri.nix
-    ../../modules/nixos/asus.nix
     ../../modules/nixos/gaming.nix
   ];
 

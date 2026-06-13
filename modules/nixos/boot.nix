@@ -18,32 +18,14 @@
     configurationLimit = 4;
   };
 
-  # BLS entry for Arch (CachyOS) on the shared ESP. lanzaboote ignores
-  # boot.loader.systemd-boot.extraEntries, so ship the file via tmpfiles;
-  # lzbt's ESP garbage collection only sweeps EFI/nixos and nixos-* in
-  # EFI/Linux, so loader/entries/arch.conf survives rebuilds. Kernel and
-  # cmdline taken verbatim from Arch's refind_linux.conf (2026-06-12); the
-  # kernel is sbctl-signed on the Arch side, so it verifies under Secure Boot.
-  systemd.tmpfiles.rules =
-    let
-      archEntry = pkgs.writeText "arch.conf" ''
-        title CachyOS (Arch)
-        sort-key z-arch
-        linux /vmlinuz-linux-cachyos
-        initrd /intel-ucode.img
-        initrd /initramfs-linux-cachyos.img
-        options quiet loglevel=3 systemd.show_status=auto rd.udev.log_level=3 zswap.enabled=0 nowatchdog vt.global_cursor_default=0 splash i915.enable_dpcd_backlight=3 rcutree.enable_rcu_lazy=1 rw rootflags=subvol=/@ root=UUID=b34a2639-b192-4add-a2ba-3deb931288ce
-      '';
-    in
-    [ "C+ /boot/loader/entries/arch.conf - - - - ${archEntry}" ];
-
   # Vanilla kernel per user preference (no CachyOS variants).
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # Ported from Arch cmdline; i915.enable_dpcd_backlight=3 is a G16 panel
-  # backlight quirk, zswap off because zram is used. systemd.show_status=auto
-  # and rd.udev.log_level=3 silence systemd/udev console chatter at boot AND
-  # shutdown (consoleLogLevel only covers kernel messages, not these).
+  # Ported from Arch cmdline; zswap off because zram is used.
+  # systemd.show_status=auto and rd.udev.log_level=3 silence systemd/udev
+  # console chatter at boot AND shutdown (consoleLogLevel only covers kernel
+  # messages, not these). Machine-specific params (backlight quirk) live in
+  # the host's hardware.nix.
   boot.kernelParams = [
     "quiet"
     "loglevel=3"
@@ -52,7 +34,6 @@
     "nowatchdog"
     "zswap.enabled=0"
     "vt.global_cursor_default=0"
-    "i915.enable_dpcd_backlight=3"
     "rcutree.enable_rcu_lazy=1"
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
