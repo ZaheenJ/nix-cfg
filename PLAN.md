@@ -225,8 +225,10 @@ Arch + rEFInd stay untouched throughout = rollback path.
 
 ### Phase 5 — Post-install TODO
 
-- [ ] **Quiet boot round 2 + systemd-boot menu look** (2026-06-12, config
-      done, VERIFY on next reboot): consoleMode="max" (lanzaboote's loader.conf
+- [x] **Quiet boot round 2 + systemd-boot menu look** (VERIFIED 2026-06-12;
+      menu lazy-repaint over BGRT remains, deferred — cosmetic ASUS firmware
+      quirk, possible experiments: timeout=1 or consoleMode="2"):
+      consoleMode="max" (lanzaboote's loader.conf
       reads boot.loader.systemd-boot.consoleMode; default "keep" left the
       firmware's low-res mode + uncleared BGRT → giant pixelated OEM logo
       under the menu). Quiet boot: systemd.show_status=auto +
@@ -294,8 +296,11 @@ Arch + rEFInd stay untouched throughout = rollback path.
 - [ ] **Noctalia greeter** — evaluate replacing the no-DM autologin+fish-exec
       flow with noctalia's greeter; interacts with howdy PAM and
       services.getty.autologinUser — revisit boot chain if adopted.
-- [~] **nixos-hardware adopted** (2026-06-12, config done, VERIFY on next
-      switch): asus-zephyrus-gu605my profile imported (MY=4090 vs our MI=4070,
+- [x] **nixos-hardware adopted** (VERIFIED 2026-06-12: mic-mute key,
+      brightness keys, nvidia-offload, nvidia-powerd all confirmed working;
+      nvidia.nix+asus.nix since merged into hosts/home-g16/hardware.nix —
+      machine-specific config lives with the host now, modules/nixos/ is
+      host-agnostic): asus-zephyrus-gu605my profile imported (MY=4090 vs our MI=4070,
       same Ada/platform — GPU config identical). New from it: hwdb key fixes
       (mic mute, Fn+arrows→Home/End), nvidia dynamicBoost (nvidia-powerd),
       early-KMS i915 in initrd, Intel oneVPL+compute-runtime+32-bit VAAPI.
@@ -329,10 +334,11 @@ Arch + rEFInd stay untouched throughout = rollback path.
       - bluetooth pairing + audio profile switch
       - ~~xwayland via satellite (Steam window is the canary)~~ DONE
         2026-06-12 (Steam UI + Geometry Dash via Proton)
-      - screenshot bind (wl-paste | satty)
+      - ~~screenshot bind (wl-paste | satty)~~ DONE 2026-06-12
       - syncthing device reconnects/sync
-      - SD card reader, external monitor (HDMI-A-1), webcam (normal + IR)
-      - fwupd `fwupdmgr get-updates`
+      - SD card reader
+      - ~~external monitor (HDMI-A-1), webcam (normal + IR)~~ DONE 2026-06-12
+      - ~~fwupd `fwupdmgr get-updates`~~ DONE 2026-06-12
       - ESP headroom after several generations (`df -h /boot`)
 - [ ] school/work hosts skeletons (+ push repo to a remote first)
 - [ ] Revisit: secrets (sops-nix), impermanence?, btrfs snapshots for /home,
