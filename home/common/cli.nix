@@ -19,6 +19,7 @@
     # Search / filesystem
     fd
     ripgrep
+    unzip
 
     # Disk usage
     dust
