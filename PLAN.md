@@ -312,23 +312,31 @@ Arch + rEFInd stay untouched throughout = rollback path.
       =3; its two NVreg backlight params ported into nvidia.nix.
       Verify after switch: brightness keys still work, nvidia-offload,
       nvidia-powerd running, mic-mute key.
-- [~] **CachyOS performance parity** — 2026-06-12: scx_lavd enabled
+- [x] **CachyOS performance parity** — 2026-06-12: scx_lavd enabled
       (services.scx) + zram sysctls (vm.swappiness=180, vm.page-cluster=0)
-      in core.nix — VERIFY after switch (`systemctl status scx`, sysctl).
-      Remaining: full cachyos-settings sysctl diff (item 2 below).
+      in core.nix — VERIFIED 2026-06-12: scx running, sysctls applied.
+      scx_lavd left in default --autopilot (load-based power mode) by
+      choice — user prefers it to --autopower (PPD-following). --autopower
+      via services.scx.extraArgs remains an option if ever wanted (PPD on
+      this box does auto-switch on AC/battery).
+      Full cachyos-settings sysctl diff DONE 2026-06-12: ported
+      vfs_cache_pressure=50, dirty_bytes=256M, dirty_background_bytes=64M,
+      dirty_writeback_centisecs=1500, nmi_watchdog=0 into core.nix. Skipped
+      kernel.unprivileged_userns_clone (Arch kernel patch, not vanilla; NixOS
+      userns on by default) + optional kptr_restrict/netdev_max_backlog/
+      file-max. NB: vm.max_map_count is NOT in cachyos-settings (Steam/
+      gamescope territory) — add under gaming if ever wanted.
       Also: udev AC/battery RUN hooks replaced by a UPower-watching user
-      service (home/personal/power.nix) — fixes boot-on-battery state,
-      no more root→user niri-socket hack; VERIFY: unplug/replug switches
-      brightness + 60/240 Hz, and login-on-battery applies battery state.
+      service (home/personal/power.nix) — VERIFIED 2026-06-12: unplug/replug
+      switches brightness + 60/240 Hz, login-on-battery applies state.
       Original research notes, in rough
       value-per-effort order:
       1. `services.scx` exists in NixOS (verified): sched-ext userspace
          schedulers on the VANILLA kernel (6.12+ has sched-ext built in).
          CachyOS defaults to scx_lavd/scx_bpfland for desktop/gaming — this
          is most of the CachyOS feel without their kernel.
-      2. sysctl deltas: diff cachyos-settings' shipped sysctls (Arch mount:
-         pacman -Ql cachyos-settings) against our config; we ported printk
-         only. Candidates: vm.swappiness for zram, vm.max_map_count.
+      2. sysctl deltas: DONE (see above). Source was 70-cachyos-settings.conf
+         fetched from the CachyOS-Settings GitHub repo — no Arch mount needed.
       3. ananicy-cpp + CachyOS rules: already done.
       4. CachyOS kernel itself (BORE, -v3): available via the chaotic-nyx
          flake (linuxPackages_cachyos) if ever wanted — user prefers vanilla;
@@ -338,7 +346,8 @@ Arch + rEFInd stay untouched throughout = rollback path.
         auto-signed → reboots fine (the real lanzaboote loop test)
       - suspend/resume with nvidia (PreserveVideoMemoryAllocations path)
       - howdy: sudo + lock screen; IR emitter after reboot
-      - AC/battery udev hooks fire (brightness 50/10%, 240/60 Hz)
+      - ~~AC/battery hooks fire (brightness 50/10%, 240/60 Hz)~~ DONE
+        2026-06-12 (UPower user service, unplug/replug + boot-on-battery)
       - bluetooth pairing + audio profile switch
       - ~~xwayland via satellite (Steam window is the canary)~~ DONE
         2026-06-12 (Steam UI + Geometry Dash via Proton)

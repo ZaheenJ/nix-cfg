@@ -46,6 +46,15 @@
   boot.kernel.sysctl = {
     "vm.swappiness" = 180;
     "vm.page-cluster" = 0;
+    # Remaining cachyos-settings (70-cachyos-settings.conf) sysctls worth
+    # carrying over. swappiness above is deliberately higher than their 100
+    # (zram); these match upstream. Skipped: kernel.unprivileged_userns_clone
+    # (Arch kernel patch, not a vanilla sysctl — NixOS enables userns by default).
+    "vm.vfs_cache_pressure" = 50;
+    "vm.dirty_bytes" = 268435456;
+    "vm.dirty_background_bytes" = 67108864;
+    "vm.dirty_writeback_centisecs" = 1500;
+    "kernel.nmi_watchdog" = 0;
   };
 
   # sched-ext userspace scheduler on the vanilla kernel — CachyOS's default
