@@ -84,7 +84,7 @@
   services.fwupd.enable = true;
   services.fstrim.enable = true;
 
-  # VIA keyboard (4d4b:3068) and 1915:232a hidraw access (from Arch udev rules).
+  # VIA keyboard (4d4b:3068) and RAWM mouse (1915:232a) hidraw access (from Arch udev rules).
   services.udev.extraRules = ''
     KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="4d4b", ATTRS{idProduct}=="3068", GROUP="users", MODE="0660"
     KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1915", ATTRS{idProduct}=="232a", GROUP="users", MODE="0660"

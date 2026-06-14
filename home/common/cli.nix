@@ -15,6 +15,15 @@
     enableNushellIntegration = true;
   };
 
+  # tealdeer (tldr client); auto-refresh the page cache weekly.
+  programs.tealdeer = {
+    enable = true;
+    settings.updates = {
+      auto_update = true;
+      auto_update_interval_hours = 168;
+    };
+  };
+
   home.packages = with pkgs; [
     # Search / filesystem
     fd
