@@ -1,9 +1,5 @@
-use std/util "path add"
-
 $env.config.buffer_editor = "hx"
 $env.EDITOR = "hx"
-
-path add ["~/.local/bin" "~/.cargo/bin" "/opt/cuda/bin"]
 
 $env.config.edit_mode = "vi"
 $env.config.cursor_shape = {emacs: line, vi_insert: line, vi_normal: block}
