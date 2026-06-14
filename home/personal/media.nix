@@ -34,5 +34,6 @@
   home.packages = with pkgs; [
     cmus
     vimiv-qt
+    yt-dlp
   ];
 }

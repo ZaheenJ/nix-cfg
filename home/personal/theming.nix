@@ -53,6 +53,12 @@
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
+      # Default web browser: Firefox.
+      "text/html" = "firefox.desktop";
+      "x-scheme-handler/http" = "firefox.desktop";
+      "x-scheme-handler/https" = "firefox.desktop";
+      "x-scheme-handler/about" = "firefox.desktop";
+
       "x-scheme-handler/discord" = "vesktop.desktop";
       "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
     };
