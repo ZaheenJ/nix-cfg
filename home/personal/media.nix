@@ -35,5 +35,6 @@
     cmus
     vimiv-qt
     yt-dlp
+    tickrs
   ];
 }
