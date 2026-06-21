@@ -33,5 +33,8 @@
 
     # Music tagging
     picard
+
+    # Shazam client
+    songrec
   ];
 }
