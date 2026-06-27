@@ -551,7 +551,7 @@ window-rule {
 
 // Disable xray on Noctalia surfaces so blur looks more realistic.
 layer-rule {
-    match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel)$"
+    match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
     match namespace="^vicinae$"
     background-effect {
         xray false
