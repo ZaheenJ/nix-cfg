@@ -1,5 +1,6 @@
-# fish: login shell only. Launches niri-session on tty1, sets PATH, defines
-# helix-style keybindings, git abbreviations, and utility functions.
+# fish: login shell. Sets PATH, defines helix-style keybindings, git
+# abbreviations, and utility functions. (Session launch is greetd's job now,
+# not loginShellInit — see modules/nixos/desktop-niri.nix.)
 # Carapace and zoxide integrations live in cli.nix.
 { ... }:
 {
@@ -38,13 +39,6 @@
     '';
 
     interactiveShellInit = builtins.readFile ./fish/interactive.fish;
-
-    # Launch niri-session on tty1 when fish is the login shell
-    loginShellInit = ''
-      if test -z "$WAYLAND_DISPLAY" && test -z "$DISPLAY" && test "$XDG_VTNR" = 1
-          exec niri-session -l &>~/.niri.log
-      end
-    '';
   };
 
   # Silence login(1)'s "Last login: ..." line on tty login (quiet boot).

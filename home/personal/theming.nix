@@ -11,13 +11,21 @@
     gtk.enable = true;
   };
 
-  # GTK: icon theme + font + dark preference. Theme name omitted (see above).
+  # GTK: theme + icon theme + font + dark preference.
+  # adw-gtk3 is the libadwaita GTK3 backport; it's the base theme that noctalia's
+  # gtk3/gtk4 templates recolor via @define-color in ~/.config/gtk-*/noctalia.css.
+  # Without it, GTK3 apps fall back to built-in Adwaita and ignore those color
+  # names (GTK4/libadwaita apps consume them natively, so they were already fine).
   # Note: gtk-icon-theme-name in settings.ini was "Bibata-Modern-Classic" (same as
   # cursor), which is likely an Arch-side artefact; bibata-cursors does not ship
   # a GTK icon theme. Setting package = null means niri/GTK will use whatever
   # icon theme is already installed system-wide.
   gtk = {
     enable = true;
+    theme = {
+      package = pkgs.adw-gtk3;
+      name = "adw-gtk3-dark";
+    };
     iconTheme = {
       package = null;
       name = "Bibata-Modern-Classic";
@@ -27,7 +35,7 @@
       size = 11;
     };
     gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = false;
+      gtk-application-prefer-dark-theme = true;
       gtk-cursor-theme-name = "Bibata-Modern-Classic";
       gtk-cursor-theme-size = 24;
     };

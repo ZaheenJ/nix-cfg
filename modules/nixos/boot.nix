@@ -46,10 +46,10 @@
   services.getty = {
     greetingLine = "";
     helpLine = "";
-    # Match Arch's getty@tty1 drop-in (inventory/etc/getty-tty1-autologin.conf);
-    # --autologin comes from services.getty.autologinUser in desktop-niri.nix.
+    # greetd owns tty1 (login is via noctalia-greeter now); these only affect
+    # the fallback console gettys (tty2-6). Quiet-boot cosmetics only —
+    # --skip-login was dropped with the old autologin so normal tty login works.
     extraArgs = [
-      "--skip-login"
       "--nonewline"
       "--noissue"
       "--noclear"

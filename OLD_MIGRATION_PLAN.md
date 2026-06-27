@@ -293,9 +293,11 @@ Arch + rEFInd stay untouched throughout = rollback path.
 - [x] **Test nvidia-offload** — CONFIRMED 2026-06-12: Minecraft (Prism)
       renders on the NVIDIA GPU; Geometry Dash runs on Steam (Proton +
       xwayland-satellite both proven by this).
-- [ ] **Noctalia greeter** — evaluate replacing the no-DM autologin+fish-exec
-      flow with noctalia's greeter; interacts with howdy PAM and
-      services.getty.autologinUser — revisit boot chain if adopted.
+- [x] **Noctalia greeter** — DONE 2026-06-27: greetd + noctalia-greeter
+      replaced the getty-autologin+fish-exec flow (password login). niri.desktop
+      exposed via systemPackages; pam_gnome_keyring unlocks the login keyring
+      (git push no longer prompts); howdy disabled for polkit-1 only (it broke
+      GUI polkit auth in-session — camera unavailable → conversation failure).
 - [x] **nixos-hardware adopted** (VERIFIED 2026-06-12: mic-mute key,
       brightness keys, nvidia-offload, nvidia-powerd all confirmed working;
       nvidia.nix+asus.nix since merged into hosts/home-g16/hardware.nix —
@@ -344,7 +346,8 @@ Arch + rEFInd stay untouched throughout = rollback path.
 - [ ] **Validation checklist** (system function tests still unrun):
       - the generation lifecycle: after next kernel bump, rebuild → new UKI
         auto-signed → reboots fine (the real lanzaboote loop test)
-      - suspend/resume with nvidia (PreserveVideoMemoryAllocations path)
+      - ~~suspend/resume with nvidia (PreserveVideoMemoryAllocations path)~~
+        DONE 2026-06-27
       - howdy: sudo + lock screen; IR emitter after reboot
       - ~~AC/battery hooks fire (brightness 50/10%, 240/60 Hz)~~ DONE
         2026-06-12 (UPower user service, unplug/replug + boot-on-battery)
