@@ -15,6 +15,6 @@
 
   programs.noctalia = {
     enable = true;
-    settings = builtins.readFile ./noctalia/config.toml;
+    settings = ./noctalia/config.toml;
   };
 }

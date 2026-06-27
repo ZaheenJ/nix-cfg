@@ -349,7 +349,7 @@ binds {
 
     // === Security ===
     Mod+Shift+L hotkey-overlay-title="Lock Screen" {
-        spawn "noctalia" "msg" "screen-lock";
+        spawn "noctalia" "msg" "session" "lock";
     }
     Mod+Ctrl+Q { quit; }
 
