@@ -34,7 +34,11 @@
   # Authenticating at the greeter unlocks the login keyring (same password),
   # so git push / Secret Service / the gcr SSH agent stop prompting. Note: face
   # login (gaze) doesn't type a password, so it won't unlock the keyring —
-  # password login still does. Face auth (services.gaze) is deliberately not
-  # wired into polkit-1, so GUI polkit prompts always ask for the password.
+  # password login still does.
   security.pam.services.greetd.enableGnomeKeyring = true;
+
+  # nixpkgs now gates the setuid pkexec wrapper behind this (defaults off);
+  # enable it so GUI polkit prompts (and `pkexec`) work — including gaze face
+  # auth on the polkit-1 stack (services.gaze.pamServices).
+  security.polkit.enablePkexecWrapper = true;
 }
