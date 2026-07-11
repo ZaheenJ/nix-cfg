@@ -2,7 +2,11 @@
   description = "Multi-host NixOS + home-manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # HOLD: pinned off nixos-unstable — newer nixpkgs breaks howdy's
+    # face-recognition build (python3.14 dropped pkg_resources). Restore to
+    # "github:NixOS/nixpkgs/nixos-unstable" once fixed upstream (or when howdy
+    # is replaced by biopass).
+    nixpkgs.url = "github:NixOS/nixpkgs/e73de5be04e0eff4190a1432b946d469c794e7b4";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager";
