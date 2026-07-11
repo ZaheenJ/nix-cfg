@@ -40,6 +40,19 @@
     algorithm = "zstd";
     memoryPercent = 100;
   };
+  # Safety net against memory-exhaustion freezes. With zram-only (no disk swap)
+  # the kernel OOM killer stays reluctant while it can still compress one more
+  # page, so a runaway build can thrash the machine into a livelock instead of
+  # being killed. earlyoom kills the biggest hog on an absolute free-RAM
+  # threshold, which zram doesn't mask. freeSwapThreshold is maxed because on a
+  # zram machine a filling swap *is* the RAM emergency — don't wait for it to
+  # drain (kill logic is AND, so free RAM is the effective trigger).
+  services.earlyoom = {
+    enable = true;
+    freeMemThreshold = 8;     # SIGTERM at <8% free RAM; SIGKILL at half (~4%)
+    freeSwapThreshold = 100;  # zram: treat any swap pressure as active
+    enableNotifications = true;
+  };
   # Tune VM for zram (kernel-docs/CachyOS guidance): swapping to compressed
   # RAM is nearly free, so swap aggressively (default 60 is tuned for disk)
   # and disable readahead clustering (pointless on zram, adds latency).
