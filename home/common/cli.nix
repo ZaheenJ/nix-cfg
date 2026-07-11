@@ -47,6 +47,7 @@
     termdown
     figlet
     xkcdpass
+    libqalculate # `qalc` CLI calculator
 
     # Task management
     taskwarrior-tui
