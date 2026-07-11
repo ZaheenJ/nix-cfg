@@ -40,9 +40,15 @@
     # musicDirectory defaults to xdg.userDirs.music (~/Music). playlistDirectory
     # defaults to $XDG_DATA_HOME/mpd/playlists; MPD owns playlists, tag cache and
     # state under $XDG_DATA_HOME/mpd.
+    # auto_update: MPD watches musicDirectory via inotify and refreshes its
+    # database when files change — no manual `mpc update` after adding music
+    # (only the very first scan needs one). The tag cache persists across
+    # rebuilds under $XDG_DATA_HOME/mpd, so rebuilds never require a rescan.
     # Native PipeWire output so MPD routes through the sound server instead of
     # grabbing an ALSA device exclusively.
     extraConfig = ''
+      auto_update "yes"
+
       audio_output {
         type "pipewire"
         name "PipeWire"
