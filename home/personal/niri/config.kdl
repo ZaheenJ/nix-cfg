@@ -391,7 +391,7 @@ binds {
     XF86KbdBrightnessDown hotkey-overlay-title="Keyboard brightness down" allow-when-locked=true { spawn "asusctl" "-p"; }
 
     // === Application Shortcuts ===
-    Mod+M hotkey-overlay-title="Music player: cmus" { spawn "ghostty" "-e" "cmus"; }
+    Mod+M hotkey-overlay-title="Music player: rmpc" { spawn "ghostty" "-e" "rmpc"; }
     Mod+W hotkey-overlay-title="Web browser: Firefox" { spawn "firefox"; }
     Mod+I hotkey-overlay-title="Incognito web browser: Firefox" { spawn "firefox" "--private-window"; }
     Mod+Y hotkey-overlay-title="Youtube" { spawn "firefox" "--new-window" "youtube.com"; }
