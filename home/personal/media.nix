@@ -78,5 +78,11 @@
     vimiv-qt
     yt-dlp
     tickrs
+
+    # Music metadata scripts (common/nushell/music.nu): opustags writes tags
+    # incl. multi-value ARTIST and cover art; opusinfo probes duration for
+    # lyric timestamp rescaling.
+    opustags
+    opus-tools
   ];
 }

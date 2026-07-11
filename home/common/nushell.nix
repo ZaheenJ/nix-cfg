@@ -10,6 +10,10 @@
     # programs.zoxide.enableNushellIntegration in cli.nix.
     envFile.text = "";
 
-    configFile.text = builtins.readFile ./nushell/config.nu;
+    configFile.text =
+      builtins.readFile ./nushell/config.nu
+      + "\n"
+      # music library commands: metadata-adder, music-cover, music-lyrics,
+      + builtins.readFile ./nushell/music.nu;
   };
 }

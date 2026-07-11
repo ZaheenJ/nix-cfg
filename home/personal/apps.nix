@@ -31,9 +31,6 @@
     # Cloud tools
     google-cloud-sdk
 
-    # Music tagging
-    picard
-
     # Shazam client
     songrec
   ];
