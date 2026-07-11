@@ -118,6 +118,16 @@
     };
   };
 
+  # asus-shutdown (from the asus profile) ignores SIGTERM by design and sets
+  # SendSIGKILL=no, so every nixos-rebuild switch that tries to restart it hangs
+  # on stop and fails with a timeout — making switch-to-configuration exit 4 even
+  # though nothing is actually wrong. Leave it running across switches; the new
+  # version takes effect at the next boot.
+  systemd.services.asus-shutdown = {
+    restartIfChanged = false;
+    stopIfChanged = false;
+  };
+
   # AC/battery brightness + refresh-rate switching is a user service now
   # (home/personal/power.nix) watching UPower events — it replaced the Arch
   # udev RUN hooks (root poking the user's niri socket, racing niri at boot).

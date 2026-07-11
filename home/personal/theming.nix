@@ -5,6 +5,7 @@
 {
   # Cursor: Bibata-Modern-Classic, 24px — matches niri config.kdl and GTK settings.
   home.pointerCursor = {
+    enable = true; # now required explicitly by home-manager
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Classic";
     size = 24;
