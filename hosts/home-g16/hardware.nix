@@ -77,26 +77,46 @@
     rulesProvider = pkgs.ananicy-rules-cachyos;
   };
 
-  # "sufficient" = face OR password, matching Arch; the NixOS default
-  # "required" would demand both factors.
-  services.howdy = {
+  # Face auth is gaze (replaced howdy). No linux-enable-ir-emitter: this Sonix
+  # 3277:0051 camera's IR emitter is motion/proximity-reactive (fires in
+  # hardware when someone is in front of it), not software-controlled — probing
+  # it finds nothing and can hang. So gaze just reads the IR node with the
+  # emitter left alone (emitter_enabled defaults false).
+  services.gaze = {
     enable = true;
-    control = "sufficient";
-    # Deltas from inventory/etc/howdy-config.ini that matter; the rest of the
-    # Arch config matched upstream defaults. device_path is the IR camera by
-    # stable hardware path. Face models: re-enroll post-install (howdy add).
+    authTimeoutSecs = 5; # fall back to the password prompt faster
+    pamServices = [
+      "sudo"
+      "login" # TTY login + noctalia's lockscreen (both use the "login" service)
+      "greetd" # the graphical noctalia-greeter
+      # polkit-1 broke under howdy (it opened the camera in the agent's process);
+      # gaze does camera work in the root daemon, so this is worth a try.
+      "polkit-1"
+    ];
+    # The daemon runs as root with no user PipeWire session (and none exists at
+    # the greeter/lockscreen), so drive both cameras directly via V4L2 instead
+    # of the "primary"/pipewiresrc default. Stable by-path nodes: …-1.0-… is the
+    # color webcam, …-1.2-… is the IR camera.
     settings = {
-      core.abort_if_lid_closed = true;
-      video = {
-        device_path = "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.2-video-index0";
-        certainty = 3.5;
-        timeout = 4;
-        dark_threshold = 80;
-        max_height = 320;
+      security.level = "medium";
+      cameras = {
+        rgb = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0";
+        ir = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.2-video-index0";
+        dark_luma_threshold = 30;
       };
+      auth = {
+        abort_if_ssh = true;
+        abort_if_lid_closed = true;
+      };
+      liveness = {
+        enabled = true;
+        threshold = 0.8;
+        max_frames = 40;
+      };
+      enrollment.max_templates = 2;
+      storage.encrypt_templates = false;
     };
   };
-  services.linux-enable-ir-emitter.enable = true;
 
   # AC/battery brightness + refresh-rate switching is a user service now
   # (home/personal/power.nix) watching UPower events — it replaced the Arch

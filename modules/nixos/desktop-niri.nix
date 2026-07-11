@@ -32,14 +32,9 @@
 
   services.gnome.gnome-keyring.enable = true;
   # Authenticating at the greeter unlocks the login keyring (same password),
-  # so git push / Secret Service / the gcr SSH agent stop prompting. Howdy
-  # (services.howdy, "sufficient") auto-attaches to this PAM service too, so
-  # face auth works at the greeter, falling through to password on failure.
+  # so git push / Secret Service / the gcr SSH agent stop prompting. Note: face
+  # login (gaze) doesn't type a password, so it won't unlock the keyring —
+  # password login still does. Face auth (services.gaze) is deliberately not
+  # wired into polkit-1, so GUI polkit prompts always ask for the password.
   security.pam.services.greetd.enableGnomeKeyring = true;
-
-  # Howdy breaks GUI polkit auth: in-session it can't open the IR camera, and
-  # pam_howdy fails the PAM *conversation* instead of falling through, so the
-  # polkit agent reports "invalid password" instantly. Drop face auth from
-  # polkit prompts only; keep it for login / sudo / swaylock / the greeter.
-  security.pam.services.polkit-1.howdy.enable = false;
 }

@@ -12,6 +12,7 @@
     ../../modules/nixos/desktop-niri.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/tailscale.nix
+    ../../modules/nixos/gaze.nix
   ];
 
   networking.hostName = "home-g16";

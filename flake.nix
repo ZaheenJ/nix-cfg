@@ -2,11 +2,7 @@
   description = "Multi-host NixOS + home-manager configuration";
 
   inputs = {
-    # HOLD: pinned off nixos-unstable — newer nixpkgs breaks howdy's
-    # face-recognition build (python3.14 dropped pkg_resources). Restore to
-    # "github:NixOS/nixpkgs/nixos-unstable" once fixed upstream (or when howdy
-    # is replaced by biopass).
-    nixpkgs.url = "github:NixOS/nixpkgs/e73de5be04e0eff4190a1432b946d469c794e7b4";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -31,11 +27,17 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, lanzaboote, ... } @ inputs: {
-    nixosConfigurations.home-g16 = nixpkgs.lib.nixosSystem {
+  outputs = { nixpkgs, home-manager, lanzaboote, ... } @ inputs:
+    let
       system = "x86_64-linux";
+      overlays = [ (import ./overlays) ];
+    in
+    {
+    nixosConfigurations.home-g16 = nixpkgs.lib.nixosSystem {
+      inherit system;
       specialArgs = { inherit inputs; };
       modules = [
+        { nixpkgs.overlays = overlays; }
         ./hosts/home-g16
         lanzaboote.nixosModules.lanzaboote
         home-manager.nixosModules.home-manager
@@ -52,6 +54,15 @@
         }
       ];
     };
+
+    # Custom packages, exposed for `nix build .#<pkg>`.
+    packages.${system} =
+      let
+        pkgs = import nixpkgs { inherit system overlays; };
+      in
+      {
+        inherit (pkgs) gaze;
+      };
 
     # Standalone home-manager for non-NixOS hosts (school/work), e.g.:
     # homeConfigurations."zaheenj@school" =
