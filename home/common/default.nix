@@ -10,6 +10,7 @@
     ./helix.nix
     ./git.nix
     ./cli.nix
+    ./xdg.nix
   ];
 
   home.username = "zaheenj";
