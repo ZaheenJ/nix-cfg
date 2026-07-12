@@ -46,19 +46,22 @@ def choose-field [label: string, options: list] {
         return (input $"  ($label) \(no suggestions — type a value, enter leaves it empty\): " | str trim)
     }
     if (($opts | length) == 1 ) {
-        return (confirm-field $"($label) \(($opts | first | get src)\)" ($opts | first | get value))
+        let v = (confirm-field $"($label) \(($opts | first | get src); '-' = empty\)" ($opts | first | get value))
+        return (if ($v == "-") { "" } else { $v })
     }
     print $"  ($label):"
     for i in 0..(($opts | length) - 1) {
         print $"    [($i + 1)] ($opts | get $i | get src): ($opts | get $i | get value)"
     }
-    let ans = (input $"  ($label) \(number or custom value\) [1]: " | str trim)
+    let ans = (input $"  ($label) \(number / custom / '-' = empty\) [1]: " | str trim)
     resolve-choice $ans $opts
 }
 
-# enter = first option, in-range number = that option, anything else = custom
+# enter = first option, in-range number = that option, '-' = explicitly
+# empty (e.g. a standalone single has no album), anything else = custom
 def resolve-choice [ans: string, opts: list] {
     if ($ans | is-empty) { return ($opts | first | get value) }
+    if ($ans == "-") { return "" }
     let n = (try { $ans | into int } catch { 0 })
     if ($n >= 1) and ($n <= ($opts | length)) {
         $opts | get ($n - 1) | get value
@@ -186,6 +189,30 @@ def mb-release [artist: string, title: string] {
         }
     }
     $pooled
+}
+
+# ---------- Deezer (independent of the Apple-backed Shazam catalog) ----------
+
+# Look up a track on Deezer. Returns {album, date} or an empty record.
+# (Release date needs a second request: search results don't carry it.)
+def deezer-lookup [artist: string, title: string] {
+    if ($artist | is-empty) or ($title | is-empty) { return {} }
+    let clean = ($title | str replace --all --regex '\s*[\(\[][^\)\]]*[\)\]]' '' | str trim)
+    let qs = ({q: $'artist:"($artist)" track:"($clean)"'} | url build-query)
+    let res = (try {
+        http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
+    } catch { {} })
+    let hits = ($res | get -o data | default [])
+    if ($hits | is-empty) { return {} }
+    let h = ($hits | first)
+    let albid = ($h | get -o album | default {} | get -o id | default 0)
+    let alb = (if ($albid == 0) { {} } else {
+        try { http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/album/($albid)" } catch { {} }
+    })
+    {
+        album: ($h | get -o album | default {} | get -o title | default "")
+        date: ($alb | get -o release_date | default "" | str substring 0..3)
+    }
 }
 
 # ---------- cover art ----------
@@ -376,6 +403,10 @@ def metadata-adder [file: string, --url: string = ""] {
     let sz_date = (meta-val $metaflat Released)
     let mb_album = ($mb | get -o album | default "")
     let mb_date = ($mb | get -o date | default "")
+    # Deezer: catalog independent of Apple (Shazam's metadata is Apple Music's)
+    let dz = (deezer-lookup ($track | get -o subtitle | default "") ($track | get -o title | default ""))
+    let dz_album = ($dz | get -o album | default "" | str replace --regex '\s*-\s*Single$' '')
+    let dz_date = ($dz | get -o date | default "")
 
     # every source is offered per field; kakasi romanizations of
     # Japanese/Chinese values are prepended as the default per convention
@@ -398,11 +429,13 @@ def metadata-adder [file: string, --url: string = ""] {
     let artists = ($artists_raw | split row ";" | each { str trim } | where ($it | is-not-empty))
     let album = (choose-field "album " (
         (with-romanized musicbrainz $mb_album)
-        ++ (with-romanized shazam $sz_album)
+        ++ (with-romanized "shazam/apple" $sz_album)
+        ++ (with-romanized deezer $dz_album)
         ++ (with-romanized "existing tag" (tag-val $old_tags album))))
     let date = (choose-field "date  " [
         {src: musicbrainz, value: $mb_date}
-        {src: shazam, value: $sz_date}
+        {src: "shazam/apple", value: $sz_date}
+        {src: deezer, value: $dz_date}
         {src: "existing tag", value: (tag-val $old_tags date)}
     ])
     let genre = (choose-field "genre " [
