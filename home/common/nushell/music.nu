@@ -59,24 +59,148 @@ def rescale-lrc [lrc: string, ratio: float] {
     } | str join "\n"
 }
 
+# ---------- MusicBrainz (album/date the way Picard would report them) ----------
+
+# Does any artist credit match the wanted artist name (incl. romanized
+# aliases, e.g. "Kenshi Yonezu" for 米津玄師)?
+def mb-credit-match [entity, artist: string] {
+    let want = ($artist | str downcase)
+    $entity | get -o "artist-credit" | default [] | any {|c|
+        let names = ([
+            ($c | get -o name | default "")
+            ($c | get -o artist | default {} | get -o name | default "")
+        ] ++ ($c | get -o artist | default {} | get -o aliases | default [] | each {|al| $al | get -o name | default "" }))
+        $names | any {|n| ($n | str downcase) == $want }
+    }
+}
+
+# GET a MusicBrainz API URL with one retry (MB throttles with 503s)
+def mb-get [url: string] {
+    try {
+        http get --headers [User-Agent $MUSIC_UA] $url
+    } catch {
+        sleep 2sec
+        try { http get --headers [User-Agent $MUSIC_UA] $url } catch { {} }
+    }
+}
+
+# Look up the earliest official album release of a recording on MusicBrainz.
+# Returns {album, date, caaurl}, or an empty record when nothing was found.
+def mb-release [artist: string, title: string] {
+    if ($artist | is-empty) or ($title | is-empty) { return {} }
+    # MB recording titles don't carry "(feat. X)" suffixes
+    let clean = ($title | str replace --all --regex '\s*[\(\[][^\)\]]*[\)\]]' '' | str trim)
+    # alias: catches romanized titles (e.g. "Yoru ni Kakeru" for 夜に駆ける);
+    # the artist is matched client-side because no search field covers
+    # romanized artist aliases
+    let q = $"\(recording:\"($clean)\" OR alias:\"($clean)\"\)"
+    let qs = ({query: $q, fmt: "json", limit: "100"} | url build-query)
+    let res = (mb-get $"https://musicbrainz.org/ws/2/recording/?($qs)")
+    # search ranking can't be trusted (live versions, re-records, DJ mixes and
+    # covers all score 100): pool the releases of every non-derivative
+    # recording credited to this artist, then pick the earliest studio album
+    # (compilations/live/soundtracks have secondary types), then any album,
+    # then any release. The date is the earliest release of any kind (the
+    # single often precedes the album).
+    let rels = ($res | get -o recordings | default []
+        | where {|r| not (($r | get -o disambiguation | default "") =~ '(?i)live|demo|instrumental|karaoke|remix|mix|edit') }
+        | where {|r| mb-credit-match $r $artist }
+        | each {|r| $r | get -o releases | default [] } | flatten
+        | where {|r| ($r | get -o status | default "Official") == "Official" }
+        | insert ptype {|r| $r | get -o "release-group" | default {} | get -o "primary-type" | default "" }
+        | insert secondary {|r| $r | get -o "release-group" | default {} | get -o "secondary-types" | default [] | length }
+        | insert rdate {|r| $r | get -o date | default "" }
+        | where rdate != "")
+    let studio = ($rels | where ptype == Album | where secondary == 0 | sort-by rdate)
+    let albums = ($rels | where ptype == Album | sort-by rdate)
+    let pool = (if ($studio | is-not-empty) { $studio } else if ($albums | is-not-empty) { $albums } else { $rels | sort-by rdate })
+    let pooled = (if ($pool | is-empty) { {} } else {
+        {
+            album: ($pool | first | get -o title | default "")
+            date: ($rels | get rdate | sort | first | str substring 0..3)
+            caaurl: $"https://coverartarchive.org/release/($pool | first | get -o id | default '')/front-500"
+        }
+    })
+    # cross-check with a release-group search: the recording samples above
+    # miss some original albums entirely (e.g. self-titled classics buried
+    # under compilation entities). Prefer the release group when it's older.
+    sleep 1100ms  # MusicBrainz rate limit: 1 request/second
+    let gqs = ({query: $"releasegroup:\"($clean)\" AND primarytype:\"Album\"", fmt: "json", limit: "50"} | url build-query)
+    let gres = (mb-get $"https://musicbrainz.org/ws/2/release-group/?($gqs)")
+    let rgs = ($gres | get -o "release-groups" | default []
+        | where {|g| (($g | get -o title | default "") | str downcase) == ($clean | str downcase) }
+        | where {|g| ($g | get -o "secondary-types" | default [] | length) == 0 }
+        | where {|g| mb-credit-match $g $artist }
+        | insert frd {|g| $g | get -o "first-release-date" | default "" }
+        | where frd != "" | sort-by frd)
+    if ($rgs | is-not-empty) {
+        let rg = ($rgs | first)
+        if ($pooled | is-empty) or (($rg.frd | str substring 0..3) < $pooled.date) {
+            return {
+                album: $rg.title
+                date: ($rg.frd | str substring 0..3)
+                caaurl: $"https://coverartarchive.org/release-group/($rg.id)/front-500"
+            }
+        }
+    }
+    $pooled
+}
+
 # ---------- cover art ----------
 
-# Find and embed cover art (Deezer search with confirmation, or your own URL).
-def music-cover [file: string] {
+# Download an image and embed it as the cover, validating it really is an
+# image (pasted URLs sometimes serve HTML redirect pages).
+def embed-image [file: string, url: string] {
+    let data = (try { http get --headers [User-Agent $MUSIC_UA] $url | into binary } catch { null })
+    if ($data == null) { print "  cover: download failed"; return false }
+    let ext = if ($data | bytes starts-with 0x[FFD8FF]) {
+        "jpg"
+    } else if ($data | bytes starts-with 0x[89504E47]) {
+        "png"
+    } else { "" }
+    if ($ext | is-empty) {
+        print "  cover: URL did not return a JPEG/PNG (got HTML or something else) — not embedding"
+        return false
+    }
+    let tmp = (mktemp --suffix $".($ext)")
+    $data | save -f $tmp
+    ^opustags -i --set-cover $tmp ($file | path expand)
+    rm $tmp
+    print "  cover: embedded"
+    true
+}
+
+# Find and embed cover art. Tries the Cover Art Archive when a MusicBrainz
+# release id is known (exact), then Deezer by album then by track, then a
+# pasted URL.
+def music-cover [file: string, --caa-url: string = ""] {
+    # exact art for the release MusicBrainz identified
+    if ($caa_url | is-not-empty) {
+        let ok = (try {
+            if (yes-or "  embed the MusicBrainz release cover \(Cover Art Archive\)? [Y]es / [n]o: ") {
+                embed-image $file $caa_url
+            } else { false }
+        } catch { false })
+        if $ok { return }
+    }
     let tags = (read-tags ($file | path expand))
     let artist = (tag-val $tags artist)
     let title = (tag-val $tags title)
     let album = (tag-val $tags album)
-    let q = if ($album | is-empty) {
-        $'artist:"($artist)" track:"($title)"'
-    } else {
-        $'artist:"($artist)" album:"($album)"'
+    # Deezer: try the album first, fall back to the track
+    mut queries = []
+    if ($album | is-not-empty) { $queries = ($queries ++ [$'artist:"($artist)" album:"($album)"']) }
+    $queries = ($queries ++ [$'artist:"($artist)" track:"($title)"'])
+    mut hits = []
+    for q in $queries {
+        if ($hits | is-empty) {
+            let qs = ({q: $q} | url build-query)
+            let res = (try {
+                http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
+            } catch { {data: []} })
+            $hits = ($res | get -o data | default [])
+        }
     }
-    let qs = ({q: $q} | url build-query)
-    let res = (try {
-        http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
-    } catch { {data: []} })
-    let hits = ($res | get -o data | default [])
     mut url = ""
     if ($hits | is-not-empty) {
         let h = ($hits | first)
@@ -92,11 +216,7 @@ def music-cover [file: string] {
         if ($ans starts-with "http") { $url = $ans }
     }
     if ($url | is-empty) { print "  cover: skipped"; return }
-    let tmp = (mktemp --suffix .jpg)
-    http get --headers [User-Agent $MUSIC_UA] $url | save -f $tmp
-    ^opustags -i --set-cover $tmp ($file | path expand)
-    rm $tmp
-    print "  cover: embedded"
+    embed-image $file $url | ignore
 }
 
 # ---------- lyrics ----------
@@ -170,15 +290,26 @@ def metadata-adder [file: string, --url: string = ""] {
     }
     print $"  shazam: ($track | get -o title | default '(no match)') — ($track | get -o subtitle | default '')"
 
-    # propose fields (falling back to existing tags)
+    # MusicBrainz: canonical album/date (earliest official album release).
+    # Shazam identifies the recording reliably but reports whatever release its
+    # catalog entry belongs to — often a compilation or remaster.
+    let mb = (mb-release ($track | get -o subtitle | default "") ($track | get -o title | default ""))
+    let sz_album = ((meta-val $metaflat Album) | str replace --regex '\s*-\s*Single$' '')
+    let sz_date = (meta-val $metaflat Released)
+    if ($mb | is-not-empty) {
+        print $"  musicbrainz: album '($mb.album)' \(($mb.date)\)   [shazam said: '($sz_album)' \(($sz_date)\)]"
+    }
+
+    # propose fields (MusicBrainz for album/date, Shazam otherwise, old tags last)
     print "confirm each field (enter = accept, or type a correction):"
     print "  conventions: classical = 'Composer: Work'; feat. goes in the title; romanized or Hangeul"
     let title = (confirm-field "title " (($track | get -o title | default "") | default (tag-val $old_tags title)))
     let artists_raw = (confirm-field "artist(s), ';'-separated, main first" (($track | get -o subtitle | default "") | default (tag-val $old_tags artist)))
     let artists = ($artists_raw | split row ";" | each { str trim } | where ($it | is-not-empty))
-    let alb_prop = ((meta-val $metaflat Album) | default (tag-val $old_tags album) | str replace --regex '\s*-\s*Single$' '')
+    let alb_prop = (($mb | get -o album | default "") | default $sz_album | default (tag-val $old_tags album))
     let album = (confirm-field "album " $alb_prop)
-    let date = (confirm-field "date  " ((meta-val $metaflat Released) | default (tag-val $old_tags date)))
+    let date_prop = (($mb | get -o date | default "") | default $sz_date | default (tag-val $old_tags date))
+    let date = (confirm-field "date  " $date_prop)
     let genre = (confirm-field "genre " (($track | get -o genres | default {} | get -o primary | default "") | default (tag-val $old_tags genre)))
 
     # duplicate check across the library (fixed glob pattern: titles may
@@ -218,7 +349,9 @@ def metadata-adder [file: string, --url: string = ""] {
         $target
     }
 
-    music-cover $final
+    # only offer the CAA cover when the user kept the MusicBrainz album
+    let caa = (if ($mb | is-not-empty) and ($album == $mb.album) { $mb.caaurl } else { "" })
+    music-cover $final --caa-url $caa
     music-lyrics $final
     print "done."
 }
