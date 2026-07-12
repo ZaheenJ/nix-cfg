@@ -119,14 +119,14 @@ def mb-credit-match [entity, artist: string] {
     }
 }
 
-# GET a MusicBrainz API URL with one retry (MB throttles with 503s)
+# GET a MusicBrainz API URL with retries (MB throttles bursts with 503s)
 def mb-get [url: string] {
-    try {
-        http get --headers [User-Agent $MUSIC_UA] $url
-    } catch {
-        sleep 2sec
-        try { http get --headers [User-Agent $MUSIC_UA] $url } catch { {} }
+    for delay in [2sec 5sec] {
+        let res = (try { http get --headers [User-Agent $MUSIC_UA] $url } catch { null })
+        if ($res != null) { return $res }
+        sleep $delay
     }
+    try { http get --headers [User-Agent $MUSIC_UA] $url } catch { {} }
 }
 
 # Look up the earliest official album release of a recording on MusicBrainz.
@@ -135,21 +135,31 @@ def mb-release [artist: string, title: string] {
     if ($artist | is-empty) or ($title | is-empty) { return {} }
     # MB recording titles don't carry "(feat. X)" suffixes
     let clean = ($title | str replace --all --regex '\s*[\(\[][^\)\]]*[\)\]]' '' | str trim)
-    # alias: catches romanized titles (e.g. "Yoru ni Kakeru" for 夜に駆ける);
-    # the artist is matched client-side because no search field covers
-    # romanized artist aliases
-    let q = $"\(recording:\"($clean)\" OR alias:\"($clean)\"\)"
-    let qs = ({query: $q, fmt: "json", limit: "100"} | url build-query)
-    let res = (mb-get $"https://musicbrainz.org/ws/2/recording/?($qs)")
+    # Two query shapes: artistname-constrained first (common titles like
+    # "Mastermind" have hundreds of recordings and the right one may not make
+    # the top 100 of a title-only search), then title-only with alias (covers
+    # romanized titles like "Yoru ni Kakeru" and romanized artists that
+    # artistname doesn't index, e.g. "Kenshi Yonezu"). Credits are also
+    # matched client-side either way.
+    let base = $"\(recording:\"($clean)\" OR alias:\"($clean)\"\)"
+    mut recs = []
+    for q in [$"($base) AND artistname:\"($artist)\"" $base] {
+        if ($recs | is-empty) {
+            let qs = ({query: $q, fmt: "json", limit: "100"} | url build-query)
+            let res = (mb-get $"https://musicbrainz.org/ws/2/recording/?($qs)")
+            $recs = ($res | get -o recordings | default []
+                | where {|r| not (($r | get -o disambiguation | default "") =~ '(?i)live|demo|instrumental|karaoke|remix|mix|edit') }
+                | where {|r| mb-credit-match $r $artist })
+            if ($recs | is-empty) { sleep 1100ms }  # MusicBrainz rate limit
+        }
+    }
     # search ranking can't be trusted (live versions, re-records, DJ mixes and
     # covers all score 100): pool the releases of every non-derivative
     # recording credited to this artist, then pick the earliest studio album
     # (compilations/live/soundtracks have secondary types), then any album,
     # then any release. The date is the earliest release of any kind (the
     # single often precedes the album).
-    let rels = ($res | get -o recordings | default []
-        | where {|r| not (($r | get -o disambiguation | default "") =~ '(?i)live|demo|instrumental|karaoke|remix|mix|edit') }
-        | where {|r| mb-credit-match $r $artist }
+    let rels = ($recs
         | each {|r| $r | get -o releases | default [] } | flatten
         | where {|r| ($r | get -o status | default "Official") == "Official" }
         | insert ptype {|r| $r | get -o "release-group" | default {} | get -o "primary-type" | default "" }
@@ -193,18 +203,30 @@ def mb-release [artist: string, title: string] {
 
 # ---------- Deezer (independent of the Apple-backed Shazam catalog) ----------
 
+# Search Deezer for a track: advanced query first, plain-text fallback with
+# a client-side artist check (Deezer's fielded search misses some catalog
+# entries entirely, e.g. Taylor Swift's "Mastermind"). Returns hit or {}.
+def deezer-find [artist: string, title: string] {
+    let queries = [$'artist:"($artist)" track:"($title)"' $"($artist) ($title)"]
+    for q in $queries {
+        let qs = ({q: $q} | url build-query)
+        let res = (try {
+            http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
+        } catch { {} })
+        let hits = ($res | get -o data | default []
+            | where {|h| (($h | get -o artist | default {} | get -o name | default "") | str downcase) == ($artist | str downcase) })
+        if ($hits | is-not-empty) { return ($hits | first) }
+    }
+    {}
+}
+
 # Look up a track on Deezer. Returns {album, date} or an empty record.
 # (Release date needs a second request: search results don't carry it.)
 def deezer-lookup [artist: string, title: string] {
     if ($artist | is-empty) or ($title | is-empty) { return {} }
     let clean = ($title | str replace --all --regex '\s*[\(\[][^\)\]]*[\)\]]' '' | str trim)
-    let qs = ({q: $'artist:"($artist)" track:"($clean)"'} | url build-query)
-    let res = (try {
-        http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
-    } catch { {} })
-    let hits = ($res | get -o data | default [])
-    if ($hits | is-empty) { return {} }
-    let h = ($hits | first)
+    let h = (deezer-find $artist $clean)
+    if ($h | is-empty) { return {} }
     let albid = ($h | get -o album | default {} | get -o id | default 0)
     let alb = (if ($albid == 0) { {} } else {
         try { http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/album/($albid)" } catch { {} }
@@ -279,22 +301,17 @@ def music-cover [file: string, --caa-url: string = ""] {
             $cands = ($cands ++ [{label: "MusicBrainz (Cover Art Archive)", img: $img}])
         }
     }
-    # Deezer: try the album first, fall back to the track
-    mut queries = []
-    if ($album | is-not-empty) { $queries = ($queries ++ [$'artist:"($artist)" album:"($album)"']) }
-    $queries = ($queries ++ [$'artist:"($artist)" track:"($title)"'])
-    mut hits = []
-    for q in $queries {
-        if ($hits | is-empty) {
-            let qs = ({q: $q} | url build-query)
-            let res = (try {
-                http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
-            } catch { {data: []} })
-            $hits = ($res | get -o data | default [])
-        }
+    # Deezer: try the album first, then the track (with plain-text fallback)
+    mut h = {}
+    if ($album | is-not-empty) {
+        let qs = ({q: $'artist:"($artist)" album:"($album)"'} | url build-query)
+        let res = (try {
+            http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
+        } catch { {data: []} })
+        $h = ($res | get -o data | default [] | get -o 0 | default {})
     }
-    if ($hits | is-not-empty) {
-        let h = ($hits | first)
+    if ($h | is-empty) { $h = (deezer-find $artist $title) }
+    if ($h | is-not-empty) {
         let url = ($h.album | get -o cover_big | default ($h.album | get -o cover_xl | default ""))
         let img = (if ($url | is-empty) { {} } else { fetch-image $url })
         if ($img | is-not-empty) {
