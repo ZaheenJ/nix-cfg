@@ -42,6 +42,20 @@ def yes-or [prompt: string] {
     ($ans | is-empty) or (($ans | str downcase) starts-with "y")
 }
 
+# Suggest a romanization for Japanese/Chinese text via kakasi (Hepburn-ish).
+# Hangeul stays as-is per library convention. Returns the input unchanged when
+# there's nothing to do or kakasi is unavailable. NB: kakasi assumes Japanese
+# readings — for a Chinese-only title, treat the suggestion with suspicion.
+def romanize-suggest [s: string] {
+    if ($s =~ '[가-힣]') { return $s }
+    if not ($s =~ '[぀-ヿ一-鿿]') { return $s }
+    if (which kakasi | is-empty) { return $s }
+    let r = (try { $s | ^kakasi -i utf8 -o utf8 -Ja -Ha -Ka -Ea -s | str trim } catch { "" })
+    if ($r | is-empty) { $s } else {
+        $r | str replace -a "( " "(" | str replace -a " )" ")" | str replace --all --regex ' +' ' '
+    }
+}
+
 def rescale-lrc [lrc: string, ratio: float] {
     $lrc | lines | each {|line|
         mut l = $line
@@ -148,40 +162,59 @@ def mb-release [artist: string, title: string] {
 
 # ---------- cover art ----------
 
-# Download an image and embed it as the cover, validating it really is an
-# image (pasted URLs sometimes serve HTML redirect pages).
-def embed-image [file: string, url: string] {
+# Download an image, validating it really is one (pasted URLs sometimes serve
+# HTML redirect pages). Returns {data, ext} or an empty record.
+def fetch-image [url: string] {
     let data = (try { http get --headers [User-Agent $MUSIC_UA] $url | into binary } catch { null })
-    if ($data == null) { print "  cover: download failed"; return false }
+    if ($data == null) { print "  cover: download failed"; return {} }
     let ext = if ($data | bytes starts-with 0x[FFD8FF]) {
         "jpg"
     } else if ($data | bytes starts-with 0x[89504E47]) {
         "png"
     } else { "" }
     if ($ext | is-empty) {
-        print "  cover: URL did not return a JPEG/PNG (got HTML or something else) — not embedding"
-        return false
+        print "  cover: URL did not return a JPEG/PNG (got HTML or something else)"
+        return {}
     }
-    let tmp = (mktemp --suffix $".($ext)")
-    $data | save -f $tmp
+    {data: $data, ext: $ext}
+}
+
+# Render the image inline (kitty graphics via viu; ghostty supports it).
+def preview-image [img] {
+    if (which viu | is-empty) { return }
+    let tmp = (mktemp --suffix $".($img.ext)")
+    $img.data | save -f $tmp
+    try { ^viu -w 30 $tmp } catch { }
+    rm $tmp
+}
+
+def embed-img [file: string, img] {
+    let tmp = (mktemp --suffix $".($img.ext)")
+    $img.data | save -f $tmp
     ^opustags -i --set-cover $tmp ($file | path expand)
     rm $tmp
     print "  cover: embedded"
-    true
 }
 
-# Find and embed cover art. Tries the Cover Art Archive when a MusicBrainz
-# release id is known (exact), then Deezer by album then by track, then a
+# Download, preview, confirm, embed. Returns true when embedded.
+def offer-image [file: string, url: string, label: string] {
+    let img = (fetch-image $url)
+    if ($img | is-empty) { return false }
+    print $"  ($label):"
+    preview-image $img
+    if (yes-or "  embed this cover? [Y]es / [n]o: ") {
+        embed-img $file $img
+        true
+    } else { false }
+}
+
+# Find and embed cover art. Tries the Cover Art Archive when MusicBrainz
+# matched a release (exact art), then Deezer by album then by track, then a
 # pasted URL.
 def music-cover [file: string, --caa-url: string = ""] {
     # exact art for the release MusicBrainz identified
     if ($caa_url | is-not-empty) {
-        let ok = (try {
-            if (yes-or "  embed the MusicBrainz release cover \(Cover Art Archive\)? [Y]es / [n]o: ") {
-                embed-image $file $caa_url
-            } else { false }
-        } catch { false })
-        if $ok { return }
+        if (offer-image $file $caa_url "MusicBrainz release cover (Cover Art Archive)") { return }
     }
     let tags = (read-tags ($file | path expand))
     let artist = (tag-val $tags artist)
@@ -201,22 +234,21 @@ def music-cover [file: string, --caa-url: string = ""] {
             $hits = ($res | get -o data | default [])
         }
     }
-    mut url = ""
     if ($hits | is-not-empty) {
         let h = ($hits | first)
-        print $"  cover match: ($h.title) — ($h.artist.name) — album: ($h.album.title)"
-        let ans = (input "  embed this cover? [Y]es / [n]o / paste image URL: " | str trim)
-        if ($ans | is-empty) or (($ans | str downcase) starts-with "y") {
-            $url = ($h.album | get -o cover_big | default ($h.album | get -o cover_xl | default ""))
-        } else if ($ans starts-with "http") {
-            $url = $ans
+        let url = ($h.album | get -o cover_big | default ($h.album | get -o cover_xl | default ""))
+        if ($url | is-not-empty) {
+            if (offer-image $file $url $"Deezer match: ($h.title) — ($h.artist.name) — album: ($h.album.title)") { return }
         }
     } else {
-        let ans = (input "  no cover found on Deezer. Paste image URL or enter to skip: " | str trim)
-        if ($ans starts-with "http") { $url = $ans }
+        print "  no cover found on Deezer"
     }
-    if ($url | is-empty) { print "  cover: skipped"; return }
-    embed-image $file $url | ignore
+    let ans = (input "  paste an image URL to embed, or enter to skip: " | str trim)
+    if ($ans starts-with "http") {
+        offer-image $file $ans "your image" | ignore
+    } else {
+        print "  cover: skipped"
+    }
 }
 
 # ---------- lyrics ----------
@@ -300,14 +332,23 @@ def metadata-adder [file: string, --url: string = ""] {
         print $"  musicbrainz: album '($mb.album)' \(($mb.date)\)   [shazam said: '($sz_album)' \(($sz_date)\)]"
     }
 
-    # propose fields (MusicBrainz for album/date, Shazam otherwise, old tags last)
+    # propose fields (MusicBrainz for album/date, Shazam otherwise, old tags
+    # last; Japanese/Chinese proposals get a kakasi romanization suggestion)
     print "confirm each field (enter = accept, or type a correction):"
     print "  conventions: classical = 'Composer: Work'; feat. goes in the title; romanized or Hangeul"
-    let title = (confirm-field "title " (($track | get -o title | default "") | default (tag-val $old_tags title)))
-    let artists_raw = (confirm-field "artist(s), ';'-separated, main first" (($track | get -o subtitle | default "") | default (tag-val $old_tags artist)))
+    let title_raw = (($track | get -o title | default "") | default (tag-val $old_tags title))
+    let title_sug = (romanize-suggest $title_raw)
+    if ($title_sug != $title_raw) { print $"  \(original title: ($title_raw)\)" }
+    let title = (confirm-field "title " $title_sug)
+    let artists_prop = (($track | get -o subtitle | default "") | default (tag-val $old_tags artist))
+    let artists_sug = (romanize-suggest $artists_prop)
+    if ($artists_sug != $artists_prop) { print $"  \(original artist: ($artists_prop)\)" }
+    let artists_raw = (confirm-field "artist(s), ';'-separated, main first" $artists_sug)
     let artists = ($artists_raw | split row ";" | each { str trim } | where ($it | is-not-empty))
-    let alb_prop = (($mb | get -o album | default "") | default $sz_album | default (tag-val $old_tags album))
-    let album = (confirm-field "album " $alb_prop)
+    let alb_raw = (($mb | get -o album | default "") | default $sz_album | default (tag-val $old_tags album))
+    let alb_sug = (romanize-suggest $alb_raw)
+    if ($alb_sug != $alb_raw) { print $"  \(original album: ($alb_raw)\)" }
+    let album = (confirm-field "album " $alb_sug)
     let date_prop = (($mb | get -o date | default "") | default $sz_date | default (tag-val $old_tags date))
     let date = (confirm-field "date  " $date_prop)
     let genre = (confirm-field "genre " (($track | get -o genres | default {} | get -o primary | default "") | default (tag-val $old_tags genre)))
@@ -350,8 +391,26 @@ def metadata-adder [file: string, --url: string = ""] {
     }
 
     # only offer the CAA cover when the user kept the MusicBrainz album
-    let caa = (if ($mb | is-not-empty) and ($album == $mb.album) { $mb.caaurl } else { "" })
+    # (possibly in its romanized form) — rejecting the album means the MB
+    # match was wrong, so its art would be too
+    let caa = (if ($mb | is-not-empty) and ($album in [$mb.album (romanize-suggest $mb.album)]) { $mb.caaurl } else { "" })
     music-cover $final --caa-url $caa
     music-lyrics $final
     print "done."
+}
+
+# Download from YouTube and immediately fix its metadata: ytda + metadata-adder.
+# (Keep the yt-dlp flags in sync with the ytda abbreviation in config.nu.)
+def ytdm [url: string] {
+    let printed = (^yt-dlp --embed-metadata --xattrs -x -f bestaudio
+        --sponsorblock-remove music_offtopic,intro,outro
+        --progress --no-simulate --print after_move:filepath $url | lines)
+    # the progress bar shares stdout using carriage returns; the real path is
+    # the last CR-separated segment of the last line
+    let out = (if ($printed | is-empty) { "" } else { $printed | last | split row (char cr) | last | str trim })
+    if ($out | is-empty) or (not ($out | path exists)) {
+        error make {msg: "yt-dlp did not produce a file"}
+    }
+    print $"downloaded: ($out)"
+    metadata-adder $out --url $url
 }
