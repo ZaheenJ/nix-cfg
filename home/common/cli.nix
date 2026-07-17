@@ -53,6 +53,7 @@
     taskwarrior-tui
 
     # Dev tools
+    clang
     man-pages
     mcp-nixos # used by Claude Code via repo .mcp.json
   ];

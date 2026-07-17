@@ -17,12 +17,13 @@
 
     # Work communication
     teams-for-linux
+    slack
+    zoom-us
 
     # Privacy browser
     tor-browser
 
     # AI / dev tools
-    code-cursor
     claude-code
 
     # Mobile development
