@@ -4,7 +4,7 @@
 # read-only symlinks block those writers. Seeded once at migration.
 # The niri *package* comes from programs.niri in modules/nixos/desktop-niri.nix.
 # Executables referenced by config.kdl (lead must confirm all are packaged):
-#   spawn-at-startup: rog-control-center (asusctl), noctalia, vicinae
+#   spawn-at-startup: noctalia, vicinae
 #   binds/spawns: ghostty, vicinae, noctalia, systemctl, asusctl,
 #                 firefox, zathura, vesktop, cmus (via ghostty -e),
 #                 wl-paste, satty (Mod+Shift+S screenshot annotation)

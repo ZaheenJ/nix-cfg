@@ -39,6 +39,20 @@ Day-to-day changes are applied on the machine with
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
   (-git, via flake input — user needs master for SystemVerilog).
 - zram swap; no swap partition; no hibernation.
+- **Face auth (gaze) must NOT be wired into long-lived PAM consumers.**
+  `pam_gaze.so` runs the recognizer in-process and leaves ~2.8 GB of **mlock'd**
+  per-CPU inference buffers (22 × 128 MB on this 22-thread CPU) that it never
+  frees/munlocks after auth. In a short-lived auth process (sudo/polkit-1/login)
+  that's transient; in **greetd's session-worker**, which lives for the whole
+  login session, it becomes a permanent 2.8 GB unswappable mlock — the main
+  driver of the 2026-07 memory-freeze. So gaze is enabled for sudo/polkit-1/login
+  but **deliberately not greetd** (services.gaze.pamServices in
+  hosts/home-g16/hardware.nix). Note the mlock: this RAM can't be swapped to zram
+  or reclaimed, and earlyoom keys on free RAM, so nothing catches it — the only
+  fix is to not create it. (Upstream gaze bug: the module should free/munlock on
+  pam_end.) More generally on this 22-thread box, suspect any threaded service
+  idling at a round multiple of ~128 MB — glibc malloc-arena bloat is the usual
+  culprit there, tunable with `MALLOC_ARENA_MAX` / `GLIBC_TUNABLES`.
 
 ## User preferences (load-bearing)
 

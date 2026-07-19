@@ -67,7 +67,9 @@
   ## ASUS vendor daemons + power behavior.
 
   # services.asusd comes from the nixos-hardware gu605my profile (mkDefault);
-  # asusctl/rog-control-center are used by niri keybinds + spawn-at-startup.
+  # hardware control is via the asusd daemon + asusctl CLI (niri keybinds).
+  # The rog-control-center GUI/tray is intentionally not autostarted — asusctl
+  # covers everything and its GUI kept crashing (coredump spam in the journal).
 
   services.power-profiles-daemon.enable = true;
 
@@ -88,7 +90,12 @@
     pamServices = [
       "sudo"
       "login" # TTY login + noctalia's lockscreen (both use the "login" service)
-      "greetd" # the graphical noctalia-greeter
+      # Deliberately NOT "greetd": pam_gaze.so runs the recognizer in-process and
+      # leaves ~2.8 GB of mlock'd per-CPU inference buffers (22 x 128 MB) that it
+      # never frees/munlocks after auth. In short-lived auth processes (sudo/
+      # polkit-1/login) that's transient and harmless; but greetd's session-worker
+      # lives for the whole login session, so face auth there pins ~2.8 GB
+      # unswappable for the session — the main driver of the 2026-07 memory-freeze.
       # polkit-1 broke under howdy (it opened the camera in the agent's process);
       # gaze does camera work in the root daemon, so this is worth a try.
       "polkit-1"

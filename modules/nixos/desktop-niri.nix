@@ -22,6 +22,13 @@
   # User that RUNS the greeter (unprivileged); the greetd module creates it.
   services.greetd.settings.default_session.user = "greeter";
 
+  # niri has no verbosity flag; it uses RUST_LOG (tracing). Left at its default
+  # it logs at DEBUG (hundreds of "device changed" / screencasting lines). Cap
+  # niri at warn to drop that flood while keeping warnings/errors (e.g. the
+  # libinput "too slow" messages that flag real stalls). gaze sets its own
+  # RUST_LOG per-service, so it's unaffected.
+  environment.sessionVariables.RUST_LOG = "info,niri=warn";
+
   # The greeter scans /run/current-system/sw/share/wayland-sessions for
   # session entries; nixpkgs' programs.niri doesn't link niri.desktop there,
   # so add the niri package to systemPackages to expose niri as a choice.
