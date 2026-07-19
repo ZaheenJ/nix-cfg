@@ -7,7 +7,6 @@
     enable = true;
     package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
     extraPackages = [
-      pkgs.lua-language-server
       pkgs.tinymist
       pkgs.nil # nix LSP (helix uses it for .nix by default)
     ];
@@ -35,9 +34,6 @@
         "C-z" = ":sh zathura --fork $(basename %{buffer_name} typ)pdf";
         tab = "move_parent_node_end";
         "S-tab" = "move_parent_node_start";
-        V = ["goto_first_nonwhitespace" "extend_to_line_end"];
-        "A-v" = ["ensure_selections_forward" "extend_to_line_end"];
-        x = "extend_line";
       };
       keys.insert."S-tab" = "move_parent_node_start";
       keys.select = {
