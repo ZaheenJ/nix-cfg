@@ -28,6 +28,7 @@
     # Search / filesystem
     fd
     ripgrep
+    fzf # fuzzy finder; also backs zoxide's `z -i` and yazi's fzf/zoxide jumps
     unzip
 
     # Disk usage

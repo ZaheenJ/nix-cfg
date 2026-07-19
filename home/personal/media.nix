@@ -73,6 +73,10 @@
     '';
   };
 
+  # Video thumbnails in yazi (desktop only — pulls a ~700 MiB ffmpeg closure
+  # that the shared base deliberately omits; see home/common/yazi.nix).
+  programs.yazi.extraPackages = [ pkgs.ffmpeg ];
+
   home.packages = with pkgs; [
     cmus
     vimiv-qt

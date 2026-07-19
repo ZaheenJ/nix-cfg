@@ -10,6 +10,7 @@
     ./helix.nix
     ./git.nix
     ./cli.nix
+    ./yazi.nix
     ./xdg.nix
   ];
 
