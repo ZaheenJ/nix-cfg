@@ -64,6 +64,34 @@
         inherit (pkgs) gaze;
       };
 
+    # `nix flake check` gates. nushell-config parses every tracked .nu file with
+    # the *same* nushell nixpkgs ships, so a deprecation/removal (e.g. the
+    # 0.114 `str downcase` -> `str lowercase` rename) fails the check the next
+    # time the pin bumps, instead of silently degrading at runtime. `source`
+    # parses def bodies at parse time, so warnings surface without executing.
+    checks.${system}.nushell-config =
+      let
+        pkgs = import nixpkgs { inherit system; };
+      in
+      pkgs.runCommandLocal "check-nushell-config"
+        { nativeBuildInputs = [ pkgs.nushell ]; }
+        ''
+          export HOME=$(mktemp -d)
+          cd ${./home/common/nushell}
+          rc=0
+          for f in *.nu; do
+            msg=$(nu --no-config-file --no-std-lib -c "source $f" 2>&1 >/dev/null) || rc=1
+            if [ -n "$msg" ]; then
+              echo "### $f"; echo "$msg"; echo; rc=1
+            fi
+          done
+          if [ $rc -ne 0 ]; then
+            echo "nushell config check failed — fix the deprecations/errors above." >&2
+            exit 1
+          fi
+          touch $out
+        '';
+
     # Standalone home-manager for non-NixOS hosts (school/work), e.g.:
     # homeConfigurations."zaheenj@school" =
     #   home-manager.lib.homeManagerConfiguration { ... };

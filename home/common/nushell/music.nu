@@ -17,7 +17,7 @@ def sanitize-filename [name: string] {
 
 def read-tags [file: string] {
     ^opustags $file | lines | where ($it | str contains "=")
-    | parse "{key}={value}" | update key { str downcase }
+    | parse "{key}={value}" | update key { str lowercase }
 }
 
 def tag-val [tags, key: string] {
@@ -70,7 +70,7 @@ def resolve-choice [ans: string, opts: list] {
 
 def yes-or [prompt: string] {
     let ans = (input $prompt | str trim)
-    ($ans | is-empty) or (($ans | str downcase) starts-with "y")
+    ($ans | is-empty) or (($ans | str lowercase) starts-with "y")
 }
 
 # Suggest a romanization for Japanese/Chinese text via kakasi (Hepburn-ish).
@@ -109,13 +109,13 @@ def rescale-lrc [lrc: string, ratio: float] {
 # Does any artist credit match the wanted artist name (incl. romanized
 # aliases, e.g. "Kenshi Yonezu" for 米津玄師)?
 def mb-credit-match [entity, artist: string] {
-    let want = ($artist | str downcase)
+    let want = ($artist | str lowercase)
     $entity | get -o "artist-credit" | default [] | any {|c|
         let names = ([
             ($c | get -o name | default "")
             ($c | get -o artist | default {} | get -o name | default "")
         ] ++ ($c | get -o artist | default {} | get -o aliases | default [] | each {|al| $al | get -o name | default "" }))
-        $names | any {|n| ($n | str downcase) == $want }
+        $names | any {|n| ($n | str lowercase) == $want }
     }
 }
 
@@ -183,7 +183,7 @@ def mb-release [artist: string, title: string] {
     let gqs = ({query: $"releasegroup:\"($clean)\" AND primarytype:\"Album\"", fmt: "json", limit: "50"} | url build-query)
     let gres = (mb-get $"https://musicbrainz.org/ws/2/release-group/?($gqs)")
     let rgs = ($gres | get -o "release-groups" | default []
-        | where {|g| (($g | get -o title | default "") | str downcase) == ($clean | str downcase) }
+        | where {|g| (($g | get -o title | default "") | str lowercase) == ($clean | str lowercase) }
         | where {|g| ($g | get -o "secondary-types" | default [] | length) == 0 }
         | where {|g| mb-credit-match $g $artist }
         | insert frd {|g| $g | get -o "first-release-date" | default "" }
@@ -214,7 +214,7 @@ def deezer-find [artist: string, title: string] {
             http get --headers [User-Agent $MUSIC_UA] $"https://api.deezer.com/search?($qs)"
         } catch { {} })
         let hits = ($res | get -o data | default []
-            | where {|h| (($h | get -o artist | default {} | get -o name | default "") | str downcase) == ($artist | str downcase) })
+            | where {|h| (($h | get -o artist | default {} | get -o name | default "") | str lowercase) == ($artist | str lowercase) })
         if ($hits | is-not-empty) { return ($hits | first) }
     }
     {}
