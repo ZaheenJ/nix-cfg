@@ -89,17 +89,18 @@
     # Generate /etc/gaze/config.toml read-only from `settings` (we don't use the
     # GUI settings page, so keep it fully declarative rather than seed-and-mutate).
     mutableConfig = false;
+    # Only short-lived auth processes. Deliberately NOT "login" or "greetd":
+    # greetd's PAM does `auth substack login`, so putting gaze on "login" pulls
+    # pam_gaze.so into greetd's long-lived session-worker too. There it (a) pins
+    # ~2.8 GB of mlock'd per-CPU inference buffers it never frees — the main
+    # driver of the 2026-07 memory-freeze — and (b) runs before gnome_keyring so
+    # a face login never unlocks the login keyring ("password no longer matches"
+    # popup). The noctalia lockscreen unlocks via gazed over D-Bus, not PAM
+    # "login", so it keeps face auth regardless. polkit-1 broke under howdy (it
+    # opened the camera in the agent's process); gaze does camera work in the
+    # root daemon, so it's fine here.
     pam.defaultServices = [
       "sudo"
-      "login" # TTY login + noctalia's lockscreen (both use the "login" service)
-      # Deliberately NOT "greetd": pam_gaze.so runs the recognizer in-process and
-      # leaves ~2.8 GB of mlock'd per-CPU inference buffers (22 x 128 MB) that it
-      # never frees/munlocks after auth. In short-lived auth processes (sudo/
-      # polkit-1/login) that's transient and harmless; but greetd's session-worker
-      # lives for the whole login session, so face auth there pins ~2.8 GB
-      # unswappable for the session — the main driver of the 2026-07 memory-freeze.
-      # polkit-1 broke under howdy (it opened the camera in the agent's process);
-      # gaze does camera work in the root daemon, so this is worth a try.
       "polkit-1"
     ];
     # The daemon runs as root with no user PipeWire session (and none exists at
@@ -111,7 +112,11 @@
       cameras = {
         rgb = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0";
         ir = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.2-video-index0";
-        dark_luma_threshold = 30;
+        # IR frames from this camera hover right at ~16-36 luma even with the
+        # emitter firing, so the default 30 rejects many valid frames as "not
+        # enough light" and enrollment/auth only intermittently gets through.
+        # Lower the gate to accept the dim-but-valid IR feed.
+        dark_luma_threshold = 15;
       };
       auth = {
         abort_if_ssh = true;
