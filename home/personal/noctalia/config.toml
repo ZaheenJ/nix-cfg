@@ -90,22 +90,24 @@ position = "bottom_center"
 [shell]
 font_family = "Iosevka NF"
 polkit_agent = true
-settings_show_advanced = true
+settings_show_advanced = false
 
     [shell.panel]
     control_center_placement = "floating"
     launcher_categories = false
+    open_near_click_control_center = true
     transparency_mode = "glass"
 
 [theme]
 builtin = "Tokyo-Night"
 community_palette = "Lilac AMOLED"
 mode = "dark"
+pure_black_dark = true
 source = "community"
 
     [theme.templates]
     builtin_ids = [ "gtk3", "gtk4", "niri", "qt" ]
-    community_ids = [ "vicinae", "steam" ]
+    community_ids = [ "vicinae", "steam", "yazi" ]
 
 [wallpaper]
 directory = "/home/zaheenj/Pictures/wallpapers"
