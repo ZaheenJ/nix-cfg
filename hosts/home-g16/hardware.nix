@@ -86,8 +86,10 @@
   # emitter left alone (emitter_enabled defaults false).
   services.gaze = {
     enable = true;
-    authTimeoutSecs = 5; # fall back to the password prompt faster
-    pamServices = [
+    # Generate /etc/gaze/config.toml read-only from `settings` (we don't use the
+    # GUI settings page, so keep it fully declarative rather than seed-and-mutate).
+    mutableConfig = false;
+    pam.defaultServices = [
       "sudo"
       "login" # TTY login + noctalia's lockscreen (both use the "login" service)
       # Deliberately NOT "greetd": pam_gaze.so runs the recognizer in-process and
