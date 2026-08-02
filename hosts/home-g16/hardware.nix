@@ -2,7 +2,7 @@
 # Ultra 9 185H + RTX 4070 Max-Q hybrid, OLED 2560x1600@240, IR camera).
 # Generic platform config comes from the nixos-hardware gu605my profile
 # imported in default.nix; this module holds only what that doesn't cover.
-{ inputs, pkgs, ... }:
+{ inputs, pkgs, config, lib, ... }:
 {
   ## Graphics — hybrid Meteor Lake Arc iGPU (PCI 00:02.0) + RTX 4070 Max-Q
   ## (PCI 01:00.0). videoDrivers, open driver, modesetting, dynamicBoost,
@@ -89,18 +89,15 @@
     # Generate /etc/gaze/config.toml read-only from `settings` (we don't use the
     # GUI settings page, so keep it fully declarative rather than seed-and-mutate).
     mutableConfig = false;
-    # Only short-lived auth processes. Deliberately NOT "login" or "greetd":
-    # greetd's PAM does `auth substack login`, so putting gaze on "login" pulls
-    # pam_gaze.so into greetd's long-lived session-worker too. There it (a) pins
-    # ~2.8 GB of mlock'd per-CPU inference buffers it never frees — the main
-    # driver of the 2026-07 memory-freeze — and (b) runs before gnome_keyring so
-    # a face login never unlocks the login keyring ("password no longer matches"
-    # popup). The noctalia lockscreen unlocks via gazed over D-Bus, not PAM
-    # "login", so it keeps face auth regardless. polkit-1 broke under howdy (it
-    # opened the camera in the agent's process); gaze does camera work in the
-    # root daemon, so it's fine here.
+    # The noctalia lockscreen authenticates via PAM "login" (pam_unix(login:auth)),
+    # so gaze must be on "login" for lockscreen face unlock — it runs there in a
+    # short-lived forked auth helper, so the mlock is transient and harmless.
+    # greetd is handled separately below (its long-lived worker must NOT run gaze).
+    # polkit-1 broke under howdy (it opened the camera in the agent's process);
+    # gaze does camera work in the root daemon, so it's fine here.
     pam.defaultServices = [
       "sudo"
+      "login"
       "polkit-1"
     ];
     # The daemon runs as root with no user PipeWire session (and none exists at
@@ -131,6 +128,22 @@
       storage.encrypt_templates = false;
     };
   };
+
+  # Keep gaze off greetd without losing it on "login". greetd's auth is
+  # `substack login`, which would pull pam_gaze.so into greetd's long-lived
+  # session-worker — pinning ~2.8 GB of mlock'd inference buffers (the memory
+  # freeze) and running face auth before gnome_keyring (breaking the login
+  # keyring unlock). A substack can't skip an inner rule, so override just
+  # greetd's auth to run login's auth modules *minus* gaze (account/password/
+  # session still substack login normally; gaze is auth-only). The lockscreen,
+  # which also uses PAM "login" but in a short-lived fork, keeps face auth.
+  security.pam.services.greetd.rules.auth = lib.mkForce (
+    # Drop read-only `name` (= attr key) and the resolved `args` (regenerated
+    # from `settings`, else it double-applies).
+    lib.mapAttrs (_: rule: removeAttrs rule [ "name" "args" ])
+      (lib.filterAttrs (name: _: name != "gaze")
+        config.security.pam.services.login.rules.auth)
+  );
 
   # asus-shutdown (from the asus profile) ignores SIGTERM by design and sets
   # SendSIGKILL=no, so every nixos-rebuild switch that tries to restart it hangs
