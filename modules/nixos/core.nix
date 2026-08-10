@@ -1,7 +1,10 @@
 { pkgs, ... }:
 {
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     auto-optimise-store = true;
   };
   # Old system generations accumulate in /nix until GC'd (the lanzaboote
@@ -63,8 +66,8 @@
   # rog-control-center (removed in desktop-niri.nix) was a secondary factor.
   services.earlyoom = {
     enable = true;
-    freeMemThreshold = 8;     # SIGTERM at <8% free RAM; SIGKILL at half (~4%)
-    freeSwapThreshold = 100;  # AND-logic: leaves free RAM as the effective trigger
+    freeMemThreshold = 8; # SIGTERM at <8% free RAM; SIGKILL at half (~4%)
+    freeSwapThreshold = 100; # AND-logic: leaves free RAM as the effective trigger
     enableNotifications = true;
   };
   # Tune VM for zram (kernel-docs/CachyOS guidance): swapping to compressed
@@ -119,7 +122,12 @@
 
   users.users.zaheenj = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "input" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+      "input"
+    ];
     shell = pkgs.fish;
   };
   programs.fish.enable = true;

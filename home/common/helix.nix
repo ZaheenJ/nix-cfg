@@ -9,6 +9,7 @@
     extraPackages = with pkgs; [
       tinymist
       nil # nix LSP (helix uses it for .nix by default)
+      nixfmt # nix formatter
       clang-tools # C/CPP LSP
     ];
 
@@ -40,13 +41,18 @@
       keys.select = {
         tab = "extend_parent_node_end";
         "S-tab" = "extend_parent_node_start";
-        ";" = ["collapse_selection" "normal_mode"];
+        ";" = [
+          "collapse_selection"
+          "normal_mode"
+        ];
         x = "extend_line";
       };
     };
 
     languages = {
-      "language-server".tinymist.config = { exportPdf = "onType"; };
+      "language-server".tinymist.config = {
+        exportPdf = "onType";
+      };
       # slang-server is DEFERRED: SystemVerilog LSP not yet packaged.
       # "language-server".slang-server.command = "slang-server";
       language = [

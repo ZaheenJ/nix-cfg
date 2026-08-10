@@ -64,15 +64,18 @@ Day-to-day changes are applied on the machine with
   (no TTY for password) — ask the user to run sudo commands directly.
 - Implement idiomatic nix patterns, and notify the user of
   any anti-patterns if strictly necessary.
+- Never change system.stateVersion or home.stateVersion
+- Never hardcode secrets, prompt user for how to handle secrets
 
 ## Workflow rules
 
 - **Never write a NixOS/home-manager option or package name from memory.**
   Verify via mcp-nixos tools (`mcp__nixos__nix`, search/info actions) or
-  `nix search`. Wrong-but-plausible option names are the #1 failure mode.
+  `nix search`. **Always do this even if the user provides the package name.** Wrong-but-plausible option names are the #1 failure mode.
 - Validation ladder (no root needed):
-  1. `nix flake check` — seconds, catches evaluation errors
-  2. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
+  1. **Format your code**: Run `nix fmt` *before* validating to ensure clean Nix code.
+  2. `nix flake check` — seconds, catches evaluation errors
+  3. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
      — the real build; catches what eval doesn't (flake check is not enough).
   Then apply with `sudo nixos-rebuild switch --flake .#<host>` (user runs).
   `build-vm` is NOT part of the regular flow — it's a backup debugging tool to

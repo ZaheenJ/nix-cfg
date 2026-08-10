@@ -2,7 +2,13 @@
 # Ultra 9 185H + RTX 4070 Max-Q hybrid, OLED 2560x1600@240, IR camera).
 # Generic platform config comes from the nixos-hardware gu605my profile
 # imported in default.nix; this module holds only what that doesn't cover.
-{ inputs, pkgs, config, lib, ... }:
+{
+  inputs,
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 {
   ## Graphics — hybrid Meteor Lake Arc iGPU (PCI 00:02.0) + RTX 4070 Max-Q
   ## (PCI 01:00.0). videoDrivers, open driver, modesetting, dynamicBoost,
@@ -140,9 +146,13 @@
   security.pam.services.greetd.rules.auth = lib.mkForce (
     # Drop read-only `name` (= attr key) and the resolved `args` (regenerated
     # from `settings`, else it double-applies).
-    lib.mapAttrs (_: rule: removeAttrs rule [ "name" "args" ])
-      (lib.filterAttrs (name: _: name != "gaze")
-        config.security.pam.services.login.rules.auth)
+    lib.mapAttrs (
+      _: rule:
+      removeAttrs rule [
+        "name"
+        "args"
+      ]
+    ) (lib.filterAttrs (name: _: name != "gaze") config.security.pam.services.login.rules.auth)
   );
 
   # asus-shutdown (from the asus profile) ignores SIGTERM by design and sets

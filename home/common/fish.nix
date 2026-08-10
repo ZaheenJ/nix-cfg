@@ -50,6 +50,5 @@
   # are shipped verbatim with xdg.configFile.
   xdg.configFile."fish/functions/fish_helix_key_bindings.fish".source =
     ./fish/fish_helix_key_bindings.fish;
-  xdg.configFile."fish/functions/fish_helix_command.fish".source =
-    ./fish/fish_helix_command.fish;
+  xdg.configFile."fish/functions/fish_helix_command.fish".source = ./fish/fish_helix_command.fish;
 }

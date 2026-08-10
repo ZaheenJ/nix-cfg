@@ -41,7 +41,7 @@
 
   programs.mcp = {
     enable = true;
-    
+
     servers = {
       # Package installed below
       nixos = {
