@@ -62,6 +62,8 @@ Day-to-day changes are applied on the machine with
 - No Determinate Systems installer/tooling — upstream Nix only.
 - User approves all sudo personally. **sudo does not work in non-interactive agent shells**
   (no TTY for password) — ask the user to run sudo commands directly.
+- Implement idiomatic nix patterns, and notify the user of
+  any anti-patterns if strictly necessary.
 
 ## Workflow rules
 

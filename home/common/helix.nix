@@ -6,9 +6,10 @@
   programs.helix = {
     enable = true;
     package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    extraPackages = [
-      pkgs.tinymist
-      pkgs.nil # nix LSP (helix uses it for .nix by default)
+    extraPackages = with pkgs; [
+      tinymist
+      nil # nix LSP (helix uses it for .nix by default)
+      clang-tools # C/CPP LSP
     ];
 
     settings = {

@@ -24,6 +24,32 @@
     };
   };
 
+  # LLMs
+  programs.antigravity-cli = {
+    enable = true;
+
+    settings = {
+      colorScheme = "tokyo night";
+      altScreenMode = "always";
+      editorMode = "vim";
+      vimInsertFirst = true;
+      notifications = true;
+    };
+
+    enableMcpIntegration = true;
+  };
+
+  programs.mcp = {
+    enable = true;
+    
+    servers = {
+      # Package installed below
+      nixos = {
+        command = "mcp-nixos";
+      };
+    };
+  };
+
   home.packages = with pkgs; [
     # Search / filesystem
     fd
@@ -53,9 +79,8 @@
     # Task management
     taskwarrior-tui
 
-    # Dev tools
-    clang
+    # Dev tools that don't depend on FHS
     man-pages
-    mcp-nixos # used by Claude Code via repo .mcp.json
+    mcp-nixos # used by LLMs
   ];
 }
