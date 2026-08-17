@@ -23,14 +23,8 @@
     # Privacy browser
     tor-browser
 
-    # AI / dev tools
-    claude-code
-
     # Mobile development
     android-tools
-
-    # Cloud tools
-    google-cloud-sdk
 
     # Shazam client
     songrec
