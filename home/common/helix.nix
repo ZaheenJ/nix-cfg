@@ -7,10 +7,11 @@
     enable = true;
     package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
     extraPackages = with pkgs; [
-      tinymist
-      nil # nix LSP (helix uses it for .nix by default)
-      nixfmt # nix formatter
+      tinymist # typst LSP
+      nil # nix LSP
+      nixfmt
       clang-tools # C/CPP LSP
+      jdt-language-server # java
     ];
 
     settings = {
