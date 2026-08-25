@@ -1,7 +1,7 @@
 $env.config.buffer_editor = "hx"
 $env.EDITOR = "hx"
 
-$env.config.edit_mode = "vi"
+$env.config.edit_mode = "helix"
 $env.config.cursor_shape = {emacs: line, vi_insert: line, vi_normal: block}
 $env.config.show_banner = false
 

@@ -53,24 +53,24 @@ def choose-field [label: string, options: list] {
     for i in 0..(($opts | length) - 1) {
         print $"    [($i + 1)] ($opts | get $i | get src): ($opts | get $i | get value)"
     }
-    let ans = (input $"  ($label) \(number / custom / '-' = empty\) [1]: " | str trim)
-    resolve-choice $ans $opts
+    let choice = (input $"  ($label) \(number / custom / '-' = empty\) [1]: " | str trim)
+    resolve-choice $choice $opts
 }
 
 # enter = first option, in-range number = that option, '-' = explicitly
 # empty (e.g. a standalone single has no album), anything else = custom
-def resolve-choice [ans: string, opts: list] {
-    if ($ans | is-empty) { return ($opts | first | get value) }
-    if ($ans == "-") { return "" }
-    let n = (try { $ans | into int } catch { 0 })
+def resolve-choice [choice: string, opts: list] {
+    if ($choice | is-empty) { return ($opts | first | get value) }
+    if ($choice == "-") { return "" }
+    let n = (try { $choice | into int } catch { 0 })
     if ($n >= 1) and ($n <= ($opts | length)) {
         $opts | get ($n - 1) | get value
-    } else { $ans }
+    } else { $choice }
 }
 
 def yes-or [prompt: string] {
-    let ans = (input $prompt | str trim)
-    ($ans | is-empty) or (($ans | str lowercase) starts-with "y")
+    let resp = (input $prompt | str trim)
+    ($resp | is-empty) or (($resp | str lowercase) starts-with "y")
 }
 
 # Suggest a romanization for Japanese/Chinese text via kakasi (Hepburn-ish).
@@ -320,22 +320,22 @@ def music-cover [file: string, --caa-url: string = ""] {
     }
     if ($cands | is-empty) {
         print "  no covers found on MusicBrainz/Deezer"
-        let ans = (input "  paste an image URL to embed, or enter to skip: " | str trim)
-        if ($ans starts-with "http") { offer-image $file $ans "your image" | ignore } else { print "  cover: skipped" }
+        let resp = (input "  paste an image URL to embed, or enter to skip: " | str trim)
+        if ($resp starts-with "http") { offer-image $file $resp "your image" | ignore } else { print "  cover: skipped" }
         return
     }
     for i in 0..(($cands | length) - 1) {
         print $"  [($i + 1)] ($cands | get $i | get label):"
         preview-image ($cands | get $i | get img)
     }
-    let ans = (input $"  cover \(number / image URL / 'n'one\) [1]: " | str trim)
-    let n = (try { $ans | into int } catch { 0 })
-    if ($ans | is-empty) {
+    let resp = (input $"  cover \(number / image URL / 'n'one\) [1]: " | str trim)
+    let n = (try { $resp | into int } catch { 0 })
+    if ($resp | is-empty) {
         embed-img $file ($cands | first | get img)
     } else if ($n >= 1) and ($n <= ($cands | length)) {
         embed-img $file ($cands | get ($n - 1) | get img)
-    } else if ($ans starts-with "http") {
-        offer-image $file $ans "your image" | ignore
+    } else if ($resp starts-with "http") {
+        offer-image $file $resp "your image" | ignore
     } else {
         print "  cover: skipped"
     }
