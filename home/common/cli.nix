@@ -31,6 +31,16 @@
     enableFishIntegration = true;
   };
 
+  programs.ssh = {
+    enable = true;
+    settings = {
+      "ews" = {
+        hostname = "linux.ews.illinois.edu";
+        user = "zaheenj2";
+      };
+    };
+  };
+
   # LLMs
   programs.antigravity-cli = {
     enable = true;
