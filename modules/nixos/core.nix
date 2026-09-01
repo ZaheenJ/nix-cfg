@@ -90,7 +90,7 @@
   # sched-ext userspace scheduler on the vanilla kernel — CachyOS's default
   # desktop scheduler, most of its interactivity feel without their kernel.
   services.scx = {
-    enable = true;
+    enable = false; # scx.service crashes and stalls system for ~20s
     scheduler = "scx_lavd";
   };
 
