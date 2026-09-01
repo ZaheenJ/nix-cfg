@@ -1,0 +1,59 @@
+diff -ruN reedline-orig/src/core_editor/editor.rs reedline-mod/src/core_editor/editor.rs
+--- reedline-orig/src/core_editor/editor.rs	2026-08-26 03:01:21.136335052 -0500
++++ reedline-mod/src/core_editor/editor.rs	2026-08-26 03:01:45.015360618 -0500
+@@ -825,25 +825,16 @@
+     pub(crate) fn is_cursor_at_buffer_end(&self) -> bool {
+         let buf = self.get_buffer();
+         let cursor = self.line_buffer.cursor();
+-        // An active selection is never a clean end-of-buffer point. Completing a
+-        // history hint (or appending) here would run through `delete_selection`
+-        // and clobber the selection — so report `false`, matching the old
+-        // caret-based check, which a forward selection's caret (one inward from
+-        // `len`) already failed.
+-        if !cursor.is_empty() {
++        let multi_grapheme = next_grapheme_boundary(buf, cursor.start()) < cursor.end();
++        let active_selection = !cursor.is_empty() && self.edit_mode.is_selection_mode();
++        if multi_grapheme || active_selection {
+             return false;
+         }
++        let caret = self.insertion_point();
+         if self.caret_geometry() == CaretGeometry::Block {
+-            // Cell caret (vi normal): the resting point sits *on* the last
+-            // grapheme, one inward from `len`. "At the end" means that cell is the
+-            // final one — nothing lies to its right. (A bare `head == len` check
+-            // never holds here, which is why a history hint stopped completing in
+-            // normal mode after the cursor became the single source of truth.)
+-            next_grapheme_boundary(buf, cursor.head()) == buf.len()
++            next_grapheme_boundary(buf, caret) == buf.len()
+         } else {
+-            // Bar caret (emacs / vi insert): at the end iff the head rests past
+-            // the last grapheme.
+-            cursor.head() == buf.len()
++            caret == buf.len()
+         }
+     }
+ 
+diff -ruN reedline-orig/src/prompt/base.rs reedline-mod/src/prompt/base.rs
+--- reedline-orig/src/prompt/base.rs	2026-08-26 03:01:21.132335047 -0500
++++ reedline-mod/src/prompt/base.rs	2026-08-26 03:01:45.013961606 -0500
+@@ -104,6 +104,20 @@
+     /// operation over the same span. Vim drops it: `y` or `~` in visual mode
+     /// returns to normal with nothing selected, and a lingering anchor would
+     /// paint a highlight there.
++    pub(crate) fn is_selection_mode(&self) -> bool {
++        match self {
++            PromptEditMode::Vi(PromptViMode::Visual) => true,
++            #[cfg(feature = "helix")]
++            PromptEditMode::Helix(PromptHelixMode::Select) => true,
++            PromptEditMode::Vi(PromptViMode::Normal | PromptViMode::Insert)
++            | PromptEditMode::Default
++            | PromptEditMode::Emacs
++            | PromptEditMode::Custom(_) => false,
++            #[cfg(feature = "helix")]
++            PromptEditMode::Helix(PromptHelixMode::Normal | PromptHelixMode::Insert) => false,
++        }
++    }
++
+     pub(crate) fn retains_selection_after_edit(&self) -> bool {
+         match self {
+             #[cfg(feature = "helix")]

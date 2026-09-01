@@ -2,7 +2,7 @@ $env.config.buffer_editor = "hx"
 $env.EDITOR = "hx"
 
 $env.config.edit_mode = "helix"
-$env.config.cursor_shape = {emacs: line, vi_insert: line, vi_normal: block}
+$env.config.cursor_shape = {emacs: line, helix_insert: line, helix_normal: block}
 $env.config.show_banner = false
 
 # Custom commands
@@ -73,7 +73,7 @@ $env.config.keybindings ++= [
       name: abbr_menu
       modifier: none
       keycode: enter
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert]
       event: [
           { send: menu name: abbr_menu }
           { send: enter }
@@ -83,7 +83,7 @@ $env.config.keybindings ++= [
       name: accept_abbr
       modifier: control
       keycode: char_y
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert]
       event: [
         { send: HistoryHintComplete }]
     }
@@ -91,11 +91,24 @@ $env.config.keybindings ++= [
       name: abbr_menu
       modifier: none
       keycode: space
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert]
       event: [
           { send: menu name: abbr_menu }
           { edit: insertchar value: ' '}
       ]
+    }
+    {
+      name: helix_l_hint_normal
+      modifier: none
+      keycode: char_l
+      mode: [helix_normal]
+      event: {
+        until: [
+          { send: HistoryHintComplete }
+          { send: MenuRight }
+          { edit: MoveRight }
+        ]
+      }
     }
 ]
 

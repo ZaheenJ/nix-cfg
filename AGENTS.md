@@ -54,6 +54,18 @@ Day-to-day changes are applied on the machine with
   idling at a round multiple of ~128 MB — glibc malloc-arena bloat is the usual
   culprit there, tunable with `MALLOC_ARENA_MAX` / `GLIBC_TUNABLES`.
 
+## Waiting on Upstream
+
+- **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
+  - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
+  - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
+  - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
+  - *Status*: Temporarily patched via `overlays/default.nix` + `overlays/reedline-1192.patch`. Waiting for PR 1192 to be included in an upstream Nushell release before removing the overlay.
+- **Gaze (face auth) — PAM session-worker memory leak**:
+  - *Symptom*: ~2.8 GB unswappable mlock RAM bloat if gaze is attached to long-lived PAM services.
+  - *Root Cause*: `pam_gaze.so` leaves per-CPU inference buffers allocated/mlock'd in the host process and never munlocks/frees on `pam_end`.
+  - *Workaround*: Enabled for `sudo`/`polkit-1`/`login`, but explicitly excluded from `greetd` in `hosts/home-g16/hardware.nix`.
+
 ## User preferences (load-bearing)
 
 - Vanilla kernel/`linuxPackages`, NOT CachyOS variants. Standard Proton, not
