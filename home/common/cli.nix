@@ -71,6 +71,15 @@
     rm -f "$HOME/.gemini/antigravity-cli/settings.json.hm-bak"
   '';
 
+  programs.taskwarrior = {
+    enable = true;
+    package = pkgs.taskwarrior3;
+    extraConfig = ''
+      # Include machine-local sync credentials (WingTask)
+      include ~/.config/task/sync.rc
+    '';
+  };
+
   programs.mcp = {
     enable = true;
 
