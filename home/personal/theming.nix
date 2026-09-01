@@ -57,19 +57,4 @@
   # this config is read-only. Font/style/icon tweaks: edit ./qt6ct/qt6ct.conf
   # here, not the qt6ct GUI (it can't save).
   xdg.configFile."qt6ct/qt6ct.conf".source = ./qt6ct/qt6ct.conf;
-
-  # MIME associations (ported from ~/.config/mimeapps.list).
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      # Default web browser: Firefox.
-      "text/html" = "firefox.desktop";
-      "x-scheme-handler/http" = "firefox.desktop";
-      "x-scheme-handler/https" = "firefox.desktop";
-      "x-scheme-handler/about" = "firefox.desktop";
-
-      "x-scheme-handler/discord" = "vesktop.desktop";
-      "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
-    };
-  };
 }
