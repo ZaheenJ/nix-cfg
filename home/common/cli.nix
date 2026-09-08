@@ -131,7 +131,9 @@
       "altScreenMode": "always",
       "editorMode": "vim",
       "vimInsertFirst": true,
-      "notifications": true
+      "notifications": true,
+      "enableTerminalSandbox": true,
+      "toolPermission": "proceed-in-sandbox"
     }'
 
     if [ -s "$SETTINGS_FILE" ] && ${pkgs.jq}/bin/jq -e . "$SETTINGS_FILE" >/dev/null 2>&1; then
