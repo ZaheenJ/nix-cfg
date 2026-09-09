@@ -1,5 +1,4 @@
-# Vicinae's `settings.json` remains app-written runtime state rather than a
-# read-only Home Manager file.
+# Vicinae keeps its settings mutable because the application writes runtime state.
 { ... }:
 {
   programs.vicinae.enable = true;

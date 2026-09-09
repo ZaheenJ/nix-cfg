@@ -12,15 +12,11 @@
     ../profiles/music.nix
     ../profiles/gaming.nix
     ../profiles/personal-sync.nix
+    ../profiles/niri-desktop.nix
     ./home-g16/power.nix
     ./home-g16/monitoring.nix
-
-    # Phase-2 desktop modules remain available and unchanged.
-    ../personal/niri.nix
-    ../personal/noctalia.nix
-    ../personal/vicinae.nix
-    ../personal/desktop-tools.nix
-    ../personal/theming.nix
+    ./home-g16/niri.nix
+    ./home-g16/noctalia.nix
   ];
 
   home.username = "zaheenj";

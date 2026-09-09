@@ -24,6 +24,7 @@
     package = pkgs.taskwarrior3;
   };
 
+  # Defining in Nix allows to merge with abbreivations defined elsewhere (ytda)
   local.nushell.abbreviations = {
     se = "sudo -E";
     g = "git";

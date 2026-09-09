@@ -126,7 +126,7 @@
   };
 
   # AC/battery brightness + refresh-rate switching is a user service now
-  # (home/personal/power.nix) watching UPower events — it replaced the Arch
+  # (home/hosts/home-g16/power.nix) watching UPower events — it replaced the Arch
   # udev RUN hooks (root poking the user's niri socket, racing niri at boot).
   services.upower.enable = true;
 

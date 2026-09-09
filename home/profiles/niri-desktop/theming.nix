@@ -1,22 +1,14 @@
-# Cursor, GTK, Qt, and MIME theming for the personal desktop.
-# GTK/Qt color theming comes from noctalia's theme templates (gtk3/gtk4/qt
-# in [theme.templates]); the old oomox-BWnB theme was dropped per user.
+# Cursor, GTK, and Qt appearance for the niri desktop.
 { pkgs, config, ... }:
 {
-  # Cursor: Bibata-Modern-Classic, 24px — matches niri config.kdl and GTK settings.
   home.pointerCursor = {
-    enable = true; # now required explicitly by home-manager
+    enable = true;
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Classic";
     size = 24;
     gtk.enable = true;
   };
 
-  # GTK theme, font, and dark preference.
-  # adw-gtk3 is the libadwaita GTK3 backport; it's the base theme that noctalia's
-  # gtk3/gtk4 templates recolor via @define-color in ~/.config/gtk-*/noctalia.css.
-  # Without it, GTK3 apps fall back to built-in Adwaita and ignore those color
-  # names (GTK4/libadwaita apps consume them natively, so they were already fine).
   gtk = {
     enable = true;
     theme = {

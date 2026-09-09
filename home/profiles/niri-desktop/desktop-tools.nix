@@ -9,6 +9,6 @@
     wev
     brightnessctl
     pulsemixer
-    wl-clipboard # niri screenshot bind: wl-paste | satty
+    wl-clipboard
   ];
 }
