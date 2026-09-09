@@ -24,6 +24,8 @@ environment {
 }
 
 input {
+    disable-power-key-handling
+
     keyboard {
         xkb {
             // You can set rules, model, layout, variant and options.

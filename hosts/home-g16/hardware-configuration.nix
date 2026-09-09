@@ -27,9 +27,6 @@
     fsType = "btrfs";
     options = [
       "subvol=@"
-      "noatime"
-      "compress=zstd:1"
-      "commit=120"
     ];
   };
 
@@ -38,9 +35,6 @@
     fsType = "btrfs";
     options = [
       "subvol=@home"
-      "noatime"
-      "compress=zstd:1"
-      "commit=120"
     ];
   };
 
@@ -49,9 +43,6 @@
     fsType = "btrfs";
     options = [
       "subvol=@nix"
-      "noatime"
-      "compress=zstd:1"
-      "commit=120"
     ];
   };
 
@@ -60,9 +51,6 @@
     fsType = "btrfs";
     options = [
       "subvol=@log"
-      "noatime"
-      "compress=zstd:1"
-      "commit=120"
     ];
   };
 

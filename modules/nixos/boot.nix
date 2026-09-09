@@ -1,40 +1,13 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 {
-  # Secure Boot via lanzaboote, signing with the pre-existing sbctl keys
-  # (copied from Arch's /var/lib/sbctl at install time). systemd-boot (the
-  # lzbt-signed copy in EFI/systemd) is the sole boot manager: it auto-detects
-  # Windows (EFI/Microsoft, same ESP) and gets a hand-shipped BLS entry for
-  # Arch below. Its "Linux Boot Manager" NVRAM entry was created once with
-  # efibootmgr — lzbt never touches NVRAM, and `bootctl install` must NOT be
-  # run (it would overwrite the signed systemd-boot binary with an unsigned one).
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-  # Ignored under boot.loader.external (lanzaboote), kept for documentation:
-  # nothing on the NixOS side may add/reorder EFI variables automatically.
-  boot.loader.efi.canTouchEfiVariables = false;
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/var/lib/sbctl";
-    # ESP is ~930 MB shared with Windows + Arch; keep generations few.
-    configurationLimit = 4;
-  };
-
-  # Vanilla kernel per user preference (no CachyOS variants).
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Ported from Arch cmdline; zswap off because zram is used.
-  # systemd.show_status=auto and rd.udev.log_level=3 silence systemd/udev
-  # console chatter at boot AND shutdown (consoleLogLevel only covers kernel
-  # messages, not these). Machine-specific params (backlight quirk) live in
-  # the host's hardware.nix.
+  # Generic quiet boot policy. Machine-specific kernel parameters live with the
+  # host hardware; performance parameters live in the host performance module.
   boot.kernelParams = [
     "quiet"
     "loglevel=3"
     "systemd.show_status=auto"
     "rd.udev.log_level=3"
-    "nowatchdog"
-    "zswap.enabled=0"
     "vt.global_cursor_default=0"
-    "rcutree.enable_rcu_lazy=1"
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
 
@@ -46,9 +19,7 @@
   services.getty = {
     greetingLine = "";
     helpLine = "";
-    # greetd owns tty1 (login is via noctalia-greeter now); these only affect
-    # the fallback console gettys (tty2-6). Quiet-boot cosmetics only —
-    # --skip-login was dropped with the old autologin so normal tty login works.
+    # Quiet-boot cosmetics only; normal tty login remains available.
     extraArgs = [
       "--nonewline"
       "--noissue"
@@ -58,19 +29,12 @@
 
   # Make boot menu hidden by default
   boot.loader.timeout = 0;
-  # lanzaboote's loader.conf reads this option; the default "keep" stays in
-  # the firmware's low-res console mode and doesn't clear the BGRT logo,
-  # making the menu render over a giant pixelated OEM logo.
-  boot.loader.systemd-boot.consoleMode = "max";
 
-  # Match the CachyOS look the user wants: firmware ASUS ROG logo stays
-  # centered (BGRT) with NixOS branding, instead of plain spinner which
-  # replaced the ROG image (first-boot feedback 2026-06-11).
+  # Preserve firmware-provided branding with the BGRT-aware NixOS theme rather
+  # than replacing it with a plain spinner.
   boot.plymouth = {
     enable = true;
     theme = "nixos-bgrt";
     themePackages = [ pkgs.nixos-bgrt-plymouth ];
   };
-
-  environment.systemPackages = [ pkgs.sbctl ];
 }

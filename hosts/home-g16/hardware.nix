@@ -29,14 +29,6 @@
     "nvidia.NVReg_RegistryDwords=EnableBrightnessControl=0"
   ];
 
-  hardware.nvidia = {
-    # Sets NVreg_PreserveVideoMemoryAllocations=1 (suspend fix from Arch
-    # modprobe.d) among others; finegrained = runtime D3 power gating.
-    # The nixos-hardware profile does NOT cover these.
-    powerManagement.enable = true;
-    powerManagement.finegrained = true;
-  };
-
   # Meteor Lake is Gen12+: only the modern media driver is needed; the
   # profile's default (null) would also pull in the legacy intel-vaapi-driver.
   hardware.intelgpu.vaapiDriver = "intel-media-driver";
@@ -50,40 +42,12 @@
     ];
   };
 
-  ## Dual-boot: BLS entry for Arch (CachyOS) on the shared ESP. lanzaboote
-  ## ignores boot.loader.systemd-boot.extraEntries, so ship the file via
-  ## tmpfiles; lzbt's ESP garbage collection only sweeps EFI/nixos and
-  ## nixos-* in EFI/Linux, so loader/entries/arch.conf survives rebuilds.
-  ## Kernel and cmdline taken verbatim from Arch's refind_linux.conf
-  ## (2026-06-12); the kernel is sbctl-signed on the Arch side, so it
-  ## verifies under Secure Boot.
-  systemd.tmpfiles.rules =
-    let
-      archEntry = pkgs.writeText "arch.conf" ''
-        title CachyOS (Arch)
-        sort-key z-arch
-        linux /vmlinuz-linux-cachyos
-        initrd /intel-ucode.img
-        initrd /initramfs-linux-cachyos.img
-        options quiet loglevel=3 systemd.show_status=auto rd.udev.log_level=3 zswap.enabled=0 nowatchdog vt.global_cursor_default=0 splash i915.enable_dpcd_backlight=3 rcutree.enable_rcu_lazy=1 rw rootflags=subvol=/@ root=UUID=b34a2639-b192-4add-a2ba-3deb931288ce
-      '';
-    in
-    [ "C+ /boot/loader/entries/arch.conf - - - - ${archEntry}" ];
-
-  ## ASUS vendor daemons + power behavior.
+  ## ASUS vendor daemons.
 
   # services.asusd comes from the nixos-hardware gu605my profile (mkDefault);
   # hardware control is via the asusd daemon + asusctl CLI (niri keybinds).
   # The rog-control-center GUI/tray is intentionally not autostarted — asusctl
   # covers everything and its GUI kept crashing (coredump spam in the journal).
-
-  services.power-profiles-daemon.enable = true;
-
-  services.ananicy = {
-    enable = true;
-    package = pkgs.ananicy-cpp;
-    rulesProvider = pkgs.ananicy-rules-cachyos;
-  };
 
   # Face auth is gaze (replaced howdy). No linux-enable-ir-emitter: this Sonix
   # 3277:0051 camera's IR emitter is motion/proximity-reactive (fires in
@@ -169,4 +133,13 @@
   # (home/personal/power.nix) watching UPower events — it replaced the Arch
   # udev RUN hooks (root poking the user's niri socket, racing niri at boot).
   services.upower.enable = true;
+
+  # Power button suspends; lid close is always ignored (handled by logind).
+  # Niri disables built-in power key handling so logind catches the event.
+  services.logind.settings.Login = {
+    HandlePowerKey = "suspend";
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
 }
