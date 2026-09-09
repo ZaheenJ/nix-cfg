@@ -1,6 +1,6 @@
 # Music library management: metadata, cover art, synced lyrics.
 # Requires on PATH: songrec, yt-dlp, opustags, opusinfo (opus-tools) — the
-# latter two come from home/personal/media.nix, so these commands only work
+# latter two come from home/profiles/music.nix, so these commands only work
 # on machines that include it.
 # Conventions: filename = title; multi-value ARTIST (main first, feat in title);
 # classical titles "Composer: Work"; romanized or Hangeul metadata.
@@ -507,7 +507,7 @@ def metadata-adder [file: string, --url: string = ""] {
 }
 
 # Download from YouTube and immediately fix its metadata: ytda + metadata-adder.
-# (Keep the yt-dlp flags in sync with the ytda abbreviation in config.nu.)
+# (Keep the yt-dlp flags in sync with the ytda abbreviation in music.nix.)
 def ytdm [url: string] {
     let printed = (^yt-dlp --embed-metadata --xattrs -x -f bestaudio
         --sponsorblock-remove music_offtopic,intro,outro

@@ -20,7 +20,7 @@
     # exposing their binaries on the wrapper's PATH costs ~0 extra bytes —
     # cheap enough to ship in the shared base. ffmpeg (video thumbnails) is
     # NOT here: its closure adds ~700 MiB, so it's opt-in per host (personal
-    # laptop adds it in home/personal/media.nix). fd/ripgrep/zoxide/fzf/
+    # laptop adds it in home/profiles/media.nix). fd/ripgrep/zoxide/fzf/
     # wl-clipboard are already global and resolve from PATH.
     extraPackages = with pkgs; [
       poppler-utils # PDF previews (pdftoppm)

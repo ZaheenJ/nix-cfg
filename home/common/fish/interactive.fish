@@ -138,7 +138,6 @@ abbr gams 'git am --skip'
 abbr gama 'git am --abort'
 abbr gamscp 'git am --show-current-patch'
 
-abbr ytda 'yt-dlp --embed-metadata --xattrs -x -f bestaudio --sponsorblock-remove music_offtopic,intro,outro'
 
 # Syntax colours (from fish_frozen_theme.fish)
 set -g fish_color_autosuggestion brblack

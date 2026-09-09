@@ -24,19 +24,7 @@
         '';
       };
 
-      power-draw = {
-        description = "Show current battery power draw in watts";
-        body = ''
-          echo (math (cat /sys/class/power_supply/BAT1/current_now) \* \
-          (cat /sys/class/power_supply/BAT1/voltage_now) \* \
-          0.000000000001)" W"
-        '';
-      };
     };
-
-    shellInit = ''
-      fish_add_path ~/.local/bin ~/.cargo/bin ~/.local/share/cargo/bin /opt/cuda/bin
-    '';
 
     interactiveShellInit = builtins.readFile ./fish/interactive.fish;
   };

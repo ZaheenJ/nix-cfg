@@ -17,57 +17,7 @@ def fgpl [] {
     }
 }
 
-def power-draw [] {
-    let current = (open /sys/class/power_supply/BAT1/current_now | into float)
-    let voltage = (open /sys/class/power_supply/BAT1/voltage_now | into float)
-    let power = ($current * $voltage * 0.000000000001)
-    echo $"($power) W"
-}
-
 # Abbreviation-style expansion via a custom menu (on space / enter)
-let abbreviations = {
-    se: 'sudo -E'
-    ytda: 'yt-dlp --embed-metadata --xattrs -x -f bestaudio --sponsorblock-remove music_offtopic,intro,outro'
-    g: 'git'
-    ga: 'git add'
-    gaa: 'git add --all'
-    gau: 'git add --update'
-    gb: 'git branch'
-    gba: 'git branch --all'
-    gbd: 'git branch --delete'
-    gc: 'git commit --verbose'
-    gca: 'git commit --verbose --all'
-    gcam: 'git commit --verbose --all --message'
-    gcl: 'git clone --recurse-submodules'
-    gcp: 'git cherry-pick'
-    gd: 'git diff'
-    gf: 'git fetch'
-    gfo: 'git fetch origin'
-    gfa: 'git fetch --all'
-    gfap: 'git fetch --all --prune'
-    gi: 'git init'
-    gl: 'git log'
-    glg: "git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
-    gm: 'git merge'
-    gmauhnf: 'git merge --allow-unrelated-histories --no-ff'
-    gp: 'git push'
-    gpsu: 'git push --set-upstream'
-    gpl: 'git pull'
-    gr: 'git remote --verbose'
-    gra: 'git remote add'
-    grrm: 'git remote remove'
-    grmv: 'git remote rename'
-    grb: 'git rebase'
-    grev: 'git revert'
-    grs: 'git reset'
-    grsh: 'git reset --hard'
-    grm: 'git rm'
-    grmc: 'git rm --cached'
-    gs: 'git status -s'
-    gsw: 'git switch'
-    gswc: 'git switch --create'
-}
-
 $env.config.keybindings ++= [
     {
       name: abbr_menu_enter

@@ -1,6 +1,4 @@
-# Lower brightness and refresh rate on battery; restore them on AC. A user
-# service can reach Niri directly and applies the correct state at login.
-# Intel LPMD integration is tracked in AGENTS.md.
+# Lower brightness and refresh rate on battery; restore them on AC.
 { pkgs, ... }:
 let
   powerWatcher = pkgs.writeScript "power-watcher.fish" ''
@@ -16,9 +14,6 @@ let
         end
     end
 
-    # Apply current state at session start, then follow UPower change events
-    # (only line-power devices print "online:", and only apply transitions so
-    # battery-percentage events can't re-clobber manual brightness changes).
     set -g last ""
     for ps in /sys/class/power_supply/*
         if test (cat $ps/type) = Mains

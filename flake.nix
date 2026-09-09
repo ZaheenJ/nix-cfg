@@ -57,7 +57,7 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               extraSpecialArgs = { inherit inputs; };
-              users.zaheenj = import ./home;
+              users.zaheenj = import ./home/hosts/home-g16.nix;
               # When a real file exists where hm wants a symlink (e.g. seeded
               # configs later made declarative), back it up instead of failing.
               backupFileExtension = "hm-bak";
@@ -84,10 +84,9 @@
           in
           pkgs.runCommandLocal "check-nushell-config" { nativeBuildInputs = [ pkgs.nushell ]; } ''
             export HOME=$(mktemp -d)
-            cd ${./home/common/nushell}
             rc=0
-            for f in *.nu; do
-              msg=$(nu --no-config-file --no-std-lib -c "source $f" 2>&1 >/dev/null) || rc=1
+            for f in ${./home/common/nushell}/*.nu ${./home/profiles/music}/*.nu; do
+              msg=$(nu --no-config-file --no-std-lib -c "let abbreviations = {}; source $f" 2>&1 >/dev/null) || rc=1
               if [ -n "$msg" ]; then
                 echo "### $f"; echo "$msg"; echo; rc=1
               fi

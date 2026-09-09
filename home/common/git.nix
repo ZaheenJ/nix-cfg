@@ -1,4 +1,4 @@
-# Faithful port of ~/.gitconfig (identity + git-lfs) and ~/.config/git/ignore.
+# Shared Git behavior and user-wide identity.
 { ... }:
 {
   programs.git = {

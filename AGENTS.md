@@ -138,13 +138,22 @@ flake.nix            # inputs: nixpkgs, home-manager, lanzaboote, helix,
                      #         noctalia, noctalia-greeter (niri via nixpkgs)
 hosts/<host>/        # default.nix + hardware-configuration.nix per machine
 modules/nixos/       # shared system modules (core, boot, desktop-niri, gaming, ...)
-home/                # home-manager modules (common/ = distro-agnostic; personal/ = desktop)
+home/common/         # atomic, distro-agnostic home-manager modules and assets
+home/profiles/       # reusable capability bundles (base, music, desktop, ...)
+home/hosts/          # user identity, profile selection, and host-only modules
 overlays/            # package overrides
 pkgs/                # custom packages not in nixpkgs
 inventory/           # captured Arch system state (historical reference)
 ```
 
-- One concern per module; hosts compose modules + set host-specific options.
+- One concern per module. Home host files compose reusable profiles and may
+  also import host-only modules such as laptop power or monitoring services.
+  A hardware-aware module is not a reusable profile.
+- Home identity (`home.username` and `home.homeDirectory`) and machine-specific
+  paths, displays, and hardware bindings live in `home/hosts/<host>.nix` or its
+  companion directory. Profiles must remain usable from standalone
+  home-manager on foreign distributions.
+- NixOS hosts compose system modules + set host-specific options.
   Machine-specific config lives with the host (hosts/home-g16/hardware.nix),
   so modules/nixos/ stays host-agnostic.
 - Prefer native NixOS/home-manager options over raw dotfiles; use

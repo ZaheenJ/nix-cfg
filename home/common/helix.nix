@@ -1,5 +1,13 @@
 # Tracks Helix master for unreleased SystemVerilog support.
 { pkgs, inputs, ... }:
+let
+  openPdf = pkgs.writeShellScript "helix-open-pdf" ''
+    set -eu
+    [ "$#" -ge 1 ]
+    pdf="''${1%.*}.pdf"
+    ${pkgs.xdg-utils}/bin/xdg-open "$pdf" >/dev/null 2>&1 &
+  '';
+in
 {
   programs.helix = {
     enable = true;
@@ -33,7 +41,7 @@
         lsp."display-inlay-hints" = true;
       };
       keys.normal = {
-        "C-z" = ":sh zathura --fork $(basename %{buffer_name} typ)pdf";
+        "C-z" = ":sh ${openPdf} \"%{file_path_absolute}\"";
         tab = "move_parent_node_end";
         "S-tab" = "move_parent_node_start";
       };
