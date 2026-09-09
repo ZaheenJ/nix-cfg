@@ -70,7 +70,7 @@ let abbreviations = {
 
 $env.config.keybindings ++= [
     {
-      name: abbr_menu
+      name: abbr_menu_enter
       modifier: none
       keycode: enter
       mode: [emacs, helix_normal, helix_insert]
@@ -88,7 +88,7 @@ $env.config.keybindings ++= [
         { send: HistoryHintComplete }]
     }
     {
-      name: abbr_menu
+      name: abbr_menu_space
       modifier: none
       keycode: space
       mode: [emacs, helix_normal, helix_insert]
