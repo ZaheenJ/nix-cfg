@@ -83,9 +83,16 @@ Day-to-day changes are applied on the machine with
 - **School profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
+  - Possibly useful repo: https://github.com/krishnans2006/nixos-config/tree/main/systems/krishnan-ews
+    My school environment is the same as his (EWS at UIUC).
 - **Work profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
+- **Investigate Nvidia RTD3 power management D0 wakeups**
+  - Possibly relevant issue: https://github.com/NVIDIA/open-gpu-kernel-modules/issues/905, but seemingly Lenovo specific
+- **Applications to consider trying to make more declarative configuration for**
+  - Vesktop
+  - Prismlauncher
 
 ## User preferences (load-bearing)
 
