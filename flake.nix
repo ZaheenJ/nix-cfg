@@ -25,8 +25,7 @@
       url = "github:noctalia-dev/noctalia-greeter";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # gaze face auth: upstream now ships an official flake (package + NixOS
-    # module), replacing our hand-rolled pkgs/gaze + modules/nixos/gaze.nix.
+    # Gaze face-auth package and NixOS module.
     gaze = {
       url = "github:GunduLabs/gaze";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -119,9 +118,5 @@
             touch $out
           '';
       };
-
-      # Standalone home-manager for non-NixOS hosts (school/work), e.g.:
-      # homeConfigurations."zaheenj@school" =
-      #   home-manager.lib.homeManagerConfiguration { ... };
     };
 }

@@ -1,7 +1,4 @@
-# Media: mpv (with hwdec), cmus (package only — no rc file exists), vimiv
-# (package only — no config files exist), zathura (ported from zathurarc),
-# and the MPD-based music stack (MPD + rmpc + mpd-mpris).
-# zathura is dependency-installed on Arch but actively used by niri binds.
+# Media players, viewers, and the MPD/rmpc music stack.
 { config, pkgs, ... }:
 {
   programs.mpv = {

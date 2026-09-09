@@ -1,7 +1,5 @@
-# GUI apps: browsers, chat, launchers, dev tools, media tagging.
-# No profile/session/settings data vendored — these apps write their own
-# config at runtime (vesktop settings.json included); it's all copied to the
-# new /home in Phase 4 instead (see PLAN.md).
+# GUI apps and their URL/file associations. Application profiles and settings
+# remain mutable runtime state rather than read-only Home Manager files.
 { pkgs, ... }:
 {
   programs.firefox.enable = true;

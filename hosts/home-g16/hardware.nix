@@ -49,11 +49,9 @@
   # The rog-control-center GUI/tray is intentionally not autostarted — asusctl
   # covers everything and its GUI kept crashing (coredump spam in the journal).
 
-  # Face auth is gaze (replaced howdy). No linux-enable-ir-emitter: this Sonix
-  # 3277:0051 camera's IR emitter is motion/proximity-reactive (fires in
-  # hardware when someone is in front of it), not software-controlled — probing
-  # it finds nothing and can hang. So gaze just reads the IR node with the
-  # emitter left alone (emitter_enabled defaults false).
+  # Gaze reads the IR node directly. This Sonix 3277:0051 camera's emitter is
+  # motion/proximity-reactive in hardware; software probing finds no control
+  # and can hang, so linux-enable-ir-emitter is intentionally absent.
   services.gaze = {
     enable = true;
     # Generate /etc/gaze/config.toml read-only from `settings` (we don't use the
@@ -62,9 +60,7 @@
     # The noctalia lockscreen authenticates via PAM "login" (pam_unix(login:auth)),
     # so gaze must be on "login" for lockscreen face unlock — it runs there in a
     # short-lived forked auth helper, so the mlock is transient and harmless.
-    # greetd is handled separately below (its long-lived worker must NOT run gaze).
-    # polkit-1 broke under howdy (it opened the camera in the agent's process);
-    # gaze does camera work in the root daemon, so it's fine here.
+    # greetd is handled separately below (its long-lived worker must NOT run Gaze).
     pam.defaultServices = [
       "sudo"
       "login"

@@ -198,8 +198,4 @@
     man-pages
     mcp-nixos # used by LLMs
   ];
-
-  xdg.mimeApps.defaultApplications = {
-    "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
-  };
 }

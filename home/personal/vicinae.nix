@@ -1,6 +1,5 @@
-# vicinae: native fast launcher for the desktop (in nixpkgs unstable).
-# settings.json is app-written runtime state (like noctalia's) — copied to
-# the new /home in Phase 4, not managed read-only by home-manager.
+# Vicinae's `settings.json` remains app-written runtime state rather than a
+# read-only Home Manager file.
 { ... }:
 {
   programs.vicinae.enable = true;

@@ -1,14 +1,18 @@
 # Package Disposition Mapping: CachyOS → NixOS
 
-Generated 2026-06-11. Every row verified via `mcp__nixos__nix` (nixos-unstable channel) or
-noted as RESEARCH. Arch version from `inventory/pkgs-explicit.txt`; AUR/foreign packages
-marked with `*` in the Arch package column (sourced from `inventory/pkgs-foreign.txt`).
+> Historical migration snapshot generated 2026-06-11. Package versions and
+> proposed dispositions are not maintained; the live configuration and
+> `AGENTS.md` are authoritative.
+
+Every row was verified via `mcp__nixos__nix` (nixos-unstable channel) or noted
+as RESEARCH. Arch versions came from `inventory/pkgs-explicit.txt`; AUR/foreign
+packages are marked with `*`.
 
 Legend:
 - `nixpkgs:<attr>` — attribute verified on nixos-unstable
 - `module:<option>` — better served by a NixOS/home-manager module option
 - `flake:<url>` — upstream flake (no nixpkgs entry, or -git tracking desired)
-- `drop` — Arch/CachyOS-specific or in PLAN.md drop list
+- `drop` — Arch/CachyOS-specific or intentionally omitted
 - `RESEARCH` — not resolved; findings recorded below
 
 ---
@@ -21,7 +25,7 @@ Legend:
 | efitools | 1.9.2 | `nixpkgs:efitools` | Verified: 1.9.2 on unstable. Used for UEFI key manipulation; may be superseded by sbctl for day-to-day work |
 | sbctl | 0.18 | `module:boot.lanzaboote` | Verified: `sbctl` pkg exists (0.18). Lanzaboote flake manages signing; sbctl is pulled in as a dep. Install via `environment.systemPackages` if manual key inspection is needed |
 | intel-ucode | 20260512 | `module:hardware.cpu.intel.updateMicrocode` | Verified option exists. Set `hardware.cpu.intel.updateMicrocode = true`; NixOS pulls in `microcode-intel` (20260227 in nixpkgs — Arch version is newer, see Notes) |
-| linux-cachyos-headers | 7.0.11 | `drop` | CachyOS kernel headers; using vanilla `linuxPackages` per PLAN.md |
+| linux-cachyos-headers | 7.0.11 | `drop` | CachyOS kernel headers; the final config uses vanilla `linuxPackages` |
 | linux-cachyos-nvidia-open | 7.0.11 | `drop` | CachyOS kernel; replaced by `boot.kernelPackages = pkgs.linuxPackages` + `hardware.nvidia.open = true` |
 | nvidia-prime | 1.0 | `module:hardware.nvidia.prime.offload.enable` | Verified option exists. Use `hardware.nvidia.prime.offload.enable` + bus IDs. `hardware.nvidia.prime.offload.enableOffloadCmd = true` for convenience script |
 | sof-firmware | 2025.12.2 | `module:hardware.enableRedistributableFirmware` | Verified: `sof-firmware` pkg (2025.12.2) is included when `hardware.enableRedistributableFirmware = true`. Also set `hardware.firmware = [ pkgs.sof-firmware ]` explicitly if needed |
@@ -71,7 +75,7 @@ Legend:
 | xkcdpass | 1.30.0 | `nixpkgs:xkcdpass` | Verified: 1.30.0 on unstable |
 | zoxide | 0.9.9 | `nixpkgs:zoxide` | Verified: 0.9.9 on unstable |
 | carapace-bin * | 1.6.6 | `nixpkgs:carapace` | Verified: `carapace` 1.6.3 on unstable (the -bin was prebuilt AUR; nixpkgs builds from source). Arch has 1.6.6 (see Notes) |
-| nushell | 0.113.1 | `nixpkgs:nushell` | Verified: 0.111.0 on unstable — Arch has 0.113.1 (see Notes). Secondary shell per PLAN.md pending user decision on config depth |
+| nushell | 0.113.1 | `nixpkgs:nushell` | Verified: 0.111.0 on unstable — Arch has 0.113.1 (see Notes). The final config uses Nushell as the primary interactive shell |
 | uv | 0.11.19 | `nixpkgs:uv` | Verified: 0.11.4 on unstable — Arch has 0.11.19 (see Notes) |
 | diskonaut | 0.11.0 | `nixpkgs:ncdu` (substitute) | Not in nixpkgs; user decision 2026-06-11: substitute ncdu (verified 2.9.2 on unstable) instead of packaging diskonaut |
 | powerstat * | 0.04.05 | `nixpkgs:powerstat` | Verified: 0.04.06 on unstable (Arch has .05; nixpkgs actually has a newer micro version) |
@@ -107,7 +111,7 @@ Legend:
 | Arch package | Arch ver | Disposition | Detail |
 |---|---|---|---|
 | android-tools | 35.0.2 | `nixpkgs:android-tools` | Verified: 35.0.2 on unstable |
-| helix-git | 25.07.r670 | `flake:github:helix-editor/helix` | nixpkgs has `helix` 25.07.1 (release). The -git suffix means tracking master. Upstream confirmed flake.nix at root. PLAN.md asks user to decide: nixpkgs release is `nixpkgs:helix` (verified), or use `flake:github:helix-editor/helix` for master builds |
+| helix-git | 25.07.r670 | `flake:github:helix-editor/helix` | nixpkgs has `helix` 25.07.1 (release). The final config uses the upstream flake to track master for SystemVerilog support |
 | lua-language-server | 3.18.2 | `nixpkgs:lua-language-server` | Verified: 3.18.0 on unstable — Arch has 3.18.2 (minor) |
 | tinymist | 0.14.18 | `nixpkgs:tinymist` | Verified: 0.14.16 on unstable — Arch has 0.14.18 (see Notes) |
 | verilator | 5.048 | `nixpkgs:verilator` | Verified: 5.046 on unstable — Arch has 5.048 (see Notes) |
@@ -180,19 +184,19 @@ mangohud are NOT installed — do not add them (user confirmed).
 | downgrade | 12.0.2 | `drop` | Arch-specific pacman downgrade tool; irrelevant on NixOS |
 | paru | 2.1.0 | `drop` | AUR helper; irrelevant on NixOS |
 | reflector | 2023-5 | `drop` | Arch mirror-ranking tool for pacman; irrelevant on NixOS |
-| ntp | 4.2.8 | `drop` | Replaced by systemd-timesyncd (NixOS default) per PLAN.md |
+| ntp | 4.2.8 | `drop` | Replaced by systemd-timesyncd (NixOS default) |
 | refind-btrfs | 0.6.5 | `drop` | Arch-side rEFInd helper; stays on Arch partition only |
 | cachyos-plymouth-bootanimation | 2-3 | `drop` | CachyOS-specific Plymouth theme |
 | cachyos-plymouth-theme | 1-1 | `drop` | CachyOS-specific Plymouth theme |
 
 ---
 
-## Pending User Decision
+## Decisions Resolved After This Mapping
 
 | Arch package | Disposition | Detail |
 |---|---|---|
-| helix-git | nixpkgs or flake | nixpkgs has `helix` 25.07.1 release. Upstream flake at `github:helix-editor/helix` builds from master. PLAN.md flags this as a user decision. Both options verified |
-| nushell | nixpkgs:nushell | 0.111.0 in nixpkgs, Arch has 0.113.1. Include as extra shell with minimal config, or drop? PLAN.md flags for user |
+| helix-git | upstream flake | The final config tracks master for SystemVerilog support |
+| nushell | nixpkgs:nushell | The final config uses Nushell as the primary interactive shell |
 
 ---
 
@@ -224,25 +228,22 @@ mangohud are NOT installed — do not add them (user confirmed).
 
 ---
 
-### howdy-git + linux-enable-ir-emitter
+### Face authentication
 
-**Result: FULLY RESOLVED via NixOS modules — not a research dead-end.**
-
-Both packages have first-class NixOS module support on nixos-unstable:
-
-- `services.howdy.enable` — enables the Howdy face-authentication daemon and its PAM module. Confirmed options: `services.howdy.settings` (INI config), `services.howdy.control` (PAM control flag, defaults to `"required"`; set to `"sufficient"` for face-auth as alternative to password), `services.howdy.package`.
-- `services.linux-enable-ir-emitter.enable` — enables IR camera emitter support required by Howdy. The option description explicitly references Howdy. After enabling, run `sudo linux-enable-ir-emitter configure` once to set up the camera.
-- `security.pam.howdy.enable` and `security.pam.services.<name>.howdy.enable` — for per-service PAM integration.
-
-**Important caveat from NixOS option description:** "Howdy is not a safe alternative to unlocking with your password. It can be fooled using a well-printed photo. Do not use it as the sole authentication method."
-
-**Disposition:** `module:services.howdy.enable` + `module:services.linux-enable-ir-emitter.enable`
+The final config uses Gaze from its upstream flake. It enables PAM integration
+for `sudo`, `login`, and `polkit-1` through
+`services.gaze.pam.defaultServices`, while explicitly removing Gaze from
+`greetd` because its long-lived session worker retains roughly 2.8 GB of
+mlock'd inference buffers. The Sonix camera controls its IR emitter in hardware,
+so `linux-enable-ir-emitter` is neither needed nor enabled. See
+`hosts/home-g16/hardware.nix` and `AGENTS.md` for the current details.
 
 ---
 
 ### intel-lpmd-git
 
-**Searched:** `info` on `intel-lpmd-git` (not found), `search` for `intel-lpmd` on nixpkgs-unstable (no direct match), `search` for `intel lpmd` on NixOS wiki (no results), search for NixOS option `services.intel-lpmd` (no results — not found in any option search).
+**Status rechecked 2026-09-08:** nixpkgs-unstable still has neither an
+`intel-lpmd` package nor a `services.intel-lpmd` option.
 
 **Upstream:** `github.com/intel/intel-lpmd` — confirmed to exist (209 stars). No `flake.nix` in the repository. Installation docs only cover Fedora/Ubuntu/OpenSUSE. Project description: "Linux daemon to optimize active idle power" for Intel Meteor Lake and newer CPUs with hardware P-Core/E-Core topology (directly relevant to the Core Ultra 9 185H).
 
@@ -253,7 +254,9 @@ Both packages have first-class NixOS module support on nixos-unstable:
 2. Substitute with `services.power-profiles-daemon.enable = true` (provides `power-profiles-daemon` which handles P/E-core balancing on modern Intel via platform profile).
 3. Accept absence: the CPU will use default kernel scheduler; power management is less fine-grained but functional.
 
-**Recommendation:** Use `services.power-profiles-daemon.enable = true` as the primary power management path (already in services.txt as `power-profiles-daemon.service enabled`). Defer intel-lpmd packaging unless the user explicitly needs its fine-grained idle power features. Flag as a Phase 5 item.
+**Recommendation:** Defer intel-lpmd packaging unless its fine-grained idle
+power features justify maintaining a custom package and service. The open item
+is tracked in `AGENTS.md`.
 
 **Disposition:** `RESEARCH` — not in nixpkgs, no flake, no NixOS module. Custom derivation needed or use power-profiles-daemon as substitute.
 
@@ -340,7 +343,7 @@ The following enabled services from `inventory/services.txt` have no explicit pa
 | `flake:<url>` | 3 (noctalia, helix, vicinae-upstream) |
 | `drop` | 19 |
 | `RESEARCH` | 2 (diskonaut, intel-lpmd-git) |
-| Pending user decision | 2 (helix nixpkgs-vs-flake, nushell config depth) |
+| Resolved after mapping | 2 (Helix upstream flake, Nushell enabled) |
 | **Total** | **96** |
 
 Note: `slang-server-bin` has a provisional `nixpkgs:sv-lang` disposition (needs binary verification post-install).

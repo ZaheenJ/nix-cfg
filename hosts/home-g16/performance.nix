@@ -71,8 +71,7 @@ in
     "/var/log".options = btrfsMountOptions;
   };
 
-  # sched-ext userspace scheduler on the vanilla kernel. It is kept disabled
-  # while the service still crashes and stalls the system during startup.
+  # Disabled after startup crashes and stalls; the retest is tracked in AGENTS.md.
   services.scx = {
     enable = false;
     scheduler = "scx_lavd";

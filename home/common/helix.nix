@@ -1,6 +1,4 @@
-# helix: uses flake input helix (master) for unreleased SystemVerilog support.
-# Language servers included: lua-language-server (verified), tinymist (verified).
-# slang-server (SystemVerilog LSP) is DEFERRED — commented out in languages.
+# Tracks Helix master for unreleased SystemVerilog support.
 { pkgs, inputs, ... }:
 {
   programs.helix = {
@@ -12,6 +10,7 @@
       nixfmt
       clang-tools # C/CPP LSP
       jdt-language-server # java
+      slang-server # SystemVerilog LSP
     ];
 
     settings = {
@@ -54,11 +53,11 @@
       "language-server".tinymist.config = {
         exportPdf = "onType";
       };
-      # slang-server is DEFERRED: SystemVerilog LSP not yet packaged.
-      # "language-server".slang-server.command = "slang-server";
+      "language-server".slang-server.command = "slang-server";
       language = [
         {
           name = "systemverilog";
+          "language-servers" = [ "slang-server" ];
           "auto-pairs" = {
             "(" = ")";
             "{" = "}";

@@ -1,5 +1,3 @@
-# Hand-written from the running Arch system (see inventory/);
-# cross-check against `nixos-generate-config --root /mnt/nixos` at install time.
 {
   config,
   lib,

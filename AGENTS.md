@@ -1,9 +1,9 @@
 # NixOS Flake Config
 
 Multi-host NixOS flake (home-manager as NixOS module). The personal laptop
-(**home-g16**) runs this config day-to-day; school and work hosts will be
-scaffolded later (some home-manager-only on foreign distros, so `home/` modules
-stay distro-agnostic). Modeled on https://nixos-and-flakes.thiscute.world/.
+(**home-g16**) runs this config day-to-day. Shared `home/` modules stay
+distro-agnostic so future profiles can use standalone home-manager on foreign
+distros. Modeled on https://nixos-and-flakes.thiscute.world/.
 
 Day-to-day changes are applied on the machine with
 `sudo nixos-rebuild switch --flake ~/nix#home-g16` (user runs the sudo).
@@ -14,8 +14,9 @@ Day-to-day changes are applied on the machine with
   Arc iGPU) + NVIDIA RTX 4070 Max-Q **hybrid graphics**, 16 GB RAM, Intel CNVi
   WiFi. Uses the nixos-hardware `asus-zephyrus-gu605my` profile (GU605MY = 4090
   vs our 4070, same Ada platform). Drivers: nvidia **open** module, prime
-  offload, `powerManagement.finegrained` (runtime D3 gating). Face auth via
-  **howdy** (IR camera, control=sufficient) + linux-enable-ir-emitter.
+  offload, `powerManagement.finegrained` (runtime D3 gating). Face auth uses
+  **Gaze** with the IR camera; its emitter is hardware-controlled, so
+  `linux-enable-ir-emitter` is intentionally absent.
 - **Secure Boot is ENABLED** with personal sbctl keys (+ Microsoft vendor keys).
   Boot signing is **lanzaboote**, using the sbctl keys at `/var/lib/sbctl`.
 - Bootloader: **systemd-boot via lanzaboote**, the SOLE bootloader (rEFInd was
@@ -25,7 +26,7 @@ Day-to-day changes are applied on the machine with
   constraint. **Never let NixOS reformat the ESP**, and never run
   `bootctl install` (it would overwrite the signed systemd-boot). Windows is
   auto-detected; the Arch/CachyOS entry is hand-shipped as `arch.conf` via
-  tmpfiles (see hosts/home-g16/hardware.nix).
+  tmpfiles (see hosts/home-g16/boot.nix).
 - NixOS partition: `/dev/nvme0n1p8`, btrfs, label `NixOS`, UUID
   `1198bc8f-1186-44a5-aed4-e9a0bbb80ab6`, subvolumes `@ @home @nix @log`.
   Arch lives on p7 (don't touch), Windows on p3.
@@ -33,8 +34,8 @@ Day-to-day changes are applied on the machine with
 - Desktop stack: **niri** (wayland, scrollable tiling) + **noctalia** shell +
   xwayland-satellite + vicinae launcher, pipewire audio. Login is **greetd +
   noctalia-greeter** (password login); pam_gnome_keyring unlocks the login
-  keyring on auth. (howdy is disabled for the `polkit-1` PAM service only — it
-  breaks GUI polkit auth in-session.)
+  keyring on auth. Gaze is enabled for the short-lived `sudo`, `login`, and
+  `polkit-1` PAM consumers, but deliberately excluded from `greetd`.
 - Shells: **fish** is the login shell; **nushell** is the primary interactive
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
   (-git, via flake input — user needs master for SystemVerilog).
@@ -46,15 +47,16 @@ Day-to-day changes are applied on the machine with
   that's transient; in **greetd's session-worker**, which lives for the whole
   login session, it becomes a permanent 2.8 GB unswappable mlock — the main
   driver of the 2026-07 memory-freeze. So gaze is enabled for sudo/polkit-1/login
-  but **deliberately not greetd** (services.gaze.pamServices in
-  hosts/home-g16/hardware.nix). Note the mlock: this RAM can't be swapped to zram
-  or reclaimed, and earlyoom keys on free RAM, so nothing catches it — the only
-  fix is to not create it. (Upstream gaze bug: the module should free/munlock on
-  pam_end.) More generally on this 22-thread box, suspect any threaded service
-  idling at a round multiple of ~128 MB — glibc malloc-arena bloat is the usual
-  culprit there, tunable with `MALLOC_ARENA_MAX` / `GLIBC_TUNABLES`.
+  but **deliberately not greetd** (`services.gaze.pam.defaultServices` plus the
+  greetd override in hosts/home-g16/hardware.nix). Note the mlock: this RAM can't
+  be swapped to zram or reclaimed, and earlyoom keys on free RAM, so nothing
+  catches it — the only fix is to not create it. (Upstream Gaze bug: the module
+  should free/munlock on `pam_end`.) More generally on this 22-thread box,
+  suspect any threaded service idling at a round multiple of ~128 MB — glibc
+  malloc-arena bloat is the usual culprit there, tunable with
+  `MALLOC_ARENA_MAX` / `GLIBC_TUNABLES`.
 
-## Waiting on Upstream
+## TODO / Waiting on Upstream
 
 - **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
@@ -62,9 +64,28 @@ Day-to-day changes are applied on the machine with
   - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
   - *Status*: Temporarily patched via `overlays/default.nix` + `overlays/reedline-1192.patch`. Waiting for PR 1192 to be included in an upstream Nushell release before removing the overlay.
 - **Gaze (face auth) — PAM session-worker memory leak**:
-  - *Symptom*: ~2.8 GB unswappable mlock RAM bloat if gaze is attached to long-lived PAM services.
-  - *Root Cause*: `pam_gaze.so` leaves per-CPU inference buffers allocated/mlock'd in the host process and never munlocks/frees on `pam_end`.
-  - *Workaround*: Enabled for `sudo`/`polkit-1`/`login`, but explicitly excluded from `greetd` in `hosts/home-g16/hardware.nix`.
+  - *Symptom*: ~2.8 GB unswappable mlock RAM bloat if Gaze is attached to
+    long-lived PAM services.
+  - *Root Cause*: `pam_gaze.so` leaves per-CPU inference buffers
+    allocated/mlock'd in the host process and never munlocks/frees on `pam_end`.
+  - *Workaround*: Enabled for `sudo`/`polkit-1`/`login`, but explicitly
+    excluded from `greetd` in `hosts/home-g16/hardware.nix`.
+- **Intel LPMD**:
+  - Not implemented. As of 2026-09-08, nixpkgs-unstable has neither an
+    `intel-lpmd` package nor a `services.intel-lpmd` option.
+  - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
+    upstream packaging lands or maintaining a custom package and service
+    becomes worthwhile.
+- **scx_lavd scheduler retest**:
+  - `services.scx` is disabled because it crashed and stalled the system during
+    startup. Retest after relevant kernel or sched-ext updates; require a clean
+    boot and stable session before enabling it day-to-day.
+- **School profile scaffolding**:
+  - Add the target-specific profile and flake output once the host details and
+    requirements are known.
+- **Work profile scaffolding**:
+  - Add the target-specific profile and flake output once the host details and
+    requirements are known.
 
 ## User preferences (load-bearing)
 
@@ -99,9 +120,9 @@ Day-to-day changes are applied on the machine with
 - The deal with the user: they manage at a high level; bring them decisions
   (especially boot/filesystem/kernel-adjacent), not minutiae. Commit early
   and often.
-- `inventory/` and `OLD_MIGRATION_PLAN.md` are historical reference from the
-  CachyOS→NixOS migration (captured Arch state + the completed plan). Not
-  imported, not regenerated — consult only when a past decision needs context.
+- `inventory/`, `MAPPING.md`, and the archived migration checklist are
+  historical references. They are not imported or regenerated; consult them
+  only when a past decision needs context.
 
 ## Repo layout
 

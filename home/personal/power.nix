@@ -1,10 +1,6 @@
-# AC/battery hooks: lower brightness + 60 Hz on battery, restore + 240 Hz
-# on AC (ported from Arch's /usr/local/bin/{ac,bat}.fish + udev rules, see
-# inventory/etc/). Runs as a user service inside the niri session instead of
-# udev RUN hooks: no root→user socket hunting, no wait-for-niri race, and the
-# correct state is applied at login (udev missed "booted on battery").
-# intel_lpmd_control calls from the Arch originals still omitted — intel-lpmd
-# isn't packaged on NixOS yet (PLAN.md research item).
+# Lower brightness and refresh rate on battery; restore them on AC. A user
+# service can reach Niri directly and applies the correct state at login.
+# Intel LPMD integration is tracked in AGENTS.md.
 { pkgs, ... }:
 let
   powerWatcher = pkgs.writeScript "power-watcher.fish" ''

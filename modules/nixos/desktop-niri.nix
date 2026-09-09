@@ -8,10 +8,8 @@
 
   programs.niri.enable = true;
 
-  # Login via greetd + noctalia-greeter (password login, replacing the old
-  # getty autologin). The greeter runs its own wlroots compositor and offers
-  # user / password / session / colorscheme; greetd then launches the chosen
-  # Wayland session as the authenticated user.
+  # The greeter runs its own compositor; greetd launches the chosen Wayland
+  # session after authentication.
   programs.noctalia-greeter = {
     enable = true;
     settings = {
@@ -40,12 +38,12 @@
   services.gnome.gnome-keyring.enable = true;
   # Authenticating at the greeter unlocks the login keyring (same password),
   # so git push / Secret Service / the gcr SSH agent stop prompting. Note: face
-  # login (gaze) doesn't type a password, so it won't unlock the keyring —
+  # login (Gaze) doesn't type a password, so it won't unlock the keyring —
   # password login still does.
   security.pam.services.greetd.enableGnomeKeyring = true;
 
   # nixpkgs now gates the setuid pkexec wrapper behind this (defaults off);
-  # enable it so GUI polkit prompts (and `pkexec`) work — including gaze face
+  # enable it so GUI polkit prompts (and `pkexec`) work — including Gaze face
   # auth on the polkit-1 stack (services.gaze.pam.defaultServices).
   security.polkit.enablePkexecWrapper = true;
 }

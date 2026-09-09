@@ -43,17 +43,14 @@
       require("zoxide"):setup { update_db = true }
     '';
 
-    # yazi 26.x fetcher schema: `url` (was `name`) + a required `group`.
-    # `id` is still accepted at v26.1.22; drop it once yazi > 26.1.22.
+    # Fetchers use URL patterns and a group to deduplicate matches.
     settings.plugin.prepend_fetchers = [
       {
-        id = "git";
         url = "*";
         run = "git";
         group = "git";
       }
       {
-        id = "git";
         url = "*/";
         run = "git";
         group = "git";

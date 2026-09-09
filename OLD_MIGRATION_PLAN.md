@@ -1,5 +1,9 @@
 # Migration Plan: CachyOS → NixOS flake
 
+> Historical snapshot, not current operating documentation. In particular,
+> face authentication now uses Gaze rather than Howdy, and lanzaboote's signed
+> systemd-boot is now the sole bootloader. See `AGENTS.md` and the live modules.
+
 Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on user
 
 ## Decisions
@@ -45,7 +49,7 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` blocked on
 ### Phase 0 — Tooling (done)
 - [x] Nix installed on Arch, flakes + trusted-users enabled, daemon running
 - [x] mcp-nixos MCP server connected
-- [x] Repo scaffolding: git init, CLAUDE.md, PLAN.md, inventory/, subagent def
+- [x] Repo scaffolding: git init, agent instructions, inventory/, subagent definition
 
 ### Phase 1 — Inventory & package mapping
 - [x] Capture: pkgs-explicit.txt, pkgs-foreign.txt, services.txt, etc/ copies,
