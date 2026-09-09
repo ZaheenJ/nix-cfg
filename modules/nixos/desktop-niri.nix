@@ -1,7 +1,6 @@
 {
   pkgs,
   inputs,
-  config,
   ...
 }:
 {
@@ -15,18 +14,17 @@
   # Wayland session as the authenticated user.
   programs.noctalia-greeter = {
     enable = true;
-    package = inputs.noctalia-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default;
     settings = {
       cursor = {
         theme = "Bibata-Modern-Classic";
         size = 24;
       };
-      keyboard.layout = "us";
+      keyboard = {
+        layout = "us";
+        variant = "altgr-intl";
+      };
     };
   };
-  # User that RUNS the greeter (unprivileged); the greetd module creates it.
-  services.greetd.settings.default_session.user = "greeter";
-
   # niri has no verbosity flag; it uses RUST_LOG (tracing). Left at its default
   # it logs at DEBUG (hundreds of "device changed" / screencasting lines). Cap
   # niri at warn to drop that flood while keeping warnings/errors (e.g. the
@@ -34,12 +32,9 @@
   # RUST_LOG per-service, so it's unaffected.
   environment.sessionVariables.RUST_LOG = "info,niri=warn";
 
-  # The greeter scans /run/current-system/sw/share/wayland-sessions for
-  # session entries; nixpkgs' programs.niri doesn't link niri.desktop there,
-  # so add the niri package to systemPackages to expose niri as a choice.
   environment.systemPackages = with pkgs; [
     xwayland-satellite
-    config.programs.niri.package
+    bibata-cursors
   ];
 
   services.gnome.gnome-keyring.enable = true;
@@ -51,6 +46,6 @@
 
   # nixpkgs now gates the setuid pkexec wrapper behind this (defaults off);
   # enable it so GUI polkit prompts (and `pkexec`) work — including gaze face
-  # auth on the polkit-1 stack (services.gaze.pamServices).
+  # auth on the polkit-1 stack (services.gaze.pam.defaultServices).
   security.polkit.enablePkexecWrapper = true;
 }

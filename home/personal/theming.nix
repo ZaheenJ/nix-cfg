@@ -1,7 +1,7 @@
 # Cursor, GTK, Qt, and MIME theming for the personal desktop.
 # GTK/Qt color theming comes from noctalia's theme templates (gtk3/gtk4/qt
 # in [theme.templates]); the old oomox-BWnB theme was dropped per user.
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   # Cursor: Bibata-Modern-Classic, 24px — matches niri config.kdl and GTK settings.
   home.pointerCursor = {
@@ -12,49 +12,60 @@
     gtk.enable = true;
   };
 
-  # GTK: theme + icon theme + font + dark preference.
+  # GTK theme, font, and dark preference.
   # adw-gtk3 is the libadwaita GTK3 backport; it's the base theme that noctalia's
   # gtk3/gtk4 templates recolor via @define-color in ~/.config/gtk-*/noctalia.css.
   # Without it, GTK3 apps fall back to built-in Adwaita and ignore those color
   # names (GTK4/libadwaita apps consume them natively, so they were already fine).
-  # Note: gtk-icon-theme-name in settings.ini was "Bibata-Modern-Classic" (same as
-  # cursor), which is likely an Arch-side artefact; bibata-cursors does not ship
-  # a GTK icon theme. Setting package = null means niri/GTK will use whatever
-  # icon theme is already installed system-wide.
   gtk = {
     enable = true;
     theme = {
       package = pkgs.adw-gtk3;
       name = "adw-gtk3-dark";
     };
-    iconTheme = {
-      package = null;
-      name = "Bibata-Modern-Classic";
-    };
     font = {
       name = "Iosevka Nerd Font";
       size = 11;
     };
-    gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-      gtk-cursor-theme-name = "Bibata-Modern-Classic";
-      gtk-cursor-theme-size = 24;
-    };
-    gtk4.extraConfig = {
-      gtk-cursor-theme-name = "Bibata-Modern-Classic";
-    };
   };
+  gtk.colorScheme = "dark";
 
-  # Qt: use qt6ct for platform theme; set QT_QPA_PLATFORMTHEME in niri config.kdl.
   qt = {
     enable = true;
-    platformTheme.name = "qtct";
+    platformTheme = {
+      name = "qt6ct";
+      package = pkgs.qt6Packages.qt6ct;
+    };
+    qt6ctSettings = {
+      Appearance = {
+        color_scheme_path = "${config.xdg.configHome}/qt6ct/colors/noctalia.conf";
+        custom_palette = true;
+        standard_dialogs = "default";
+        style = "Fusion";
+      };
+      Fonts = {
+        fixed = ''"Noto Sans,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"'';
+        general = ''"Iosevka Nerd Font,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"'';
+      };
+      Interface = {
+        activate_item_on_single_click = 1;
+        buttonbox_layout = 0;
+        cursor_flash_time = 1000;
+        dialog_buttons_have_icons = 1;
+        double_click_interval = 400;
+        gui_effects = "@Invalid()";
+        keyboard_scheme = 2;
+        menus_have_icons = true;
+        show_shortcuts_in_context_menus = true;
+        stylesheets = "@Invalid()";
+        toolbutton_style = 4;
+        underline_shortcut = 1;
+        wheel_scroll_lines = 3;
+      };
+      Troubleshooting = {
+        force_raster_widgets = 1;
+        ignored_applications = "@Invalid()";
+      };
+    };
   };
-
-  # qt6ct.conf is declarative: it only stores a POINTER
-  # (color_scheme_path -> colors/noctalia.conf); noctalia's qt template
-  # rewrites that target file on theme changes, so colors stay dynamic while
-  # this config is read-only. Font/style/icon tweaks: edit ./qt6ct/qt6ct.conf
-  # here, not the qt6ct GUI (it can't save).
-  xdg.configFile."qt6ct/qt6ct.conf".source = ./qt6ct/qt6ct.conf;
 }

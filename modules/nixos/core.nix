@@ -27,6 +27,7 @@
   services.xserver.xkb = {
     layout = "us";
     variant = "altgr-intl";
+    options = "terminate:ctrl_alt_bksp,caps:escape,shift:both_capslock_cancel";
   };
   console.keyMap = "us-acentos";
 
@@ -54,7 +55,6 @@
     nssmdns4 = true;
   };
   services.fwupd.enable = true;
-  services.fstrim.enable = true;
 
   # VIA keyboard (4d4b:3068) and RAWM mouse (1915:232a) hidraw access (from Arch udev rules).
   services.udev.extraRules = ''

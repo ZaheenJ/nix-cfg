@@ -5,7 +5,6 @@
     ./niri.nix
     ./noctalia.nix
     ./vicinae.nix
-    ./satty.nix
     ./desktop-tools.nix
     ./theming.nix
     ./fonts.nix

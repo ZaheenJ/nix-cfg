@@ -8,12 +8,10 @@
 
     # env.nu: the old imperative zoxide init call is replaced by
     # programs.zoxide.enableNushellIntegration in cli.nix.
-    envFile.text = "";
+    configFile.source = ./nushell/config.nu;
 
-    configFile.text =
-      builtins.readFile ./nushell/config.nu
-      + "\n"
-      # music library commands: metadata-adder, music-cover, music-lyrics,
-      + builtins.readFile ./nushell/music.nu;
+    # Profile-specific music commands: metadata-adder, music-cover,
+    # music-lyrics, and related helpers.
+    extraConfig = builtins.readFile ./nushell/music.nu;
   };
 }

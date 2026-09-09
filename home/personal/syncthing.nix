@@ -7,7 +7,13 @@
 # overrideDevices/overrideFolders default to true: this file is authoritative,
 # so devices/folders added later via the web GUI get reverted on rebuild. Add
 # them here instead.
-{ ... }:
+{ config, ... }:
+let
+  mobileDevices = [
+    "Galaxy Tab S9 FE"
+    "Pixel 9a"
+  ];
+in
 {
   services.syncthing = {
     enable = true;
@@ -20,35 +26,23 @@
       folders = {
         "Books" = {
           id = "jxukx-5b3g6";
-          path = "~/Documents/books";
-          devices = [
-            "Galaxy Tab S9 FE"
-            "Pixel 9a"
-          ];
+          path = "${config.xdg.userDirs.documents}/books";
+          devices = mobileDevices;
         };
         "College" = {
           id = "jyzny-mtyip";
-          path = "~/Documents/college";
-          devices = [
-            "Galaxy Tab S9 FE"
-            "Pixel 9a"
-          ];
+          path = "${config.xdg.userDirs.documents}/college";
+          devices = mobileDevices;
         };
         "Music" = {
           id = "y2jmg-haren";
-          path = "~/Music";
-          devices = [
-            "Galaxy Tab S9 FE"
-            "Pixel 9a"
-          ];
+          path = config.xdg.userDirs.music;
+          devices = mobileDevices;
         };
         "Piano Sheets" = {
           id = "7veaf-dk6wr";
-          path = "~/Documents/piano";
-          devices = [
-            "Galaxy Tab S9 FE"
-            "Pixel 9a"
-          ];
+          path = "${config.xdg.userDirs.documents}/piano";
+          devices = mobileDevices;
         };
       };
     };
