@@ -23,16 +23,12 @@
 
   # The profile's shared/backlight.nix would add i915.enable_dpcd_backlight=1,
   # conflicting with our Arch-verified =3 below (kernelParams just
-  # concatenates). Disable it and port its two useful NVreg params instead.
+  # concatenates). Disable it so the =3 setting is the only one.
   disabledModules = [ "${inputs.nixos-hardware}/asus/zephyrus/shared/backlight.nix" ];
   boot.kernelParams = [
     # Force the Intel proprietary DPCD backlight interface — this OLED's VBT
     # misreports its backlight type, so detection (=1 / default) fails.
     "i915.enable_dpcd_backlight=3"
-    # Keep the NVIDIA driver from registering a bogus backlight device in
-    # hybrid mode (from the disabled backlight.nix; intel_backlight rules).
-    "nvidia.NVreg_EnableBacklightHandler=0" # TODO: This might no longer exist
-    "nvidia.NVReg_RegistryDwords=EnableBrightnessControl=0" # TODO: This might be spelled wrong
   ];
 
   # Meteor Lake is Gen12+: only the modern media driver is needed; the
