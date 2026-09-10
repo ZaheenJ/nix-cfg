@@ -71,6 +71,7 @@
     fd
     ripgrep
     fzf
+    zip
     unzip
     dust
     duf
