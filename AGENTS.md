@@ -88,8 +88,19 @@ Day-to-day changes are applied on the machine with
 - **Work profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
-- **Investigate Nvidia RTD3 power management D0 wakeups**
-  - Possibly relevant issue: https://github.com/NVIDIA/open-gpu-kernel-modules/issues/905, but seemingly Lenovo specific
+- **NVIDIA open driver — battery NVPCF D0 wakeups**:
+  - *Symptom*: On battery, each 1% charge drop wakes the otherwise idle dGPU
+    from D3cold to D0 for about 22.6 seconds. Reproduced twice on this GU605MI;
+    it matches the independent GU605 report in
+    [discussion #1201](https://github.com/NVIDIA/open-gpu-kernel-modules/discussions/1201).
+  - *Working Root Cause*: The firmware emits an ACPI NVPCF notification at each
+    battery percentage change, and the open driver's handler takes a runtime-PM
+    reference even while the GPU is suspended.
+  - *Upstream PR*: [NVIDIA/open-gpu-kernel-modules#1299](https://github.com/NVIDIA/open-gpu-kernel-modules/pull/1299).
+  - *Status*: Temporarily patched by `overlays/nvidia-nvpcf-1299.nix`. The
+    override follows nixpkgs' unpinned stable driver and should be removed once
+    the PR is released upstream. An incompatible or already-applied patch will
+    intentionally fail the build rather than silently losing the workaround.
 - **Applications to consider trying to make more declarative configuration for**
   - Vesktop
   - Prismlauncher

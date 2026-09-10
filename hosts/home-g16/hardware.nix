@@ -10,6 +10,12 @@
   ...
 }:
 {
+  # NVIDIA/open-gpu-kernel-modules#1299 prevents ACPI NVPCF notifications
+  # from waking an otherwise runtime-suspended dGPU on battery. Keep this
+  # host-only and version-unpinned so it follows nixpkgs' stable driver.
+  nixpkgs.overlays = [ (import ../../overlays/nvidia-nvpcf-1299.nix) ];
+  hardware.nvidia.branch = "stable";
+
   ## Graphics — hybrid Meteor Lake Arc iGPU (PCI 00:02.0) + RTX 4070 Max-Q
   ## (PCI 01:00.0). videoDrivers, open driver, modesetting, dynamicBoost,
   ## prime offload + bus IDs, Intel media/compute runtimes and early-KMS
@@ -25,8 +31,8 @@
     "i915.enable_dpcd_backlight=3"
     # Keep the NVIDIA driver from registering a bogus backlight device in
     # hybrid mode (from the disabled backlight.nix; intel_backlight rules).
-    "nvidia.NVreg_EnableBacklightHandler=0"
-    "nvidia.NVReg_RegistryDwords=EnableBrightnessControl=0"
+    "nvidia.NVreg_EnableBacklightHandler=0" # TODO: This might no longer exist
+    "nvidia.NVReg_RegistryDwords=EnableBrightnessControl=0" # TODO: This might be spelled wrong
   ];
 
   # Meteor Lake is Gen12+: only the modern media driver is needed; the
