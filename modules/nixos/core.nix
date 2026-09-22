@@ -26,7 +26,7 @@
   # X11 us/altgr-intl, VC us-acentos).
   services.xserver.xkb = {
     layout = "us";
-    variant = "altgr-intl";
+    # variant = "altgr-intl"; # breaks Mod + Alt + Key Niri binds
     options = "terminate:ctrl_alt_bksp,caps:escape,shift:both_capslock_cancel";
   };
   console.keyMap = "us-acentos";
