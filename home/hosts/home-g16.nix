@@ -15,6 +15,7 @@
     ../profiles/niri-desktop.nix
     ./home-g16/power.nix
     ./home-g16/monitoring.nix
+    ./home-g16/kanshi.nix
     ./home-g16/niri.nix
     ./home-g16/noctalia.nix
   ];

@@ -96,12 +96,6 @@
           output = {
             _args = [ "eDP-1" ];
             "focus-at-startup" = { };
-            position = {
-              _props = {
-                x = 0;
-                y = 0;
-              };
-            };
             variable-refresh-rate = { };
           };
         }
