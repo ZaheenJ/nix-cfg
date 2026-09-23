@@ -35,47 +35,15 @@ Day-to-day changes are applied on the machine with
   xwayland-satellite + vicinae launcher, pipewire audio. Login is **greetd +
   noctalia-greeter** (password login); pam_gnome_keyring unlocks the login
   keyring on auth. Gaze is enabled for the short-lived `sudo`, `login`, and
-  `polkit-1` PAM consumers, but deliberately excluded from `greetd`.
+  `polkit-1` PAM consumers, but deliberately excluded from `greetd` so face
+  auth cannot bypass the password needed to unlock the GNOME login keyring.
 - Shells: **fish** is the login shell; **nushell** is the primary interactive
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
   (-git, via flake input — user needs master for SystemVerilog).
 - zram swap; no swap partition; no hibernation.
-- **Face auth (gaze) must NOT be wired into long-lived PAM consumers.**
-  `pam_gaze.so` runs the recognizer in-process and leaves ~2.8 GB of **mlock'd**
-  per-CPU inference buffers (22 × 128 MB on this 22-thread CPU) that it never
-  frees/munlocks after auth. In a short-lived auth process (sudo/polkit-1/login)
-  that's transient; in **greetd's session-worker**, which lives for the whole
-  login session, it becomes a permanent 2.8 GB unswappable mlock — the main
-  driver of the 2026-07 memory-freeze. So gaze is enabled for sudo/polkit-1/login
-  but **deliberately not greetd** (`services.gaze.pam.defaultServices` plus the
-  greetd override in hosts/home-g16/hardware.nix). Note the mlock: this RAM can't
-  be swapped to zram or reclaimed, and earlyoom keys on free RAM, so nothing
-  catches it — the only fix is to not create it. (Upstream Gaze bug: the module
-  should free/munlock on `pam_end`.) More generally on this 22-thread box,
-  suspect any threaded service idling at a round multiple of ~128 MB — glibc
-  malloc-arena bloat is the usual culprit there, tunable with
-  `MALLOC_ARENA_MAX` / `GLIBC_TUNABLES`.
 
-## TODO / Waiting on Upstream
+## TODO
 
-- **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
-  - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
-  - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
-  - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
-  - *Status*: Temporarily patched via `overlays/default.nix` + `overlays/reedline-1192.patch`. Waiting for PR 1192 to be included in an upstream Nushell release before removing the overlay.
-- **Gaze (face auth) — PAM session-worker memory leak**:
-  - *Symptom*: ~2.8 GB unswappable mlock RAM bloat if Gaze is attached to
-    long-lived PAM services.
-  - *Root Cause*: `pam_gaze.so` leaves per-CPU inference buffers
-    allocated/mlock'd in the host process and never munlocks/frees on `pam_end`.
-  - *Workaround*: Enabled for `sudo`/`polkit-1`/`login`, but explicitly
-    excluded from `greetd` in `hosts/home-g16/hardware.nix`.
-- **Intel LPMD**:
-  - Not implemented. As of 2026-09-08, nixpkgs-unstable has neither an
-    `intel-lpmd` package nor a `services.intel-lpmd` option.
-  - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
-    upstream packaging lands or maintaining a custom package and service
-    becomes worthwhile.
 - **scx_lavd scheduler retest**:
   - `services.scx` is disabled because it crashed and stalled the system during
     startup. Retest after relevant kernel or sched-ext updates; require a clean
@@ -88,6 +56,27 @@ Day-to-day changes are applied on the machine with
 - **Work profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
+- **Applications to consider trying to make more declarative configuration for**
+  - Vesktop
+  - Prismlauncher
+
+## Waiting on upstream
+
+- **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
+  - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
+  - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
+  - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
+  - *Status*: PR 1192 is merged. Nushell 0.115.1 is the latest release and the
+    current nixpkgs package, but it predates the merge. Nushell main declares
+    version 0.115.2 and pins a Reedline revision containing the fix. Temporarily
+    patched via `overlays/default.nix` + `overlays/reedline-1192.patch`; remove
+    the overlay once nixpkgs provides Nushell >= 0.115.2.
+- **Intel LPMD**:
+  - Not implemented. As of 2026-09-08, nixpkgs-unstable has neither an
+    `intel-lpmd` package nor a `services.intel-lpmd` option.
+  - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
+    upstream packaging lands or maintaining a custom package and service
+    becomes worthwhile.
 - **NVIDIA open driver — battery NVPCF D0 wakeups**:
   - *Symptom*: On battery, each 1% charge drop wakes the otherwise idle dGPU
     from D3cold to D0 for about 22.6 seconds. Reproduced twice on this GU605MI;
@@ -101,9 +90,6 @@ Day-to-day changes are applied on the machine with
     override follows nixpkgs' unpinned stable driver and should be removed once
     the PR is released upstream. An incompatible or already-applied patch will
     intentionally fail the build rather than silently losing the workaround.
-- **Applications to consider trying to make more declarative configuration for**
-  - Vesktop
-  - Prismlauncher
 
 ## User preferences (load-bearing)
 
