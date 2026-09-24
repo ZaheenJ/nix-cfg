@@ -10,7 +10,7 @@
 
   # The greeter runs its own compositor; greetd launches the chosen Wayland
   # session after authentication.
-  programs.noctalia-greeter = {
+  services.displayManager.noctalia-greeter = {
     enable = true;
     settings = {
       cursor = {

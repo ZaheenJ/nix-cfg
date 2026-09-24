@@ -68,15 +68,14 @@
       "login"
       "polkit-1"
     ];
-    # The daemon runs as root with no user PipeWire session (and none exists at
-    # the greeter/lockscreen), so drive both cameras directly via V4L2 instead
-    # of the "primary"/pipewiresrc default. Stable by-path nodes: …-1.0-… is the
-    # color webcam, …-1.2-… is the IR camera.
+    # Pin the physical camera by USB ID. Gaze resolves the RGB and IR nodes
+    # separately by their caps, then captures them directly through V4L2 for
+    # privileged authentication; custom v4l2src pipelines are rejected.
     settings = {
       security.level = "medium";
       cameras = {
-        rgb = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0";
-        ir = "v4l2src device=/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.2-video-index0";
+        rgb = "usb:3277:0051";
+        ir = "usb:3277:0051";
         # IR frames from this camera hover right at ~16-36 luma even with the
         # emitter firing, so the default 30 rejects many valid frames as "not
         # enough light" and enrollment/auth only intermittently gets through.
@@ -90,12 +89,16 @@
       liveness = {
         enabled = true;
         threshold = 0.8;
-        max_frames = 40;
       };
       enrollment.max_templates = 2;
       storage.encrypt_templates = false;
     };
   };
+
+  # Gaze caches camera sources at startup, so reload declarative config changes.
+  systemd.services.gazed.restartTriggers = [
+    config.environment.etc."gaze/config.toml".source
+  ];
 
   # Keep gaze off greetd without losing it on "login". greetd's auth is
   # `substack login`, which would pull pam_gaze.so into greetd's long-lived
