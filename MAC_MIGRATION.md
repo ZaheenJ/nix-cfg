@@ -19,7 +19,10 @@
 - [ ] Design sync and backup separately. Syncthing can synchronize files, but
   a separate versioned backup is needed to recover deleted or changed data.
 - [ ] Configure keyboard repeat rate and delay until repeat
+- [ ] Configure keyboard layout/caps/escape options like Linux
 - [ ] Add tailscale/ssh for remote access
+- [ ] Use duti to set default apps
+- [ ] Configure touch id for sudo
 
 ## MacBook operation and storage
 
