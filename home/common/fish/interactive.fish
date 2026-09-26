@@ -1,4 +1,3 @@
-set -g fish_key_bindings fish_helix_key_bindings
 set -gx EDITOR hx
 
 alias e $EDITOR

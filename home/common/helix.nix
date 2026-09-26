@@ -1,5 +1,10 @@
 # Tracks Helix master for unreleased SystemVerilog support.
-{ pkgs, inputs, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 let
   openPdf = pkgs.writeShellScript "helix-open-pdf" ''
     set -eu
@@ -41,9 +46,11 @@ in
         lsp."display-inlay-hints" = true;
       };
       keys.normal = {
-        "C-z" = ":sh ${openPdf} \"%{file_path_absolute}\"";
         tab = "move_parent_node_end";
         "S-tab" = "move_parent_node_start";
+      }
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+        "C-z" = ":sh ${openPdf} \"%{file_path_absolute}\"";
       };
       keys.insert."S-tab" = "move_parent_node_start";
       keys.select = {

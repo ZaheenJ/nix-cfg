@@ -1,8 +1,13 @@
 {
-  description = "Multi-host NixOS + home-manager configuration";
+  description = "Multi-host NixOS and nix-darwin + home-manager configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -35,6 +40,8 @@
   outputs =
     {
       nixpkgs,
+      nixpkgs-darwin,
+      nix-darwin,
       home-manager,
       lanzaboote,
       ...
@@ -66,11 +73,30 @@
         ];
       };
 
+      darwinConfigurations.mandubu-server = nix-darwin.lib.darwinSystem {
+        specialArgs = { inherit inputs; };
+        modules = [
+          { nixpkgs.overlays = overlays; }
+          ./hosts/mandubu-server
+          home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = { inherit inputs; };
+              users.mandubumz = import ./home/hosts/mandubu-server.nix;
+              backupFileExtension = "hm-bak";
+            };
+          }
+        ];
+      };
+
       # Convenience: `nix build .#gaze` builds the upstream flake's package.
       packages.${system}.gaze = inputs.gaze.packages.${system}.gaze;
 
       # `nix fmt` support
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.aarch64-darwin = nixpkgs-darwin.legacyPackages.aarch64-darwin.nixfmt-tree;
 
       # `nix flake check` gates. nushell-config parses every tracked .nu file with
       # the *same* nushell nixpkgs ships, so a deprecation/removal (e.g. the

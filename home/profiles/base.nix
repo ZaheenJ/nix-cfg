@@ -1,5 +1,5 @@
 # Distro-agnostic shell, editor, development, and productivity environment.
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   imports = [
     ../common/fish.nix
@@ -67,20 +67,21 @@
     gswc = "git switch --create";
   };
 
-  home.packages = with pkgs; [
-    fd
-    ripgrep
-    fzf
-    zip
-    unzip
-    dust
-    duf
-    ncdu
-    bottom
-    tokei
-    libqalculate
-    taskwarrior-tui
-    man-pages
-    android-tools
-  ];
+  home.packages =
+    (with pkgs; [
+      fd
+      ripgrep
+      fzf
+      zip
+      unzip
+      dust
+      duf
+      ncdu
+      bottom
+      tokei
+      libqalculate
+      taskwarrior-tui
+      android-tools
+    ])
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.man-pages ];
 }
