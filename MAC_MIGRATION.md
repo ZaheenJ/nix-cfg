@@ -18,6 +18,8 @@
   evaluating macOS support, resource use, and service lifecycle needs.
 - [ ] Design sync and backup separately. Syncthing can synchronize files, but
   a separate versioned backup is needed to recover deleted or changed data.
+- [ ] Configure keyboard repeat rate and delay until repeat
+- [ ] Add tailscale/ssh for remote access
 
 ## MacBook operation and storage
 
@@ -30,8 +32,6 @@
 
 ## Initial install choices
 
-- [ ] Confirm the Mac account short name is `mandubumz` before activation; the
-  system and Home Manager host modules use `/Users/mandubumz`.
 - [ ] Keep the initial configuration free of Homebrew and Mac App Store apps.
   Add either only when a required application is unavailable or impractical
   through Nix.
