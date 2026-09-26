@@ -1,14 +1,27 @@
-# NixOS Flake Config
+# NixOS and nix-darwin Flake Config
 
-Multi-host NixOS flake (home-manager as NixOS module). The personal laptop
-(**home-g16**) runs this config day-to-day. Shared `home/` modules stay
-distro-agnostic so future profiles can use standalone home-manager on foreign
-distros. Modeled on https://nixos-and-flakes.thiscute.world/.
+Multi-host flake with NixOS and nix-darwin outputs. Home Manager is integrated
+as a module in each system. Shared `home/` modules stay distro-agnostic so
+future profiles can use standalone Home Manager on foreign distros. Modeled on
+https://nixos-and-flakes.thiscute.world/.
 
-Day-to-day changes are applied on the machine with
+Day-to-day changes to home-g16 are applied on that machine with
 `sudo nixos-rebuild switch --flake ~/nix#home-g16` (user runs the sudo).
 
-## Hard facts about the personal machine
+## Configurations
+
+- **home-g16**: ASUS ROG Zephyrus G16 personal laptop, `x86_64-linux` NixOS.
+  Flake output: `nixosConfigurations.home-g16`. System files:
+  `hosts/home-g16/`; Home Manager host: `home/hosts/home-g16.nix`.
+- **mandubumz-server**: M3 Pro MacBook, 18 GB RAM, roughly 500 GB internal
+  storage, `aarch64-darwin`. Flake output:
+  `darwinConfigurations.mandubumz-server`; system files remain under
+  `hosts/mandubu-server/`, with Home Manager in
+  `home/hosts/mandubu-server.nix`. Uses the base profile; SSH and Tailscale are
+  enabled. The user has tested this configuration. Deferred Mac work is in
+  `MAC_MIGRATION.md`.
+
+## Hard facts about home-g16
 
 - ASUS ROG Zephyrus G16 (GU605MI): Intel Core Ultra 9 185H (Meteor Lake, Intel
   Arc iGPU) + NVIDIA RTX 4070 Max-Q **hybrid graphics**, 16 GB RAM, Intel CNVi
@@ -111,10 +124,14 @@ Day-to-day changes are applied on the machine with
   `nix search`. **Always do this even if the user provides the package name.** Wrong-but-plausible option names are the #1 failure mode.
 - Validation ladder (no root needed):
   1. **Format your code**: Run `nix fmt` *before* validating to ensure clean Nix code.
-  2. `nix flake check` — seconds, catches evaluation errors
-  3. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
-     — the real build; catches what eval doesn't (flake check is not enough).
-  Then apply with `sudo nixos-rebuild switch --flake .#<host>` (user runs).
+  2. `nix flake check` — catches evaluation errors; on Linux it omits the
+     incompatible Darwin system.
+  3. Build the affected system: for NixOS,
+     `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`;
+     for nix-darwin, build on the Mac. A real build catches what evaluation
+     does not.
+  Then apply on the target machine with the appropriate rebuild command (user
+  runs sudo).
   `build-vm` is NOT part of the regular flow — it's a backup debugging tool to
   separate "config bug" from "hardware bug" if a boot issue appears.
 - Don't pipe validation commands through `tail`/`head` before `&&` — the
@@ -131,16 +148,18 @@ Day-to-day changes are applied on the machine with
 ## Repo layout
 
 ```
-flake.nix            # inputs: nixpkgs, home-manager, lanzaboote, helix,
-                     #         noctalia, noctalia-greeter (niri via nixpkgs)
-hosts/<host>/        # default.nix + hardware-configuration.nix per machine
-modules/nixos/       # shared system modules (core, boot, desktop-niri, gaming, ...)
-home/common/         # atomic, distro-agnostic home-manager modules and assets
-home/profiles/       # reusable capability bundles (base, music, desktop, ...)
-home/hosts/          # user identity, profile selection, and host-only modules
-overlays/            # package overrides
-pkgs/                # custom packages not in nixpkgs
-inventory/           # captured Arch system state (historical reference)
+flake.nix                 # NixOS/Darwin outputs, inputs, checks, formatters
+flake.lock                # pinned inputs, including Darwin-specific nixpkgs
+hosts/home-g16/           # NixOS host, hardware, boot, and performance
+hosts/mandubu-server/     # nix-darwin host module
+modules/nixos/            # shared NixOS system modules
+home/common/              # shared Home Manager modules and assets
+home/profiles/            # reusable capability bundles
+home/hosts/               # identity, profile selection, host-only modules
+overlays/                 # package overrides shared by both outputs
+pkgs/                     # custom packages not in nixpkgs
+MAC_MIGRATION.md          # deferred macOS profiles and operational concerns
+inventory/                # captured Arch system state (historical reference)
 ```
 
 - One concern per module. Home host files compose reusable profiles and may
@@ -150,9 +169,10 @@ inventory/           # captured Arch system state (historical reference)
   paths, displays, and hardware bindings live in `home/hosts/<host>.nix` or its
   companion directory. Profiles must remain usable from standalone
   home-manager on foreign distributions.
-- NixOS hosts compose system modules + set host-specific options.
-  Machine-specific config lives with the host (hosts/home-g16/hardware.nix),
-  so modules/nixos/ stays host-agnostic.
-- Prefer native NixOS/home-manager options over raw dotfiles; use
+- System hosts live in `hosts/`. NixOS hosts compose shared `modules/nixos/`
+  modules; machine-specific config stays with the host (for example,
+  `hosts/home-g16/hardware.nix`). The Darwin host currently has its own small
+  module in `hosts/mandubu-server/default.nix`.
+- Prefer native NixOS/nix-darwin/Home Manager options over raw dotfiles; use
   `xdg.configFile` to ship verbatim configs only when no module exists.
 - Comment-light, idiomatic Nix; pin nothing without a reason.
