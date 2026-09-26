@@ -11,6 +11,8 @@
   ];
 
   programs.fish.enable = true;
+  services.openssh.enable = true;
+  services.tailscale.enable = true;
   environment.shells = [ pkgs.fish ];
   users.users.mandubumz.home = "/Users/mandubumz";
   users.users.mandubumz.shell = pkgs.fish;
