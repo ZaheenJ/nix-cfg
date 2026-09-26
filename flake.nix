@@ -73,7 +73,7 @@
         ];
       };
 
-      darwinConfigurations.mandubu-server = nix-darwin.lib.darwinSystem {
+      darwinConfigurations.mandubumz-server = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit inputs; };
         modules = [
           { nixpkgs.overlays = overlays; }

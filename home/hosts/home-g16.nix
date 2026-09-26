@@ -24,6 +24,11 @@
   home.homeDirectory = "/home/zaheenj";
   home.stateVersion = "26.05";
 
+  programs.ssh.settings.mandu = {
+    hostname = "mandubumz-server";
+    user = "mandubumz";
+  };
+
   programs.taskwarrior.extraConfig = ''
     # Include machine-local sync credentials (WingTask)
     include ~/.config/task/sync.rc
