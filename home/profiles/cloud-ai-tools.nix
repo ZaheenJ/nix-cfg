@@ -27,7 +27,9 @@
     mkdir -p "$HOME/.codex"
     CONFIG_FILE="$HOME/.codex/config.toml"
     if [ -L "$CONFIG_FILE" ]; then
-      cp --remove-destination "$(readlink -f "$CONFIG_FILE")" "$CONFIG_FILE"
+      TEMP_FILE=$(mktemp "$CONFIG_FILE.XXXXXX")
+      cp "$CONFIG_FILE" "$TEMP_FILE"
+      mv -f "$TEMP_FILE" "$CONFIG_FILE"
     fi
     [ -f "$CONFIG_FILE" ] || touch "$CONFIG_FILE"
 

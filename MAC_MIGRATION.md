@@ -9,8 +9,8 @@
   helper.
 - [ ] Review `desktop-agnostic.nix` before importing it. XDG config paths work
   on macOS, but Home Manager's `xdg.mimeApps` support is Linux-only.
-- [ ] Review the remaining profiles before adding them: `ai-tools`,
-  `cli-extras`, `browser-extras`, `communications`, `media`, `music`,
+- [ ] Review the remaining profiles before adding them: `cli-extras`,
+  `browser-extras`, `communications`, `media`, `music`,
   `gaming`, `personal-sync`, and `niri-desktop`.
 - [ ] Port or replace the host-specific Niri, Noctalia, power, monitoring, and
   display configuration. These are currently Linux desktop/laptop concerns.
@@ -20,7 +20,7 @@
   a separate versioned backup is needed to recover deleted or changed data.
 - [ ] Configure keyboard repeat rate and delay until repeat
 - [ ] Configure keyboard layout/caps/escape options like Linux
-- [ ] Add tailscale/ssh for remote access
+- [x] Add Tailscale/SSH for remote access
 - [ ] Use duti to set default apps
 - [ ] Configure touch id for sudo
 

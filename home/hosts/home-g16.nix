@@ -3,7 +3,7 @@
 {
   imports = [
     ../profiles/base.nix
-    ../profiles/ai-tools.nix
+    ../profiles/cloud-ai-tools.nix
     ../profiles/cli-extras.nix
     ../profiles/desktop-agnostic.nix
     ../profiles/browser-extras.nix

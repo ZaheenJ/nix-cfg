@@ -17,9 +17,9 @@ Day-to-day changes to home-g16 are applied on that machine with
   storage, `aarch64-darwin`. Flake output:
   `darwinConfigurations.mandubumz-server`; system files remain under
   `hosts/mandubu-server/`, with Home Manager in
-  `home/hosts/mandubu-server.nix`. Uses the base profile; SSH and Tailscale are
-  enabled. The user has tested this configuration. Deferred Mac work is in
-  `MAC_MIGRATION.md`.
+  `home/hosts/mandubumz-server.nix`. Uses the `base` and `cloud-ai-tools` profiles;
+  SSH and Tailscale are enabled. The user has tested this configuration.
+  Deferred Mac work is in `MAC_MIGRATION.md`.
 
 ## Hard facts about home-g16
 

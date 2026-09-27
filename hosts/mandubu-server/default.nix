@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   nixpkgs.hostPlatform = "aarch64-darwin";
+  nixpkgs.config.allowUnfreePackages = [ "antigravity-cli" ];
 
   system.stateVersion = 7;
   system.primaryUser = "mandubumz";

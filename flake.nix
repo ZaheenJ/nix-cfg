@@ -84,7 +84,7 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               extraSpecialArgs = { inherit inputs; };
-              users.mandubumz = import ./home/hosts/mandubu-server.nix;
+              users.mandubumz = import ./home/hosts/mandubumz-server.nix;
               backupFileExtension = "hm-bak";
             };
           }
