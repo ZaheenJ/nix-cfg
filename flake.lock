@@ -159,6 +159,26 @@
         "type": "github"
       }
     },
+    "nix-plist-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-darwin"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790283696,
+        "narHash": "sha256-c8J9LK40Mn+6UaS7sJZKSW28L2XkSivSF9dYl6bOeEc=",
+        "owner": "SushyDev",
+        "repo": "nix-plist-manager",
+        "rev": "f3ac4aaa9504e2f27da6314a47acea69a2e778e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SushyDev",
+        "repo": "nix-plist-manager",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -292,6 +312,7 @@
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
         "nix-darwin": "nix-darwin",
+        "nix-plist-manager": "nix-plist-manager",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-darwin": "nixpkgs-darwin",

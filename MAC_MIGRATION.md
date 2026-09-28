@@ -18,11 +18,13 @@
   evaluating macOS support, resource use, and service lifecycle needs.
 - [ ] Design sync and backup separately. Syncthing can synchronize files, but
   a separate versioned backup is needed to recover deleted or changed data.
-- [ ] Configure keyboard repeat rate and delay until repeat
-- [ ] Configure keyboard layout/caps/escape options like Linux
+- [x] Configure keyboard repeat rate and delay until repeat
+- [x] Map Caps Lock to Escape, including after login
+- [ ] Declare/verify keyboard layout like Linux (macOS currently uses U.S.)
+- [ ] Configure both Shift keys to toggle Caps Lock like Linux
 - [x] Add Tailscale/SSH for remote access
 - [ ] Use duti to set default apps
-- [ ] Configure touch id for sudo
+- [x] Configure Touch ID for sudo
 
 ## MacBook operation and storage
 

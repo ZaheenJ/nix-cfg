@@ -13,6 +13,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-plist-manager = {
+      url = "github:SushyDev/nix-plist-manager";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
