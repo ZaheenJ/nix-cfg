@@ -21,7 +21,7 @@
         "shift+enter=text:\\n"
       ];
       shell-integration = "detect";
-      shell-integration-features = "cursor,sudo,title,no-cursor";
+      shell-integration-features = "sudo,title,no-cursor,ssh-env,ssh-terminfo";
       gtk-single-instance = true;
     };
   };
