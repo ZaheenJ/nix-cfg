@@ -52,7 +52,8 @@ in
             {
               criteria = dell;
               status = "enable";
-              position = "1706,0";
+              # Niri rounds the laptop's scaled width up to 1707 for overlap checks.
+              position = "1707,0";
               scale = 1.0;
             }
           ];
