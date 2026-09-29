@@ -1,6 +1,7 @@
 let
   laptop = "eDP-1";
-  monitor = "Samsung Electric Company C32R50x H4CX605453Y";
+  samsung = "Samsung Electric Company C32R50x H4CX605453Y";
+  dell = "Dell Inc. DELL D2721H 7C0JQ23";
 in
 {
   services.kanshi = {
@@ -24,7 +25,7 @@ in
           name = "monitor-left";
           outputs = [
             {
-              criteria = monitor;
+              criteria = samsung;
               status = "enable";
               position = "0,0";
               scale = 1.0;
@@ -34,6 +35,25 @@ in
               status = "enable";
               position = "1920,0";
               scale = 1.5;
+            }
+          ];
+        };
+      }
+      {
+        profile = {
+          name = "monitor-right";
+          outputs = [
+            {
+              criteria = laptop;
+              status = "enable";
+              position = "0,0";
+              scale = 1.5;
+            }
+            {
+              criteria = dell;
+              status = "enable";
+              position = "1706,0";
+              scale = 1.0;
             }
           ];
         };
