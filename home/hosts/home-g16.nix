@@ -4,6 +4,7 @@
   imports = [
     ../profiles/base.nix
     ../profiles/cloud-ai-tools.nix
+    ../profiles/local-ai-client.nix
     ../profiles/cli-extras.nix
     ../profiles/desktop-agnostic.nix
     ../profiles/browser-extras.nix

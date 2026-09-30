@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
-  imports = [ ./keyboard.nix ];
+  imports = [
+    ./keyboard.nix
+    ./local-ai-server.nix
+  ];
 
   nixpkgs.hostPlatform = "aarch64-darwin";
   nixpkgs.config.allowUnfreePackages = [ "antigravity-cli" ];

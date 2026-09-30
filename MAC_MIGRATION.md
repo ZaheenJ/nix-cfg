@@ -14,8 +14,14 @@
   `gaming`, `personal-sync`, and `niri-desktop`.
 - [ ] Port or replace the host-specific Niri, Noctalia, power, monitoring, and
   display configuration. These are currently Linux desktop/laptop concerns.
-- [ ] Add local AI, Jellyfin, and Minecraft service configuration after
-  evaluating macOS support, resource use, and service lifecycle needs.
+- [x] Declare the local AI llama.cpp router as a system `launchd` daemon and
+  install Pi on home-g16.
+- [ ] Verify that the local AI daemon serves requests and uses Metal before
+  user login. If Metal inference fails in the system context, move it to a
+  login-time agent. FileVault must unlock the disk before the daemon can start;
+  macOS still boots its graphical login environment.
+- [ ] Add Jellyfin and Minecraft service configuration after evaluating macOS
+  support, resource use, and service lifecycle needs.
 - [ ] Design sync and backup separately. Syncthing can synchronize files, but
   a separate versioned backup is needed to recover deleted or changed data.
 - [x] Configure keyboard repeat rate and delay until repeat
@@ -34,6 +40,16 @@
 - [ ] Plan external storage: the roughly 500 GB internal drive is shared by
   macOS, Nix, applications, media, local AI models, and backups. Keep media,
   models, and backup copies on appropriately sized external storage.
+
+## Local AI operation
+
+The router listens only on the Mac's loopback interface. On home-g16, start
+`ssh -N -L 8080:127.0.0.1:8080 mandu`, then run `pi`. Pi's `/llama` command
+downloads, loads, and unloads models on the Mac; `/model` selects a loaded model.
+The router starts without a model and limits context to 16K tokens per model.
+Change that server setting, or add llama.cpp model presets, to use a different
+context size. The initial model directory is `/Users/mandubumz/models` pending
+the external-storage decision.
 
 ## Initial install choices
 
