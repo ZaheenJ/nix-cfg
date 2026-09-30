@@ -46,7 +46,7 @@
 The router listens only on the Mac's loopback interface. On home-g16, start
 `ssh -N -L 8080:127.0.0.1:8080 mandu`, then run `pi`. Pi's `/llama` command
 downloads, loads, and unloads models on the Mac; `/model` selects a loaded model.
-The router starts without a model and limits context to 16K tokens per model.
+The router starts without a model and limits context to 128K tokens per model.
 Change that server setting, or add llama.cpp model presets, to use a different
 context size. The initial model directory is `/Users/mandubumz/models` pending
 the external-storage decision.
