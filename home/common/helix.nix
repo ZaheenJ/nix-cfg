@@ -2,7 +2,8 @@
 {
   lib,
   pkgs,
-  inputs,
+  helixInput,
+  helixGrammarOverlays,
   ...
 }:
 let
@@ -16,7 +17,11 @@ in
 {
   programs.helix = {
     enable = true;
-    package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    package = (
+      helixInput.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
+        grammarOverlays = helixGrammarOverlays;
+      }
+    );
     extraPackages = with pkgs; [
       tinymist # typst LSP
       nil # nix LSP

@@ -13,6 +13,11 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Keep the Mac's Home Manager revision independent from the laptop's.
+    home-manager-darwin = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     nix-plist-manager = {
       url = "github:SushyDev/nix-plist-manager";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -25,6 +30,10 @@
     helix = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    helix-darwin = {
+      url = "github:helix-editor/helix";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
@@ -47,6 +56,7 @@
       nixpkgs-darwin,
       nix-darwin,
       home-manager,
+      home-manager-darwin,
       lanzaboote,
       ...
     }@inputs:
@@ -67,7 +77,11 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              extraSpecialArgs = { inherit inputs; };
+              extraSpecialArgs = {
+                inherit inputs;
+                helixInput = inputs.helix;
+                helixGrammarOverlays = [ (import ./overlays/helix-perl-grammar.nix) ];
+              };
               users.zaheenj = import ./home/hosts/home-g16.nix;
               # When a real file exists where hm wants a symlink (e.g. seeded
               # configs later made declarative), back it up instead of failing.
@@ -82,12 +96,16 @@
         modules = [
           { nixpkgs.overlays = overlays; }
           ./hosts/mandubu-server
-          home-manager.darwinModules.home-manager
+          home-manager-darwin.darwinModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              extraSpecialArgs = { inherit inputs; };
+              extraSpecialArgs = {
+                inherit inputs;
+                helixInput = inputs.helix-darwin;
+                helixGrammarOverlays = [ ];
+              };
               users.mandubumz = import ./home/hosts/mandubumz-server.nix;
               backupFileExtension = "hm-bak";
             };

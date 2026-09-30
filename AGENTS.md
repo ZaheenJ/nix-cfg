@@ -75,17 +75,25 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Waiting on upstream
 
+- **Helix Perl grammar with glibc 2.44**:
+  - The `tree-sitter-perl` grammar at `72a08a49` defines `bsearch`, which
+    conflicts with glibc 2.44's `_Generic` macro. Both the old and updated
+    Helix inputs hit this build failure with the updated Linux nixpkgs.
+  - The laptop applies `overlays/helix-perl-grammar.nix` to rename the local
+    function while retaining Perl syntax support. Remove the overlay once the
+    grammar fixes the conflict upstream. The Mac has an independent Helix input
+    and does not use this workaround.
 - **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
   - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
   - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
-  - *Status*: PR 1192 is merged. Nushell 0.115.1 is the latest release and the
-    current nixpkgs package, but it predates the merge. Nushell main declares
-    version 0.115.2 and pins a Reedline revision containing the fix. Temporarily
-    patched via `overlays/default.nix` + `overlays/reedline-1192.patch`; remove
-    the overlay once nixpkgs provides Nushell >= 0.115.2.
+  - *Status (2026-09-30)*: PR 1192 is merged and Nushell 0.116.0 has been
+    released, but nixpkgs-unstable still packages 0.115.1, which predates the
+    fix. Temporarily patched via `overlays/default.nix` +
+    `overlays/reedline-1192.patch`; remove the shared overlay once both hosts'
+    pinned nixpkgs inputs provide a Nushell release containing the fix.
 - **Intel LPMD**:
-  - Not implemented. As of 2026-09-08, nixpkgs-unstable has neither an
+  - Not implemented. As of 2026-09-30, nixpkgs-unstable has neither an
     `intel-lpmd` package nor a `services.intel-lpmd` option.
   - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
     upstream packaging lands or maintaining a custom package and service
@@ -99,10 +107,11 @@ Day-to-day changes to home-g16 are applied on that machine with
     battery percentage change, and the open driver's handler takes a runtime-PM
     reference even while the GPU is suspended.
   - *Upstream PR*: [NVIDIA/open-gpu-kernel-modules#1299](https://github.com/NVIDIA/open-gpu-kernel-modules/pull/1299).
-  - *Status*: Temporarily patched by `overlays/nvidia-nvpcf-1299.nix`. The
-    override follows nixpkgs' unpinned stable driver and should be removed once
-    the PR is released upstream. An incompatible or already-applied patch will
-    intentionally fail the build rather than silently losing the workaround.
+  - *Status (2026-09-30)*: PR 1299 is still open. Temporarily patched by
+    `overlays/nvidia-nvpcf-1299.nix`. The override follows nixpkgs' unpinned
+    stable driver and should be removed once the PR is released upstream. An
+    incompatible or already-applied patch will intentionally fail the build
+    rather than silently losing the workaround.
 
 ## User preferences (load-bearing)
 
@@ -119,6 +128,10 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Workflow rules
 
+- Update Linux inputs with `nix flake update nixpkgs nixos-hardware home-manager lanzaboote helix noctalia noctalia-greeter gaze`.
+  Update Mac inputs with `nix flake update nixpkgs-darwin nix-darwin home-manager-darwin helix-darwin nix-plist-manager`.
+  Home Manager and Helix have separate inputs for each host; keep their
+  `nixpkgs` follows pointed at the matching host input.
 - **Never write a NixOS/home-manager option or package name from memory.**
   Verify via mcp-nixos tools (`mcp__nixos__nix`, search/info actions) or
   `nix search`. **Always do this even if the user provides the package name.** Wrong-but-plausible option names are the #1 failure mode.
