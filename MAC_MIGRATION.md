@@ -51,6 +51,10 @@ Change that server setting, or add llama.cpp model presets, to use a different
 context size. The initial model directory is `/Users/mandubumz/models` pending
 the external-storage decision.
 
+The home-g16 client profile pins `billion-context` as a Pi package. Pi installs
+it on first launch after a rebuild; `/acp` shows its status. It compresses Pi's
+conversation history but does not change the router's context limit.
+
 ## Initial install choices
 
 - [ ] Keep the initial configuration free of Homebrew and Mac App Store apps.
