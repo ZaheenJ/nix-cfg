@@ -46,14 +46,21 @@
 The router listens only on the Mac's loopback interface. On home-g16, start
 `ssh -N -L 8080:127.0.0.1:8080 mandu`, then run `pi`. Pi's `/llama` command
 downloads, loads, and unloads models on the Mac; `/model` selects a loaded model.
-The router starts without a model and limits context to 128K tokens per model.
-Change that server setting, or add llama.cpp model presets, to use a different
-context size. The initial model directory is `/Users/mandubumz/models` pending
-the external-storage decision.
+The router starts without a model. Its presets use 32K context for
+`unsloth/Qwen3.8-27B-GGUF:IQ4_XS`, 131K for
+`unsloth/Qwen3.5-9B-GGUF:Q5_K_M`, and 32K for other models. The initial model
+directory is `/Users/mandubumz/models` pending the external-storage decision;
+models downloaded through `/llama` live in llama.cpp's cache instead. Switching
+models does not require deleting the old downloads; remove them only to reclaim
+disk space.
 
-The home-g16 client profile pins `billion-context` as a Pi package. Pi installs
-it on first launch after a rebuild; `/acp` shows its status. It compresses Pi's
-conversation history but does not change the router's context limit.
+The home-g16 client profile pins `billion-context` and
+`rpiv-ask-user-question` as Pi packages. Pi installs them on first launch after
+a rebuild; `/acp` shows the former's status. Pi defaults to the 27B model at
+`xhigh` thinking when loaded and uses 8K compaction reserves for its 32K
+context. The 9B model defaults to thinking on. These Pi settings and model
+overrides are declarative; change them in Nix, then rebuild. Pi's `/thinking`
+still changes the level for the current session.
 
 ## Initial install choices
 

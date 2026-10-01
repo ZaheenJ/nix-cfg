@@ -1,18 +1,79 @@
 {
   config,
-  lib,
   pkgs,
   ...
 }:
 let
   routerUrl = "http://127.0.0.1:8080";
-  billionContext = "npm:billion-context@0.1.178";
+  qwen38 = "unsloth/Qwen3.8-27B-GGUF:IQ4_XS";
+  qwen35 = "unsloth/Qwen3.5-9B-GGUF:Q5_K_M";
 in
 {
   programs.pi-coding-agent = {
     enable = true;
     extraPackages = [ pkgs.nodejs ];
+
+    settings = {
+      defaultProvider = "llama.cpp";
+      defaultModel = qwen38;
+      packages = [
+        "npm:billion-context@0.1.178"
+        "npm:@juicesharp/rpiv-ask-user-question@2.12.0"
+      ];
+      modelThinkingLevels = {
+        "llama.cpp/${qwen38}" = "xhigh";
+        "llama.cpp/${qwen35}" = "medium";
+      };
+      compaction.modelOverrides."llama.cpp/${qwen38}" = {
+        reserveTokens = 8192;
+        keepRecentTokens = 8192;
+      };
+    };
+
+    models.providers."llama.cpp".modelOverrides = {
+      "${qwen38}" = {
+        contextWindow = 32768;
+        reasoning = true;
+        thinkingLevelMap = {
+          off = "off";
+          minimal = null;
+          low = "low";
+          medium = "medium";
+          high = null;
+          xhigh = "xhigh";
+          max = null;
+        };
+        compat = {
+          thinkingFormat = "chat-template";
+          chatTemplateKwargs = {
+            enable_thinking."$var" = "thinking.enabled";
+            preserve_thinking = true;
+            reasoning_effort = {
+              "$var" = "thinking.effort";
+              omitWhenOff = true;
+            };
+          };
+        };
+      };
+      "${qwen35}" = {
+        contextWindow = 131072;
+        reasoning = true;
+        thinkingLevelMap = {
+          off = "off";
+          minimal = null;
+          low = null;
+          medium = "medium";
+          high = null;
+          xhigh = null;
+          max = null;
+        };
+        compat.thinkingFormat = "qwen-chat-template";
+      };
+    };
   };
+
+  home.file."${config.programs.pi-coding-agent.configDir}/settings.json".force = true;
+  home.file."${config.programs.pi-coding-agent.configDir}/models.json".force = true;
 
   home.sessionVariables = {
     LLAMA_BASE_URL = routerUrl;
@@ -22,48 +83,5 @@ in
   programs.nushell.extraEnv = ''
     $env.LLAMA_BASE_URL = "${routerUrl}"
     $env.ACP_AUTO_UPDATE = "0"
-  '';
-
-  # Pi updates settings.json for interactive choices, so merge the package entry.
-  home.activation.piBillionContext = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    pi_settings_dir="${config.home.homeDirectory}/.pi/agent"
-    pi_settings_file="$pi_settings_dir/settings.json"
-
-    if [ -L "$pi_settings_file" ]; then
-      echo "Cannot add ${billionContext}: Pi settings.json is a symlink" >&2
-      exit 1
-    fi
-
-    ${pkgs.coreutils}/bin/mkdir -p "$pi_settings_dir"
-    pi_settings_temp="$(${pkgs.coreutils}/bin/mktemp "$pi_settings_file.XXXXXX")"
-
-    if [ -f "$pi_settings_file" ]; then
-      if ! ${pkgs.jq}/bin/jq -e --arg plugin "${billionContext}" '
-        if type != "object" then error("Pi settings must be a JSON object")
-        elif ((.packages // []) | type) != "array" then error("Pi packages must be an array")
-        else
-          .packages = (
-            (.packages // [])
-            | map(select(
-                (if type == "string" then . elif type == "object" then (.source // "") else "" end
-                | test("(^|[:/])billion-context(-pi)?(@|/|$)")) | not
-              )) + [$plugin]
-          )
-        end
-      ' "$pi_settings_file" > "$pi_settings_temp"; then
-        ${pkgs.coreutils}/bin/rm "$pi_settings_temp"
-        exit 1
-      fi
-      ${pkgs.coreutils}/bin/chmod --reference="$pi_settings_file" "$pi_settings_temp"
-    else
-      ${pkgs.jq}/bin/jq -n --arg plugin "${billionContext}" '{ packages: [$plugin] }' > "$pi_settings_temp"
-      ${pkgs.coreutils}/bin/chmod 600 "$pi_settings_temp"
-    fi
-
-    if ${pkgs.coreutils}/bin/cmp -s "$pi_settings_temp" "$pi_settings_file"; then
-      ${pkgs.coreutils}/bin/rm "$pi_settings_temp"
-    else
-      ${pkgs.coreutils}/bin/mv "$pi_settings_temp" "$pi_settings_file"
-    fi
   '';
 }
