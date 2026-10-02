@@ -2,6 +2,7 @@
 let
   home = "/Users/mandubumz";
   models = "${home}/models";
+  # This 27B GGUF triggers Metal OOM with mmap even when partially offloaded.
   modelPresets = pkgs.writeText "llama-models.ini" ''
     version = 1
 
@@ -10,6 +11,8 @@ let
 
     [unsloth/Qwen3.8-27B-GGUF:IQ4_XS]
     c = 32768
+    load-mode = none
+    n-gpu-layers = 48
 
     [unsloth/Qwen3.5-9B-GGUF:Q5_K_M]
     c = 131072
@@ -29,7 +32,6 @@ in
         --jinja \
         --host 127.0.0.1 \
         --port 8080 \
-        -ngl 999 \
         -np 1
     '';
 

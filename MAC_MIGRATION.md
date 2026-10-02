@@ -52,7 +52,8 @@ The router starts without a model. Its presets use 32K context for
 directory is `/Users/mandubumz/models` pending the external-storage decision;
 models downloaded through `/llama` live in llama.cpp's cache instead. Switching
 models does not require deleting the old downloads; remove them only to reclaim
-disk space.
+disk space. The 27B preset uses non-mapped loading and 48 GPU layers because
+ordinary Metal loading exhausted this Mac's working set even at 32K context.
 
 The home-g16 client profile pins `billion-context` and
 `rpiv-ask-user-question` as Pi packages. Pi installs them on first launch after
