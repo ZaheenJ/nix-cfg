@@ -12,7 +12,9 @@ let
     [unsloth/Qwen3.8-27B-GGUF:IQ4_XS]
     c = 32768
     load-mode = none
-    n-gpu-layers = 48
+    flash-attn = on
+    cache-type-k = q8_0
+    cache-type-v = q8_0
 
     [unsloth/Qwen3.5-9B-GGUF:Q5_K_M]
     c = 131072
