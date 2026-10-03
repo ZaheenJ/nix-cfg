@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@juicesharp/rpiv-ask-user-question": "2.12.0",
-    "billion-context": "0.1.178"
+    "billion-context": "0.1.178",
+    "pi-clean-tps": "1.0.0"
   }
 }

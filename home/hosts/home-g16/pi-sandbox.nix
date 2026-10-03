@@ -167,6 +167,7 @@ in
     settings.packages = [
       "${piPackages}/node_modules/billion-context"
       "${piPackages}/node_modules/@juicesharp/rpiv-ask-user-question"
+      "${piPackages}/node_modules/pi-clean-tps"
     ];
   };
 
