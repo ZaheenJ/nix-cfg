@@ -52,8 +52,33 @@ The router starts without a model. Its presets use 32K context for
 directory is `/Users/mandubumz/models` pending the external-storage decision;
 models downloaded through `/llama` live in llama.cpp's cache instead. Switching
 models does not require deleting the old downloads; remove them only to reclaim
-disk space. The 27B preset uses non-mapped loading and 48 GPU layers because
-ordinary Metal loading exhausted this Mac's working set even at 32K context.
+disk space. The 27B preset uses non-mapped loading, flash attention, and Q8 K/V
+cache; llama.cpp chooses the GPU layer count to fit available memory. The boot
+daemon sets the wired GPU memory limit to 85% of this Mac's 18 GiB, and the
+router skips vision projectors because only text is needed.
+
+Potential llama.cpp tuning after testing the new memory limit and text-only
+loading:
+
+- Check the 27B load log for `offloaded N/66 layers`, plus memory pressure and
+  swap during a long Pi session. Only consider lowering `fit-target` from its
+  1024 MiB default (for example, to 512 MiB) if layers remain on the CPU and
+  there is headroom; forcing all layers onto the GPU risks an allocation error.
+- `cache-ram` permits up to 8192 MiB of host-RAM prompt cache by default. If
+  cache growth causes swapping, try a 1536–2048 MiB cap for 27B. Setting it
+  to 0 disables this extra cache; keep `cache-prompt` enabled for in-slot
+  prefix reuse. The extra cache can help a single Pi slot when auxiliary
+  requests interrupt an ongoing conversation.
+- `ctx-checkpoints` defaults to 32 per slot. One 27B checkpoint measured about
+  150 MiB; if these accumulate and pressure RAM, try a cap of 4–8. Fewer
+  checkpoints may require more prompt reprocessing.
+- `--no-webui` is optional for a Pi-only server and should save little memory
+  or compute. Embeddings, reranking, metrics, and built-in server tools are
+  already disabled by default. `--sleep-idle-seconds` would free model and KV
+  memory while idle, but the next request would have to reload the model.
+- The 9B preset still uses default F16 K/V cache and automatic flash attention
+  at 131K context. Benchmark Q8 K/V and explicit flash attention if that long
+  context becomes a regular workload.
 
 The home-g16 client profile pins `billion-context` and
 `rpiv-ask-user-question` as Pi packages. Pi installs them on first launch after

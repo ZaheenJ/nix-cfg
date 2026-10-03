@@ -23,6 +23,12 @@ in
 {
   environment.systemPackages = [ pkgs.llama-cpp ];
 
+  # 85% of this Mac's 18 GiB unified memory.
+  launchd.daemons.local-ai-gpu-memory-limit = {
+    command = "/usr/sbin/sysctl iogpu.wired_limit_mb=15667";
+    serviceConfig.RunAtLoad = true;
+  };
+
   launchd.daemons.local-ai-server = {
     script = ''
       /bin/mkdir -p ${models}
@@ -31,6 +37,7 @@ in
         --models-preset ${modelPresets} \
         --no-models-autoload \
         --models-max 1 \
+        --no-mmproj \
         --jinja \
         --host 127.0.0.1 \
         --port 8080 \
