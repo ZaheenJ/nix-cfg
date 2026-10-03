@@ -71,21 +71,38 @@ cache; llama.cpp chooses the GPU layer count to fit available memory. The boot
 daemon sets the wired GPU memory limit to 85% of this Mac's 18 GiB, and the
 router skips vision projectors because only text is needed.
 
-Potential llama.cpp tuning after testing the new memory limit and text-only
-loading:
+The 2026-10-03 no-MTP, text-only 27B run loaded all 66/66 layers on Metal.
+The server allocated 12,726 MiB of GPU model buffers, 1,088 MiB of Q8 KV
+cache at 32K context, 269 MiB of GPU compute buffers, and 573 MiB of CPU
+model/compute buffers. Across five completions, it generated 4,129 tokens at
+8.09 tokens/s. While the model ran, system free memory fell to 4–8%, and
+system-wide swapouts increased by 1,646 MiB. The server created 11 context
+checkpoints of 149.626 MiB each (about 1,646 MiB total), with no checkpoint
+evictions in the log. The separate host-RAM prompt cache reported 0 MiB used
+and had no save events. The checkpoint growth plausibly explains much of the
+new swap pressure, but system-wide swap counters cannot attribute pages to a
+specific allocation.
 
-- Check the 27B load log for `offloaded N/66 layers`, plus memory pressure and
-  swap during a long Pi session. Only consider lowering `fit-target` from its
-  1024 MiB default (for example, to 512 MiB) if layers remain on the CPU and
-  there is headroom; forcing all layers onto the GPU risks an allocation error.
-- `cache-ram` permits up to 8192 MiB of host-RAM prompt cache by default. If
-  cache growth causes swapping, try a 1536–2048 MiB cap for 27B. Setting it
-  to 0 disables this extra cache; keep `cache-prompt` enabled for in-slot
-  prefix reuse. The extra cache can help a single Pi slot when auxiliary
-  requests interrupt an ongoing conversation.
-- `ctx-checkpoints` defaults to 32 per slot. One 27B checkpoint measured about
-  150 MiB; if these accumulate and pressure RAM, try a cap of 4–8. Fewer
-  checkpoints may require more prompt reprocessing.
+The 27B preset now disables the separate host-RAM prompt cache and caps
+context checkpoints at four. MTP remains disabled: its previous trial generated
+about 6.3–6.5 tokens/s, versus about 8.1 tokens/s without it. Limiting
+checkpoints reduces memory used as the conversation grows, but does not remove
+the separate draft context that MTP creates when the model loads.
+
+Other llama.cpp tuning after this run:
+
+- Keep automatic GPU fitting with its default 1024 MiB target: all layers fit,
+  so there is no reason to force more GPU offload.
+- `ctx-checkpoints` defaults to 32 per slot. The new cap of 4 limits snapshots
+  to about 599 MiB at the observed checkpoint size, instead of the 1,646 MiB
+  reached here. Fewer checkpoints may require more prompt reprocessing when Pi
+  revises an earlier part of a conversation.
+- `cache-ram` defaults to an 8192 MiB *limit*, not a reservation. Reducing it
+  alone would not have prevented this run's swap, because no separate prompt
+  entries were saved. It is now 0 for the 27B preset. If
+  interrupted-conversation reuse proves useful, test at most 512 MiB. Keep
+  `cache-prompt` enabled for in-slot prefix reuse. An 8 GiB cache actually
+  filled on this Mac would create severe memory pressure.
 - `--no-webui` is optional for a Pi-only server and should save little memory
   or compute. Embeddings, reranking, metrics, and built-in server tools are
   already disabled by default. `--sleep-idle-seconds` would free model and KV
