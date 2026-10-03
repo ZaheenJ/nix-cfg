@@ -15,6 +15,7 @@
     ../profiles/personal-sync.nix
     ../profiles/niri-desktop.nix
     ./home-g16/power.nix
+    ./home-g16/pi-sandbox.nix
     ./home-g16/monitoring.nix
     ./home-g16/kanshi.nix
     ./home-g16/niri.nix

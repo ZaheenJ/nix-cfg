@@ -43,14 +43,28 @@
 
 ## Local AI operation
 
-The router listens only on the Mac's loopback interface. On home-g16, start
-`ssh -N -L 8080:127.0.0.1:8080 mandu`, then run `pi`. Pi's `/llama` command
-downloads, loads, and unloads models on the Mac; `/model` selects a loaded model.
+The router listens only on the Mac's loopback interface. On home-g16, run `pi`
+from the project directory. Its wrapper starts the `pi-llama-tunnel` user service
+on demand. SSH forwards the router to a private Unix socket, which Pi reaches
+at `127.0.0.1:8080` inside its Bubblewrap network namespace. Pi cannot make
+other direct network connections. If the tunnel or router is unavailable, check
+`systemctl --user status pi-llama-tunnel` and
+`journalctl --user -u pi-llama-tunnel`. `/model` selects a loaded model, and
+`/llama` can load and unload models. Its download search needs direct
+Hugging Face access and therefore does not work inside this sandbox. Download
+new models on the Mac instead, for example with a router request from the Mac:
+
+```sh
+curl -X POST http://127.0.0.1:8080/models \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"REPOSITORY:QUANTIZATION"}'
+```
+
 The router starts without a model. Its presets use 32K context for
 `unsloth/Qwen3.8-27B-GGUF:IQ4_XS`, 131K for
 `unsloth/Qwen3.5-9B-GGUF:Q5_K_M`, and 32K for other models. The initial model
 directory is `/Users/mandubumz/models` pending the external-storage decision;
-models downloaded through `/llama` live in llama.cpp's cache instead. Switching
+router downloads live in llama.cpp's cache instead. Switching
 models does not require deleting the old downloads; remove them only to reclaim
 disk space. The 27B preset uses non-mapped loading, flash attention, and Q8 K/V
 cache; llama.cpp chooses the GPU layer count to fit available memory. The boot
@@ -80,13 +94,26 @@ loading:
   at 131K context. Benchmark Q8 K/V and explicit flash attention if that long
   context becomes a regular workload.
 
-The home-g16 client profile pins `billion-context` and
-`rpiv-ask-user-question` as Pi packages. Pi installs them on first launch after
-a rebuild; `/acp` shows the former's status. Pi defaults to the 27B model at
+The home-g16 client builds `billion-context` and `rpiv-ask-user-question` from
+`pkgs/pi-extensions/package.json` and its integrity-locked
+`package-lock.json`. To change packages, edit the manifest and regenerate the
+lockfile in a normal networked shell (`npm install --package-lock-only
+--legacy-peer-deps` from `pkgs/pi-extensions`), then rebuild. Pi's own package
+install, update, remove, and config commands are disabled by the wrapper.
+`/acp` shows `billion-context` status. Pi defaults to the 27B model at
 `xhigh` thinking when loaded and uses 8K compaction reserves for its 32K
 context. The 9B model defaults to thinking on. These Pi settings and model
 overrides are declarative; change them in Nix, then rebuild. Pi's `/thinking`
 still changes the level for the current session.
+
+Pi sees only the current project directory writable at a stable `/workspace`
+path, its private state, and a private `/tmp` backed by a per-run directory
+under `/tmp/pi`. The state starts fresh at `~/.local/state/pi-sandbox`; the old
+`~/.pi/agent` is left untouched. Pi has read-only access to the Nix store and
+necessary Linux runtime paths, but not the host's SSH agent or Nix daemon.
+The current directory itself is writable, so launch Pi from a project rather
+than `~` if the rest of the home directory must stay protected. The router API
+is the one intentional external service and can initiate downloads on the Mac.
 
 ## Initial install choices
 

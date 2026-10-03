@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   ...
 }:
 let
@@ -11,15 +10,10 @@ in
 {
   programs.pi-coding-agent = {
     enable = true;
-    extraPackages = [ pkgs.nodejs ];
 
     settings = {
       defaultProvider = "llama.cpp";
       defaultModel = qwen38;
-      packages = [
-        "npm:billion-context@0.1.178"
-        "npm:@juicesharp/rpiv-ask-user-question@2.12.0"
-      ];
       modelThinkingLevels = {
         "llama.cpp/${qwen38}" = "xhigh";
         "llama.cpp/${qwen35}" = "medium";
