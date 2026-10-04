@@ -18,6 +18,17 @@ let
     cache-ram = 0
     ctx-checkpoints = 4
 
+    [byteshape/Qwen3.8-27B-GGUF:Qwen3.8-27B-IQ4_XS-3.84bpw]
+    c = 32768
+    load-mode = none
+    flash-attn = on
+    cache-type-k = q8_0
+    cache-type-v = q8_0
+    cache-ram = 0
+    ctx-checkpoints = 4
+    spec-type = draft-mtp
+    spec-draft-n-max = 3
+
     [unsloth/Qwen3.5-9B-GGUF:Q5_K_M]
     c = 131072
   '';
