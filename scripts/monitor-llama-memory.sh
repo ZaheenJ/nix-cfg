@@ -1,17 +1,25 @@
 #!/bin/sh
 set -eu
 
-log_file=${1:-/tmp/llama-memory-$(date +%Y%m%d-%H%M%S).log}
-model_pattern='llama-server.*--alias unsloth/Qwen3.8-27B-GGUF:IQ4_XS'
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  printf 'Usage: %s MODEL_ALIAS [LOG_FILE]\n' "$0" >&2
+  exit 2
+fi
 
-printf 'Waiting for the 27B model process; output: %s\n' "$log_file" >&2
+model_alias=$1
+log_file=${2:-/tmp/llama-memory-$(date +%Y%m%d-%H%M%S).log}
+
+printf 'Waiting for model %s; output: %s\n' "$model_alias" "$log_file" >&2
 while :; do
-  model_pid=$(pgrep -f "$model_pattern" | awk 'NR == 1 { print; exit }')
+  model_pid=$(pgrep -fl llama-server | awk -v alias="$model_alias" '
+    index($0, " --alias " alias " ") { print $1; exit }
+  ')
   [ -n "$model_pid" ] && break
   sleep 2
 done
 
 {
+  printf 'Model alias: %s\n' "$model_alias"
   printf 'Model PID: %s\n' "$model_pid"
   vm_stat | awk 'NR == 1'
   while kill -0 "$model_pid" 2>/dev/null; do
