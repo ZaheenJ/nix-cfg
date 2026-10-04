@@ -1,36 +1,44 @@
 # Qwen3.8-27B optimization options for the 18 GiB M3 Pro
 
-Reviewed 2026-10-03. This is a proposal based on the local configuration and
-logs, upstream implementation, and published model evaluations. The alternatives
-below have not been benchmarked on this Mac. No serving configuration was changed
-for this review.
+Updated 2026-10-04. Recommendations draw on local configuration and existing
+logs, source inspection, and publisher evaluations. ByteShape and MTP have now
+been tried locally; MLX, Splash, and SlotStream have not been benchmarked here.
+This review updates documentation only.
 
 ## Recommended order
 
-1. Measure the current Unsloth setup again after the checkpoint cap already
-   applied in [MAC_MIGRATION.md](MAC_MIGRATION.md). The recorded 8.09 tokens/s
-   predates that change.
-2. Try **ByteShape's full-vocabulary 3.84 BPW model, approximately 13.1 GB**,
-   with the same settings and MTP disabled. It is my first model-swap candidate.
-3. Test Q8 K / Q4 V cache, then Q4 K / Q4 V if needed. At 32K context these
+1. Keep **ByteShape 3.84 BPW without MTP** as the next comparison baseline.
+   Existing logs show about 8.1 tokens/s without MTP and 5.8 with it; these
+   were ordinary sessions, not controlled benchmark pairs.
+2. Test Q8 K / Q4 V cache, then Q4 K / Q4 V if needed. At 32K context these
    save approximately 256 MiB and 512 MiB respectively versus today's Q8/Q8.
-4. If more headroom is needed, compare **GSQ-RCO IQ3_S** with **vocabulary-pruned
+3. If more headroom is needed, compare **GSQ-RCO IQ3_S** with **vocabulary-pruned
    ByteShape**. GSQ retains the full vocabulary; pruning offers a different
    quality tradeoff. For coding/math, prefer an ASCII policy that also retains
    Greek and common terminal symbols.
-5. With memory pressure under control, retry **MTP with one draft token**.
-   Evaluate DFlash separately afterward. A high acceptance rate alone does not
-   establish that either method is faster.
+4. Run a bounded **MLX comparison** if testing another engine is worthwhile.
+   The linked 4-bit MLX checkpoint is larger than ByteShape, so measure memory
+   as carefully as speed. See [MLX and Splash](#7-native-mlx-and-splash).
+5. Treat further speculation as a kernel-and-memory experiment. **One draft
+   token minimizes rollback storage; it is not an established speed optimum.**
+   Splash has promising Metal results but no demonstrated 18 GiB setup in its
+   published tests. See the revised MTP section below.
+6. Keep **SlotStream as an optional quality comparison**. Its published
+   expectations for this memory tier are slower than the current 27B setup.
+   See [SlotStream](#8-qwen38-27b-versus-slotstream).
 
 The main opportunity is reducing weight traffic and memory pressure. Raising the
 GPU wired-memory limit cannot increase the Mac's physical memory.
 
-## Current setup and measured baseline
+## Local setup and measured baselines
 
 Configuration: [local-ai-server.nix](hosts/mandubu-server/local-ai-server.nix).
 Client: [local-ai-client.nix](home/profiles/local-ai-client.nix).
 
-| Item | Current configuration or observation |
+The following table records the October 3 Unsloth baseline summarized in
+[MAC_MIGRATION.md](MAC_MIGRATION.md); newer ByteShape observations follow it.
+
+| Item | Original configuration or observation |
 | --- | --- |
 | Hardware | M3 Pro, 18 GiB unified memory; CPU and GPU share this capacity |
 | Runtime inspected | llama.cpp 0.5.0, build 11146, commit `7fe450e` |
@@ -52,6 +60,26 @@ already a substantial improvement; count only further savings when comparing
 new proposals. Swap counters are system-wide, so the checkpoint growth is a
 plausible contributor rather than proven attribution of every swapped page.
 
+### October 4 update: ByteShape and MTP
+
+The working configuration now includes ByteShape's local 3.84 BPW file under
+`byteshape/Qwen3.8-27B-GGUF:IQ4_XS`, with 32K context, Q8/Q8 KV, four
+checkpoints, and its MTP settings commented out. The installed runtime remains
+0.5.0 / `7fe450e`; this Mac reports macOS 27.0.1.
+
+Existing `~/Library/Logs/llama-server.log` entries identify both of these
+processes as loading the same ByteShape snapshot:
+
+| Session | Completions | Output tokens | Aggregate decode | Other observations |
+| --- | ---: | ---: | ---: | --- |
+| PID 55323, MTP enabled | 4 | 3,291 | About 5.80 tokens/s | Acceptance 50.6–61.4%; reported mean length 2.52–2.84 |
+| PID 55599, MTP disabled | 3 | 4,109 | About 8.10 tokens/s | Individual completions 8.03–8.12 tokens/s |
+
+Rates are total output tokens divided by total logged decode time. Different
+requests and histories prevent a controlled speedup claim, but these sessions
+support leaving MTP off for normal use. They do not isolate kernel dispatch
+from memory pressure, drafting overhead, or other costs.
+
 ## 1. ByteShape IQ4_XS versus GSQ-RCO IQ3_S
 
 All sizes in this table are rounded **decimal GB of files**, not runtime memory.
@@ -60,7 +88,7 @@ macOS overhead determine whether a configuration fits.
 
 | Candidate | File size | Vocabulary | Intended use |
 | --- | ---: | --- | --- |
-| Current Unsloth UD-IQ4_XS | 14.3 GB | Full | Baseline |
+| Original Unsloth UD-IQ4_XS | 14.3 GB | Full | Original baseline |
 | ByteShape IQ4_XS, 3.84 BPW | 13.1 GB | Full | First quality-oriented replacement to test |
 | GSQ-RCO IQ3_S, 3.50 BPW | 11.8 GB; about 12.1 GB with MTP | Full | More headroom for caches and speculation |
 | Third-party ByteShape ASCII-P1M | 12.25 GB | Pruned | Retain ByteShape's transformer quantization while shrinking vocabulary tensors |
@@ -71,7 +99,7 @@ File sources: [Unsloth files](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/tr
 [GSQ-RCO files](https://huggingface.co/ISTA-DASLab/Qwen3.8-27B-GSQ-RCO-GGUF/tree/main),
 and the [pruned ByteShape model card](https://huggingface.co/islamsidratul/Qwen3.8-27B-ByteShape-IQ4_XS-ASCII-GGUF).
 
-**ByteShape is worth trying before assuming a move to GSQ is necessary.** However,
+**ByteShape remains a useful memory baseline after the local trial.** However,
 its IQ4_XS name describes a size class: ShapeLearn chooses mixed quantization
 types per tensor, averaging 3.84 bits per weight. It does not keep every tensor
 at four bits. GSQ-RCO also uses mixed precision, so the labels alone cannot rank
@@ -203,12 +231,38 @@ capacity is reduced, update Pi's context window and compaction budgets together.
 The defaults and option behavior can be checked against the installed
 `llama-server --help` and the [server documentation](https://github.com/ggml-org/llama.cpp/blob/7fe450e/tools/server/README.md).
 
-### Retry MTP with a smaller speculative window
+### MTP on Metal: verification width matters
 
-The previous three-token MTP trial had high acceptance but lower throughput.
-Freeing memory makes another test worthwhile; it does not establish the cause
-of that slowdown. The earlier logs do not establish whether MTP retained full
-GPU offload.
+The earlier Unsloth trial had high acceptance but lower throughput; the newer
+ByteShape trial also slowed down. The user's suspicion about narrow Metal
+batches has a concrete basis in the installed `7fe450e` source:
+
+- The ordinary matrix-matrix route requires `ne11 > 8`, non-transposed inputs,
+  an inner dimension of at least 64, and device support. Here `ne11` is the number of
+  activation rows being evaluated, not the configured draft maximum.
+  [Exact dispatch condition](https://github.com/ggml-org/llama.cpp/blob/7fe450e/ggml/src/ggml-metal/ggml-metal-common.cpp#L28)
+- Before that check, several formats have specialized small-batch kernels for
+  widths 2–8; K-quants use that route at widths 4–8. **IQ4_XS is absent from
+  those format lists.** A mixed-quant model can therefore take different paths
+  at different projections. Calling every batch below eight unoptimized would
+  be too broad. [Small-batch dispatch](https://github.com/ggml-org/llama.cpp/blob/7fe450e/ggml/src/ggml-metal/ggml-metal-ops.cpp#L2441)
+
+Verification usually evaluates the current token plus the proposed drafts.
+Eight actual drafts can therefore produce nine target rows and cross the
+matrix-matrix threshold. Setting `spec-draft-n-max = 8` does not guarantee that
+every round reaches it: drafting can stop early. Increasing `ubatch-size`
+only changes a capacity limit; it does not manufacture additional drafts.
+
+This explains a plausible source of mixed Mac results. Chip, quantization,
+actual verification width, acceptance, draft latency, GDN state handling,
+context length, and runtime revision all matter. Source inspection establishes
+the dispatch rules; profiling would be needed to attribute this Mac's slowdown.
+
+**Correction to the October 3 recommendation:** one-token MTP is a memory
+diagnostic, not a recommendation for peak generation speed. If investigating
+further, compare no MTP and draft maxima 1, 3, 7, and 8 with otherwise identical
+settings, only after ensuring they fit. The 7/8 pair probes the potential
+8-row/9-row boundary; log actual draft lengths and verify GPU placement.
 
 In this installed implementation, the target's recurrent rollback capacity
 grows with `spec-draft-n-max`. Using the observed approximately 149.6 MiB state
@@ -219,7 +273,12 @@ These allocations are separate from `ctx-checkpoints`.
 [Speculative allocation rule](https://github.com/ggml-org/llama.cpp/blob/7fe450e/common/common.h),
 [recurrent memory allocation](https://github.com/ggml-org/llama.cpp/blob/7fe450e/src/llama-memory-recurrent.cpp)
 
-Proposed MTP-only additions to a tested model preset:
+Eight draft positions reserve approximately **1,197 MiB of extra target state**,
+about 748 MiB more than three, before draft KV, compute buffers, and weights.
+Crossing the kernel threshold can therefore create a memory problem. Sequential
+MTP drafting and rejected proposals can also erase a faster verification pass.
+
+Optional settings for the one-token memory diagnostic:
 
 ```ini
 spec-type = draft-mtp
@@ -234,10 +293,9 @@ model's weights while creating another context; stripping an unused embedded
 head does not save RAM already avoided by skipping those tensors.
 [Installed-version speculative implementation](https://github.com/ggml-org/llama.cpp/blob/7fe450e/common/speculative.cpp)
 
-After a successful one-draft trial, compare two and three only if memory and
-end-to-end speed justify them. Hold the draft probability threshold fixed while
-varying depth; then tune it separately. Record accepted tokens per verification,
-draft time, verification time, and final throughput.
+Hold the draft probability threshold fixed while varying depth; then tune it
+separately. Record accepted tokens per verification, draft time, verification
+time, and final throughput. Keep MTP disabled unless the complete cycle wins.
 
 ## 4. What transfers from the linked Reddit setup?
 
@@ -324,9 +382,10 @@ alone before combining speculative methods.
   fusion work. Prioritize a newer build when its changes address this model or
   backend; CUDA speedups do not imply Metal speedups.
   [Release notes](https://github.com/ggml-org/llama.cpp/releases/tag/v0.5.0)
-- **Alternate runtimes:** MLX/MTPLX remains an experiment, not an established
-  capacity improvement. MTPLX's Qwen3.8-27B catalog recommends 32 GB and lists
-  a roughly 20 GiB bare minimum peak for its cited configuration.
+- **Alternate runtimes:** evaluate each engine's actual memory plan and model
+  support. MTPLX's cited Qwen3.8-27B configuration recommends 32 GB and lists
+  a roughly 20 GiB bare minimum peak. That is a requirement of that setup,
+  not a universal minimum for plain MLX. See the dedicated section below.
   [MTPLX requirements](https://github.com/youssofal/mtplx)
 
 For perspective, the M3 Pro has 150 GB/s memory bandwidth. Dividing that by the
@@ -342,9 +401,9 @@ features. [Apple specifications](https://support.apple.com/en-au/117736)
 ### Preserve the model-specific configuration
 
 The router's global `[*]` preset sets only context capacity. A newly named
-ByteShape or GSQ model will **not inherit the Unsloth-specific** load mode, cache
-types, or checkpoint cap. When implementing a trial, give its exact model ID a
-preset containing the existing settings first.
+model will **not inherit another model's** load mode, cache types, or checkpoint
+cap. ByteShape now has an explicit preset. Give any further candidate's exact
+model ID a preset containing the comparison settings first.
 
 Likewise, Pi's default model, reasoning mapping, `preserve_thinking`, context
 window, and compaction overrides are keyed to the current Unsloth ID. Carry
@@ -356,13 +415,14 @@ client behavior.
 
 | Trial | Change from its comparison baseline |
 | --- | --- |
-| A | Current Unsloth, current checkpoint cap, no MTP: fresh baseline |
-| B | Full-vocabulary ByteShape 3.84 BPW; retain A's settings |
+| A | ByteShape 3.84 BPW, current checkpoint cap, no MTP: controlled baseline |
+| B | Optional matched Unsloth comparison; ordinary ByteShape sessions already exist |
 | C | Best candidate with Q8 K / Q4 V, then optionally Q4/Q4 |
 | D | Checkpoint cap 2; separately test microbatch 256 if needed |
 | E | Compare GSQ or pruned ByteShape with matched settings and task quality checks |
-| F | Best stable configuration plus MTP depth 1; then test depth 2 if useful |
-| G | Separate small-DFlash or ngram experiment if headroom remains |
+| F | MLX without speculation, first at short context, then the actual working context |
+| G | Optional MTP width diagnostic or separate DFlash/ngram trial if headroom remains |
+| H | Splash capacity experiment or SlotStream quality comparison, using the criteria below |
 
 Use repeated short, medium, and near-32K prompts, plus a real multi-turn Pi
 coding session. Keep sampling and thinking effort fixed. Include English/math,
@@ -381,3 +441,164 @@ Record:
 
 Keep a change when it improves the desired tradeoff under sustained use. A load
 that succeeds but pushes the machine into swap is not a successful memory fit.
+
+## 7. Native MLX and Splash
+
+### Native MLX: worth measuring, with a tighter weight budget
+
+**Yes, consider an MLX baseline; a format change alone does not establish a
+speed or capacity improvement.** MLX uses its own operators, graph execution,
+and quantization layouts. llama.cpp's batch threshold does not determine MLX's
+behavior, but both engines use the same Mac memory bandwidth.
+
+The linked [MLX checkpoint](https://huggingface.co/mlx-community/Qwen3.8-27B-4bit)
+uses affine 4-bit quantization with groups of 64. Its weight index totals
+**16,054,262,240 bytes: 16.05 GB / 14.95 GiB**. This is materially larger than
+the approximately 13.1 GB ByteShape GGUF. The total includes vision weights;
+text-only loading can discard them, so it is not an exact resident-memory
+estimate. [Quantization configuration](https://huggingface.co/mlx-community/Qwen3.8-27B-4bit/blob/main/config.json),
+[weight index](https://huggingface.co/mlx-community/Qwen3.8-27B-4bit/blob/main/model.safetensors.index.json)
+
+With 18 GiB total, macOS, attention KV, recurrent state, and prefill scratch
+still need room. The same attention geometry at 32K needs approximately 2 GiB
+of unquantized 16-bit KV. Plain MLX generation defaults to no KV quantization,
+so comparing defaults against today's Q8 llama.cpp cache would be misleading.
+The CLI provides `--kv-bits`, `--quantized-kv-start`, and
+`--prefill-step-size`; an initial memory-conscious trial can use 8-bit KV from
+step zero and a prefill step of 256. These affect attention caches and scratch,
+not the quantization of the model's recurrent state.
+[Generation implementation and options](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/generate.py)
+
+The inspected MLX-LM Qwen implementation supports text-only loading by removing
+vision tensors, but it also drops `mtp.*` weights. **Downloading an MLX model
+does not automatically enable native MTP.** An engine implementing the matching
+speculative method is a separate choice.
+[Qwen implementation](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/models/qwen3_5.py)
+
+Suggested evaluation:
+
+1. Unload the llama.cpp model before loading MLX; two servers can otherwise
+   exceed memory even if each has a one-model policy.
+2. Start without speculation at short context. Record peak process memory,
+   swap activity, prefill and decode speed, then repeat at 8K and 32K if it fits.
+3. Keep reasoning effort, output length, and tool templates comparable. Test
+   cached follow-up turns before adopting it for Pi.
+4. If this 4-bit model swaps, consider a smaller audited MLX quantization or
+   return to the smaller GGUF. Lower precision introduces another quality
+   variable; it is not a clean engine-only comparison.
+
+Do not treat `--max-kv-size` as equivalent to llama.cpp's context-capacity
+setting: MLX documents it as a rotating cache that can discard old attention
+history. Preserve the intended context semantics when benchmarking.
+[MLX cache documentation](https://github.com/ml-explore/mlx-lm#long-prompts-and-generations)
+
+### Splash: promising Metal design, insufficient evidence for 18 GiB
+
+**Splash directly addresses the relevant performance problem.** It combines
+DFlash2, model-specific Metal kernels, prefix reuse, and memory planning. It
+supports Qwen3.8-27B in both MLX and supported GGUF formats, so using it does not
+require choosing the larger MLX file. Your M3 Pro and macOS 27.0.1 satisfy its
+M3-or-newer and macOS 26.4-or-newer platform requirements.
+[Splash overview](https://github.com/incoai/splash)
+
+The publisher reports the following on the same Unsloth UD-Q4_K_M weights:
+
+| Engine | M3 Max, 40-core GPU | M5 Pro, 20-core GPU |
+| --- | ---: | ---: |
+| llama.cpp | 17 tokens/s | 16 tokens/s |
+| llama.cpp with MTP | 20 tokens/s | 27 tokens/s |
+| Splash | 92 tokens/s | 74 tokens/s |
+
+These selected coding-prompt measurements use different hardware from yours
+and compare different speculative algorithms. They establish that effective
+Mac speculation is possible, not that this M3 Pro will reach those rates.
+The documented lower-memory trial uses a **24 GB Mac with IQ3_XXS**.
+[Benchmark conditions and lower-memory tests](https://github.com/incoai/splash/blob/main/docs/performance.md)
+
+The normal 4-bit examples specify **at least 36 GB, with 48 GB recommended**;
+smaller variants target 24 GB machines. Consequently, I would not plan on the
+standard 27B 4-bit Splash setup fitting your 18 GiB Mac.
+[Published requirements](https://github.com/incoai/splash#quick-start)
+
+For an 18 GiB experiment, I would start with a substantially smaller supported
+GGUF, `--language-only`, a short `--max-context`, and a memory plan that leaves macOS
+room. Whether a particular low-bit candidate fits remains unverified. Keep
+the quality comparison against ByteShape: a fast, much lower-precision model
+may lose the reason for choosing the 27B.
+
+Two implementation constraints matter here:
+
+- `--max-memory` caps Metal allocations, not total process RSS. Disk KV/state
+  caching can help retained conversations, but does not remove the need for
+  active model and execution memory.
+- Splash's documented external draft input is its family's BF16 safetensors
+  checkpoint, prepared into its Q4 layout. Do not assume the tiny HermiHg GGUF
+  drafter from the llama.cpp section can be substituted directly.
+
+The loader checks architecture and tensor formats, so ByteShape or a pruned
+GGUF needs explicit compatibility validation even when its nominal quant type
+is supported. [Loading, drafts, and memory behavior](https://github.com/incoai/splash/blob/main/DEVELOPMENT.md)
+
+My priority on this machine is a bounded plain-MLX comparison before investing
+in a Splash integration. Splash merits a capacity experiment if a suitable
+smaller quant retains the quality you need; its full 4-bit configuration is a
+stronger candidate for a machine with more memory.
+
+## 8. Qwen3.8-27B versus SlotStream
+
+**For interactive work on this 18 GiB Mac, I would keep the current 27B ahead
+of SlotStream unless task testing shows a substantial quality advantage.**
+The observed approximately 8 tokens/s is not a proven hard ceiling across all
+engines. Still, improving latency enough for everyday use matters more than
+crossing ten as an arbitrary threshold.
+
+SlotStream serves **Qwen3.8-Flash-Next**, a different MoE model, by retaining
+shared weights and frequently used experts in RAM and reading other experts
+from SSD. Its roughly 105 GB download and approximately 110 GB free-disk
+requirement are a sizable commitment on this Mac. It supports Macs with at
+least 16 GB and can serve Pi-compatible APIs.
+[SlotStream design and requirements](https://github.com/carloslfu/slotstream)
+
+| Evidence | Published speed | What it tells us |
+| --- | ---: | --- |
+| SlotStream's 16–<24 GB planning range | Approximately 1–6 tokens/s | Relevant memory tier; not an M3 Pro measurement |
+| Community M2, 16 GB | About 1.4–1.5 tokens/s | A measured small-memory example, with a different chip/SSD |
+| Community M4 Pro, 24 GB, release 0.2.25 | About 5.4 tokens/s | A newer Pro chip with more memory still trails your observed 27B rate |
+| Historical M5 Pro, 48 GB, 22 GB process target | 15.86 tokens/s | Its process budget already exceeds this Mac's total RAM |
+
+The small-memory range's upper end is not a measured result on a real Mac in
+that tier. SlotStream's simulated 18 GB plan uses an 11.5 GB process target,
+32K context, and no MTP; this is a planner example, not the measured plan for
+your 18 GiB machine. [Hardware evidence and planning assumptions](https://github.com/carloslfu/slotstream/blob/main/docs/HARDWARE.md)
+
+**My inference:** SlotStream is likely slower here than the resident 27B.
+Its larger model could nevertheless solve tasks the 27B misses. Neither the
+parameter count nor these throughput measurements establish that quality gain.
+The source artifact's publisher also reports meaningful degradation from uniform
+4-bit quantization and prefers its mixed 4/8-bit build on a perplexity test.
+That does not rank coding ability against the 27B, and it does not establish
+SlotStream compatibility with the alternate artifact.
+[Flash-Next quantization evaluation](https://huggingface.co/pipenetwork/Qwen3.8-Flash-Next-MLX-4bit#quality)
+
+For scale, 1,000 generated tokens take about **2.1 minutes at 8 tokens/s**, versus
+**2.8–16.7 minutes at 1–6 tokens/s**, before prompt processing and tool calls.
+Reasoning tokens count toward that time. Long cold prompts add SSD work, while
+cached follow-up turns can be much better.
+
+If testing SlotStream, start with `slotstream doctor` to inspect its memory and
+disk plan before downloading the model. Compare the same 5–10 real coding/math
+tasks: successful fixes, retries, elapsed time to a correct answer, tool-call
+validity, cold prefill, and cached follow-ups. Prefer internal SSD storage for
+this workload; the project's hardware reports show large slowdowns on a
+10 Gb/s external drive.
+
+Normalize thinking settings: `slotstream launch pi` defaults to thinking off,
+whereas this repository's Unsloth 27B profile defaults to `xhigh`. Also, the launcher
+writes Pi provider configuration; this setup should express any adopted
+provider declaratively and route it through the existing tunnel/sandbox design.
+Use the server's reported context limit instead of copying the guide's 64K
+example. [Pi integration details](https://github.com/carloslfu/slotstream/blob/main/docs/CODING-AGENTS.md#pi)
+
+For now: use the resident 27B for harder local tasks, compare the existing 9B
+for routine edits where responsiveness matters, and evaluate SlotStream as an
+optional slower model for tasks that justify the wait.
