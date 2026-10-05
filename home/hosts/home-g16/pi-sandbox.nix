@@ -24,6 +24,7 @@ let
     pkgs.ripgrep
     pkgs.fd
     pkgs.jq
+    pkgs.poppler-utils
     pkgs.curl
     pkgs.socat
     pkgs.bash
