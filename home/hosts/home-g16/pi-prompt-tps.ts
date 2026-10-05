@@ -55,7 +55,10 @@ export default function (pi: ExtensionAPI) {
 		active = false;
 	});
 
-	pi.on("agent_start", (_event, ctx) => reset(ctx));
+	pi.on("before_agent_start", (_event, ctx) => reset(ctx));
+	pi.on("agent_start", () => {
+		active = true;
+	});
 
 	pi.on("message_update", (event, ctx) => {
 		if (!active || event.message.role !== "assistant") return;

@@ -31,6 +31,7 @@ test("averages decode speed across model responses in one prompt", () => {
 			});
 		const end = (tokens) => emit("message_end", { message: { role: "assistant", usage: { output: tokens } } });
 
+		emit("before_agent_start");
 		emit("agent_start");
 		now = 100;
 		delta("abcdefghijkl");
@@ -52,6 +53,17 @@ test("averages decode speed across model responses in one prompt", () => {
 		emit("agent_end");
 		assert.equal(statuses.at(-1), "Prompt decode 15.9 tok/s");
 
+		emit("agent_start"); // Automatic retry belongs to the same prompt.
+		now = 8300;
+		delta("abcd");
+		now = 9300;
+		delta("x".repeat(15));
+		assert.equal(statuses.at(-1), "Prompt decode ~12.5 tok/s");
+		now = 9400;
+		end(10);
+		assert.equal(statuses.at(-1), "Prompt decode 13.6 tok/s");
+
+		emit("before_agent_start");
 		emit("agent_start");
 		assert.equal(statuses.at(-1), undefined);
 	} finally {
