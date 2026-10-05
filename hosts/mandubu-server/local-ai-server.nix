@@ -18,7 +18,8 @@ let
     cache-ram = 0
     ctx-checkpoints = 4
 
-    [byteshape/Qwen3.8-27B-GGUF:Qwen3.8-27B-IQ4_XS-3.84bpw]
+    [byteshape/Qwen3.8-27B-GGUF:IQ4_XS]
+    model = ${home}/.cache/huggingface/hub/models--byteshape--Qwen3.8-27B-GGUF/snapshots/3fdfbd9b4a618303ad36edb151e95d134ece8c18/Qwen3.8-27B-IQ4_XS-3.84bpw.gguf
     c = 32768
     load-mode = none
     flash-attn = on
@@ -26,8 +27,8 @@ let
     cache-type-v = q8_0
     cache-ram = 0
     ctx-checkpoints = 4
-    spec-type = draft-mtp
-    spec-draft-n-max = 3
+    # spec-type = draft-mtp
+    # spec-draft-n-max = 1
 
     [unsloth/Qwen3.5-9B-GGUF:Q5_K_M]
     c = 131072

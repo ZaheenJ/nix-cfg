@@ -61,13 +61,16 @@ curl -X POST http://127.0.0.1:8080/models \
 ```
 
 The router starts without a model. Its presets use 32K context for
+`byteshape/Qwen3.8-27B-GGUF:IQ4_XS` and
 `unsloth/Qwen3.8-27B-GGUF:IQ4_XS`, 131K for
 `unsloth/Qwen3.5-9B-GGUF:Q5_K_M`, and 32K for other models. The initial model
 directory is `/Users/mandubumz/models` pending the external-storage decision;
-router downloads live in llama.cpp's cache instead. Switching
-models does not require deleting the old downloads; remove them only to reclaim
-disk space. The 27B preset uses non-mapped loading, flash attention, and Q8 K/V
-cache; llama.cpp chooses the GPU layer count to fit available memory. The boot
+router downloads live in llama.cpp's cache instead. The short Byteshape alias
+points to a specific GGUF in the Hugging Face cache, so preserve that snapshot
+or update its preset path if the cache is cleaned. Switching models does not
+require deleting the old downloads; remove them only to reclaim disk space.
+The 27B presets use non-mapped loading, flash attention, and Q8 K/V cache;
+llama.cpp chooses the GPU layer count to fit available memory. The boot
 daemon sets the wired GPU memory limit to 85% of this Mac's 18 GiB, and the
 router skips vision projectors because only text is needed.
 
@@ -83,11 +86,12 @@ and had no save events. The checkpoint growth plausibly explains much of the
 new swap pressure, but system-wide swap counters cannot attribute pages to a
 specific allocation.
 
-The 27B preset now disables the separate host-RAM prompt cache and caps
-context checkpoints at four. MTP remains disabled: its previous trial generated
-about 6.3–6.5 tokens/s, versus about 8.1 tokens/s without it. Limiting
-checkpoints reduces memory used as the conversation grows, but does not remove
-the separate draft context that MTP creates when the model loads.
+Both 27B presets disable the separate host-RAM prompt cache and cap context
+checkpoints at four. The Unsloth MTP trial generated about 6.3–6.5 tokens/s,
+versus about 8.1 tokens/s without it; the Byteshape preset is currently also
+configured without MTP. Limiting checkpoints reduces memory used as the
+conversation grows, but does not remove the separate draft context that MTP
+creates when the model loads.
 
 Other llama.cpp tuning after this run:
 
@@ -117,11 +121,12 @@ The home-g16 client builds `billion-context` and `rpiv-ask-user-question` from
 lockfile in a normal networked shell (`npm install --package-lock-only
 --legacy-peer-deps` from `pkgs/pi-extensions`), then rebuild. Pi's own package
 install, update, remove, and config commands are disabled by the wrapper.
-`/acp` shows `billion-context` status. Pi defaults to the 27B model at
-`xhigh` thinking when loaded and uses 8K compaction reserves for its 32K
-context. The 9B model defaults to thinking on. These Pi settings and model
-overrides are declarative; change them in Nix, then rebuild. Pi's `/thinking`
-still changes the level for the current session.
+`/acp` shows `billion-context` status. Pi defaults to the Byteshape 27B model
+at `xhigh` thinking when loaded. Both 27B aliases offer off, low, medium, and
+xhigh thinking and use 8K compaction reserves for their 32K context. The 9B
+model defaults to thinking on. These Pi settings and model overrides are
+declarative; change them in Nix, then rebuild. Pi's `/thinking` still changes
+the level for the current session.
 
 Pi sees only the current project directory writable at a stable `/workspace`
 path, its private state, and a private `/tmp` backed by a per-run directory
