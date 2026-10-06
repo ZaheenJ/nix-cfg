@@ -30,6 +30,16 @@ let
     # spec-type = draft-mtp
     # spec-draft-n-max = 1
 
+    [islamsidratul/Qwen3.8-27B-ByteShape-IQ4_XS-ASCII-GGUF:IQ4_XS]
+    hf-repo = islamsidratul/Qwen3.8-27B-ByteShape-IQ4_XS-ASCII-GGUF:IQ4_XS
+    c = 65536
+    load-mode = none
+    flash-attn = on
+    cache-type-k = q8_0
+    cache-type-v = q8_0
+    cache-ram = 0
+    ctx-checkpoints = 4
+
     [unsloth/Qwen3.5-9B-GGUF:Q5_K_M]
     c = 131072
   '';

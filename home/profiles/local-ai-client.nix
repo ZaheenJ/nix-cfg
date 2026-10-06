@@ -4,6 +4,7 @@
 }:
 let
   routerUrl = "http://127.0.0.1:8080";
+  qwen38Ascii = "islamsidratul/Qwen3.8-27B-ByteShape-IQ4_XS-ASCII-GGUF:IQ4_XS";
   qwen38Byteshape = "byteshape/Qwen3.8-27B-GGUF:IQ4_XS";
   qwen38Unsloth = "unsloth/Qwen3.8-27B-GGUF:IQ4_XS";
   qwen35 = "unsloth/Qwen3.5-9B-GGUF:Q5_K_M";
@@ -42,19 +43,24 @@ in
 
     settings = {
       defaultProvider = "llama.cpp";
-      defaultModel = qwen38Byteshape;
+      defaultModel = qwen38Ascii;
       modelThinkingLevels = {
+        "llama.cpp/${qwen38Ascii}" = "xhigh";
         "llama.cpp/${qwen38Byteshape}" = "xhigh";
         "llama.cpp/${qwen38Unsloth}" = "xhigh";
         "llama.cpp/${qwen35}" = "medium";
       };
       compaction.modelOverrides = {
+        "llama.cpp/${qwen38Ascii}" = qwen38Compaction;
         "llama.cpp/${qwen38Byteshape}" = qwen38Compaction;
         "llama.cpp/${qwen38Unsloth}" = qwen38Compaction;
       };
     };
 
     models.providers."llama.cpp".modelOverrides = {
+      "${qwen38Ascii}" = qwen38Override // {
+        contextWindow = 65536;
+      };
       "${qwen38Byteshape}" = qwen38Override;
       "${qwen38Unsloth}" = qwen38Override;
       "${qwen35}" = {

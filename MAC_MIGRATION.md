@@ -60,12 +60,14 @@ curl -X POST http://127.0.0.1:8080/models \
   -d '{"model":"REPOSITORY:QUANTIZATION"}'
 ```
 
-The router starts without a model. Its presets use 32K context for
+The router starts without a model. Its presets use 64K context for
+`islamsidratul/Qwen3.8-27B-ByteShape-IQ4_XS-ASCII-GGUF:IQ4_XS`, 32K for
 `byteshape/Qwen3.8-27B-GGUF:IQ4_XS` and
 `unsloth/Qwen3.8-27B-GGUF:IQ4_XS`, 131K for
 `unsloth/Qwen3.5-9B-GGUF:Q5_K_M`, and 32K for other models. The initial model
 directory is `/Users/mandubumz/models` pending the external-storage decision;
-router downloads live in llama.cpp's cache instead. The short Byteshape alias
+router downloads live in llama.cpp's cache instead. The ASCII preset fetches
+its GGUF from Hugging Face when explicitly loaded. The short Byteshape alias
 points to a specific GGUF in the Hugging Face cache, so preserve that snapshot
 or update its preset path if the cache is cleaned. Switching models does not
 require deleting the old downloads; remove them only to reclaim disk space.
@@ -86,7 +88,7 @@ and had no save events. The checkpoint growth plausibly explains much of the
 new swap pressure, but system-wide swap counters cannot attribute pages to a
 specific allocation.
 
-Both 27B presets disable the separate host-RAM prompt cache and cap context
+All three 27B presets disable the separate host-RAM prompt cache and cap context
 checkpoints at four. The Unsloth MTP trial generated about 6.3–6.5 tokens/s,
 versus about 8.1 tokens/s without it; the Byteshape preset is currently also
 configured without MTP. Limiting checkpoints reduces memory used as the
@@ -121,12 +123,13 @@ The home-g16 client builds `billion-context` and `rpiv-ask-user-question` from
 lockfile in a normal networked shell (`npm install --package-lock-only
 --legacy-peer-deps` from `pkgs/pi-extensions`), then rebuild. Pi's own package
 install, update, remove, and config commands are disabled by the wrapper.
-`/acp` shows `billion-context` status. Pi defaults to the Byteshape 27B model
-at `xhigh` thinking when loaded. Both 27B aliases offer off, low, medium, and
-xhigh thinking and use 8K compaction reserves for their 32K context. The 9B
-model defaults to thinking on. These Pi settings and model overrides are
-declarative; change them in Nix, then rebuild. Pi's `/thinking` still changes
-the level for the current session.
+`/acp` shows `billion-context` status. Pi defaults to the ASCII-pruned
+ByteShape 27B model at `xhigh` thinking when loaded. All three 27B aliases
+offer off, low, medium, and xhigh thinking and use 8K compaction reserves.
+The pruned model is intended for English and ASCII code; use a full-vocabulary
+alias for accented or non-Latin text. The 9B model defaults to thinking on.
+These Pi settings and model overrides are declarative; change them in Nix,
+then rebuild. Pi's `/thinking` still changes the level for the current session.
 
 Pi sees only the current project directory writable at a stable `/workspace`
 path, its private state, and a private `/tmp` backed by a per-run directory
