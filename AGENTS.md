@@ -75,6 +75,16 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Waiting on upstream
 
+- **KeePassXC Wayland Auto-Type on niri**:
+  - KeePassXC is wanted for Daybreak passkeys, but installation is deferred until
+    the user asks. Browser passwords and passkeys use KeePassXC-Browser without
+    Wayland Auto-Type or desktop portals.
+  - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) adds
+    portal-based Auto-Type in 2.8.0. As of 2026-10-08, it is in beta and pinned
+    nixpkgs has 2.7.12. The current niri GNOME/GTK portal setup does not provide
+    working GlobalShortcuts and RemoteDesktop support; revisit when compatible
+    backends are available. [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/)
+    is a suggested but unverified workaround on niri.
 - **Helix Perl grammar with glibc 2.44**:
   - The `tree-sitter-perl` grammar at `72a08a49` defines `bsearch`, which
     conflicts with glibc 2.44's `_Generic` macro. Both the old and updated
