@@ -54,6 +54,7 @@
     enable = true;
     nssmdns4 = true;
   };
+  services.printing.enable = true;
   services.fwupd.enable = true;
 
   # VIA keyboard (4d4b:3068) and RAWM mouse (1915:232a) hidraw access (from Arch udev rules).
