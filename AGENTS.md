@@ -89,6 +89,8 @@ Day-to-day changes to home-g16 are applied on that machine with
   - The `tree-sitter-perl` grammar at `72a08a49` defines `bsearch`, which
     conflicts with glibc 2.44's `_Generic` macro. Both the old and updated
     Helix inputs hit this build failure with the updated Linux nixpkgs.
+  - *Status (2026-10-08)*: The updated laptop Helix input still pins the
+    affected grammar revision.
   - The laptop applies `overlays/helix-perl-grammar.nix` to rename the local
     function while retaining Perl syntax support. Remove the overlay once the
     grammar fixes the conflict upstream. The Mac has an independent Helix input
@@ -97,14 +99,14 @@ Day-to-day changes to home-g16 are applied on that machine with
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
   - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
   - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
-  - *Status (2026-09-30)*: PR 1192 is merged and Nushell 0.116.0 has been
-    released, but nixpkgs-unstable still packages 0.115.1, which predates the
-    fix. Temporarily patched via `overlays/default.nix` +
+  - *Status (2026-10-08)*: PR 1192 is merged and Nushell 0.116.0 has been
+    released, but both hosts' pinned nixpkgs inputs still package 0.115.1,
+    which predates the fix. Temporarily patched via `overlays/default.nix` +
     `overlays/reedline-1192.patch`; remove the shared overlay once both hosts'
     pinned nixpkgs inputs provide a Nushell release containing the fix.
 - **Intel LPMD**:
-  - Not implemented. As of 2026-09-30, nixpkgs-unstable has neither an
-    `intel-lpmd` package nor a `services.intel-lpmd` option.
+  - Not implemented. As of 2026-10-08, the updated Linux nixpkgs pin has
+    neither an `intel-lpmd` package nor a `services.intel-lpmd` option.
   - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
     upstream packaging lands or maintaining a custom package and service
     becomes worthwhile.
@@ -117,7 +119,8 @@ Day-to-day changes to home-g16 are applied on that machine with
     battery percentage change, and the open driver's handler takes a runtime-PM
     reference even while the GPU is suspended.
   - *Upstream PR*: [NVIDIA/open-gpu-kernel-modules#1299](https://github.com/NVIDIA/open-gpu-kernel-modules/pull/1299).
-  - *Status (2026-09-30)*: PR 1299 is still open. Temporarily patched by
+  - *Status (2026-10-08)*: PR 1299 is still open; the updated Linux pin uses
+    stable driver 595.104.02. Temporarily patched by
     `overlays/nvidia-nvpcf-1299.nix`. The override follows nixpkgs' unpinned
     stable driver and should be removed once the PR is released upstream. An
     incompatible or already-applied patch will intentionally fail the build
