@@ -76,9 +76,9 @@ Day-to-day changes to home-g16 are applied on that machine with
 ## Waiting on upstream
 
 - **KeePassXC Wayland Auto-Type on niri**:
-  - KeePassXC is wanted for Daybreak passkeys, but installation is deferred until
-    the user asks. Browser passwords and passkeys use KeePassXC-Browser without
-    Wayland Auto-Type or desktop portals.
+  - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
+    passkeys. The user manages the Firefox extension; browser passwords and
+    passkeys work without Wayland Auto-Type or desktop portals.
   - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) adds
     portal-based Auto-Type in 2.8.0. As of 2026-10-08, it is in beta and pinned
     nixpkgs has 2.7.12. The current niri GNOME/GTK portal setup does not provide

@@ -8,6 +8,7 @@
     ../profiles/cli-extras.nix
     ../profiles/desktop-agnostic.nix
     ../profiles/browser-extras.nix
+    ../profiles/password-manager.nix
     ../profiles/communications.nix
     ../profiles/media.nix
     ../profiles/music.nix
