@@ -3,6 +3,7 @@
   imports = [
     ./keyboard.nix
     ./local-ai-server.nix
+    ./power.nix
   ];
 
   nixpkgs.hostPlatform = "aarch64-darwin";
