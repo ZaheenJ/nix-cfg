@@ -27,6 +27,12 @@
       (
           address: "127.0.0.1:6600",
           lyrics_dir: "${config.xdg.userDirs.music}",
+          theme: "${./music/rmpc-theme.ron}",
+          keybinds: (
+              queue: {
+                  "sm": SortByColumn(5),
+              },
+          ),
       )
     '';
   };
