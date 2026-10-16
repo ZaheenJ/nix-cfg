@@ -1,7 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   home.packages = with pkgs; [
     vesktop
+    inputs.serein.packages.${pkgs.stdenv.hostPlatform.system}.serein
     teams-for-linux
     slack
     zoom-us
