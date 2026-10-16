@@ -75,6 +75,19 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Waiting on upstream
 
+- **Pi output budget after Billion Context compression**:
+  - Pi sizes output from stale pre-compression usage. On 2026-10-09, it
+    allowed only 3,312 output tokens despite the compressed request containing
+    21,663 input tokens in a 65,536-token context window.
+  - `pkgs/pi-extensions/patch-output-budget.mjs` patches Billion Context
+    0.1.178 for the laptop's Qwen ASCII model only. Native pi main requests
+    restore the advertised output ceiling before the proxy's compressed-input
+    clamp; other models, side requests, and direct fallback remain unchanged.
+  - The package build fails if the pinned patch point changes. Remove the
+    workaround once upstream repairs client-shrunk budgets above 200 tokens,
+    then retain the regression coverage. Compression still happens between
+    model requests, not inside uninterrupted thinking generation.
+
 - **KeePassXC Wayland Auto-Type on niri**:
   - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
     passkeys. The user manages the Firefox extension; browser passwords and

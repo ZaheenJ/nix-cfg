@@ -8,7 +8,12 @@ let
   piPackages = pkgs.importNpmLock.buildNodeModules {
     npmRoot = ../../../pkgs/pi-extensions;
     nodejs = pkgs.nodejs;
-    derivationArgs.npmFlags = [ "--legacy-peer-deps" ];
+    derivationArgs = {
+      npmFlags = [ "--legacy-peer-deps" ];
+      postInstall = ''
+        node ${../../../pkgs/pi-extensions}/patch-output-budget.mjs "$out/node_modules/billion-context"
+      '';
+    };
   };
 
   stateDir = "${config.home.homeDirectory}/.local/state/pi-sandbox";

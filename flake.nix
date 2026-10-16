@@ -126,6 +126,17 @@
       # time the pin bumps, instead of silently degrading at runtime. `source`
       # parses def bodies at parse time, so warnings surface without executing.
       checks.${system} = {
+        pi-output-budget =
+          let
+            pkgs = import nixpkgs { inherit system; };
+          in
+          pkgs.runCommandLocal "check-pi-output-budget" { nativeBuildInputs = [ pkgs.nodejs ]; } ''
+            export HOME=$(mktemp -d)
+            export BILI_PACKAGE_DIR=${builtins.head inputs.self.nixosConfigurations.home-g16.config.home-manager.users.zaheenj.programs.pi-coding-agent.settings.packages}
+            node --test ${./pkgs/pi-extensions}/output-budget*.test.mjs
+            touch $out
+          '';
+
         nushell-config =
           let
             pkgs = import nixpkgs { inherit system; };
