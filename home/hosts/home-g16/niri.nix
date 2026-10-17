@@ -86,8 +86,8 @@
           spawn = [ "zathura" ];
         };
         "Mod+D" = {
-          _props.hotkey-overlay-title = "Discord";
-          spawn = [ "vesktop" ];
+          _props.hotkey-overlay-title = "Discord: Serein";
+          spawn = [ "serein" ];
         };
       };
 
@@ -120,7 +120,7 @@
         {
           window-rule._children = [
             { match._props.app-id = "ghostty$"; }
-            { match._props.app-id = "^vesktop$"; }
+            { match._props.app-id = "^cz[.]viceverse[.]serein$"; }
             { match._props.app-id = "zathura$"; }
             { background-effect.blur = true; }
           ];

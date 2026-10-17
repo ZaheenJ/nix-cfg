@@ -70,7 +70,6 @@ Day-to-day changes to home-g16 are applied on that machine with
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
 - **Applications to consider trying to make more declarative configuration for**
-  - Vesktop
   - Prismlauncher
 
 ## Waiting on upstream
