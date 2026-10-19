@@ -74,6 +74,15 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Waiting on upstream
 
+- **Serein — NVIDIA wake from media discovery**:
+  - On 2026-10-18, GStreamer VA-API discovery reproduced a sustained NVIDIA
+    `D0` state with runtime usage `1`, even without video playback. Forcing
+    Intel's `iHD` driver allowed runtime suspend after the initial probing wake;
+    the user confirmed `LIBVA_DRIVER_NAME=iHD` alone fixes Serein too.
+  - `home/hosts/home-g16/serein.nix` wraps only the laptop's Serein package;
+    `local.serein.package` keeps terminal, niri, and desktop/URL launches aligned.
+    Remove the workaround once an upstream fix is verified on this laptop.
+
 - **Pi output budget after Billion Context compression**:
   - Pi sizes output from stale pre-compression usage. On 2026-10-09, it
     allowed only 3,312 output tokens despite the compressed request containing
