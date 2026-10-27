@@ -30,7 +30,27 @@ in
       theme = "tokyonight_transparent";
       editor = {
         "line-number" = "relative";
-        bufferline."render-mode" = "multiple";
+        "color-modes" = true;
+        bufferline = {
+          "render-mode" = "multiple";
+          separator = "";
+        };
+        statusline = {
+          left = [
+            "mode"
+            "separator"
+            "file-name"
+            "file-modification-indicator"
+          ];
+          center = [ "function-name" ];
+          right = [
+            "diagnostics"
+            "separator"
+            "selections"
+            "position"
+          ];
+          separator = "";
+        };
         "popup-border" = "all";
         "end-of-line-diagnostics" = "hint";
         "rounded-corners" = true;
