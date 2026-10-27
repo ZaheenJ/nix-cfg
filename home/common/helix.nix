@@ -33,7 +33,7 @@ in
         "color-modes" = true;
         bufferline = {
           "render-mode" = "multiple";
-          separator = "";
+          separator = "│";
         };
         statusline = {
           left = [
@@ -49,7 +49,7 @@ in
             "selections"
             "position"
           ];
-          separator = "";
+          separator = "│";
         };
         "popup-border" = "all";
         "end-of-line-diagnostics" = "hint";
