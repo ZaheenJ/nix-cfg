@@ -33,7 +33,7 @@ in
         "color-modes" = true;
         bufferline = {
           "render-mode" = "multiple";
-          separator = "│";
+          separator = "";
         };
         breadcrumb = {
           enable = true;
@@ -44,18 +44,15 @@ in
         statusline = {
           left = [
             "mode"
-            "separator"
             "file-name"
             "file-modification-indicator"
           ];
-          center = [ "function-name" ];
+          center = [ ];
           right = [
             "diagnostics"
-            "separator"
             "selections"
             "position"
           ];
-          separator = "│";
         };
         "popup-border" = "all";
         "end-of-line-diagnostics" = "hint";
