@@ -52,7 +52,8 @@ Day-to-day changes to home-g16 are applied on that machine with
   auth cannot bypass the password needed to unlock the GNOME login keyring.
 - Shells: **fish** is the login shell; **nushell** is the primary interactive
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
-  (-git, via flake input — user needs master for SystemVerilog).
+  (gj1118's fork, via separate flake inputs for Linux and Darwin, for code
+  folding, inline blame, and popup UI; retains SystemVerilog support).
 - zram swap; no swap partition; no hibernation.
 
 ## TODO
@@ -106,16 +107,6 @@ Day-to-day changes to home-g16 are applied on that machine with
     working GlobalShortcuts and RemoteDesktop support; revisit when compatible
     backends are available. [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/)
     is a suggested but unverified workaround on niri.
-- **Helix Perl grammar with glibc 2.44**:
-  - The `tree-sitter-perl` grammar at `72a08a49` defines `bsearch`, which
-    conflicts with glibc 2.44's `_Generic` macro. Both the old and updated
-    Helix inputs hit this build failure with the updated Linux nixpkgs.
-  - *Status (2026-10-08)*: The updated laptop Helix input still pins the
-    affected grammar revision.
-  - The laptop applies `overlays/helix-perl-grammar.nix` to rename the local
-    function while retaining Perl syntax support. Remove the overlay once the
-    grammar fixes the conflict upstream. The Mac has an independent Helix input
-    and does not use this workaround.
 - **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
   - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.

@@ -26,13 +26,13 @@
       url = "github:nix-community/lanzaboote/v1.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # helix master: user needs unreleased SystemVerilog support
+    # gj1118's Helix fork adds code folding, inline blame, and popup UI options.
     helix = {
-      url = "github:helix-editor/helix";
+      url = "github:gj1118/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     helix-darwin = {
-      url = "github:helix-editor/helix";
+      url = "github:gj1118/helix";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     noctalia = {
@@ -84,7 +84,6 @@
               extraSpecialArgs = {
                 inherit inputs;
                 helixInput = inputs.helix;
-                helixGrammarOverlays = [ (import ./overlays/helix-perl-grammar.nix) ];
               };
               users.zaheenj = import ./home/hosts/home-g16.nix;
               # When a real file exists where hm wants a symlink (e.g. seeded
@@ -108,7 +107,6 @@
               extraSpecialArgs = {
                 inherit inputs;
                 helixInput = inputs.helix-darwin;
-                helixGrammarOverlays = [ ];
               };
               users.mandubumz = import ./home/hosts/mandubumz-server.nix;
               backupFileExtension = "hm-bak";

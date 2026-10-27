@@ -1,9 +1,8 @@
-# Tracks Helix master for unreleased SystemVerilog support.
+# Uses gj1118's Helix fork for code folding and UI customizations.
 {
   lib,
   pkgs,
   helixInput,
-  helixGrammarOverlays,
   ...
 }:
 let
@@ -17,11 +16,7 @@ in
 {
   programs.helix = {
     enable = true;
-    package = (
-      helixInput.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
-        grammarOverlays = helixGrammarOverlays;
-      }
-    );
+    package = helixInput.packages.${pkgs.stdenv.hostPlatform.system}.default;
     extraPackages = with pkgs; [
       tinymist # typst LSP
       nil # nix LSP
@@ -35,9 +30,27 @@ in
       theme = "tokyonight_transparent";
       editor = {
         "line-number" = "relative";
-        bufferline = "multiple";
+        bufferline."render-mode" = "multiple";
         "popup-border" = "all";
         "end-of-line-diagnostics" = "hint";
+        "rounded-corners" = true;
+        cmdline = {
+          style = "popup";
+          "use-full-height" = true;
+        };
+        "gradient-borders" = {
+          enable = true;
+          thickness = 2;
+          direction = "horizontal";
+          "start-color" = "#FF0080";
+          "end-color" = "#00FFFF";
+          "animation-speed" = 2;
+        };
+        "inline-blame" = {
+          show = "cursor-line";
+          format = "{author} • {time-ago} • {title}";
+          "auto-fetch" = false;
+        };
         "cursor-shape" = {
           insert = "bar";
           select = "underline";
@@ -48,7 +61,10 @@ in
           characters.newline = "↴";
         };
         "inline-diagnostics"."cursor-line" = "warning";
-        lsp."display-inlay-hints" = true;
+        lsp = {
+          "display-inlay-hints" = true;
+          "signature-help-position" = "below";
+        };
       };
       keys.normal = {
         tab = "move_parent_node_end";

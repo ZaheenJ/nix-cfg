@@ -1,6 +1,6 @@
 inherits = "catppuccin_mocha"
 "ui.background" = {}
-"ui.statusline".bg = ""
-"ui.menu".bg = ""
-"ui.popup".bg = ""
-"ui.help".bg = ""
+"ui.statusline".bg = "default"
+"ui.menu".bg = "default"
+"ui.popup".bg = "default"
+"ui.help".bg = "default"
