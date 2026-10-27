@@ -40,12 +40,13 @@ in
         };
         "gradient-borders" = {
           enable = true;
-          thickness = 2;
+          thickness = 1;
           direction = "horizontal";
           "start-color" = "#FF0080";
           "end-color" = "#00FFFF";
           "animation-speed" = 2;
         };
+        notifications.shadow.enable = false;
         "inline-blame" = {
           show = "cursor-line";
           format = "{author} • {time-ago} • {title}";
