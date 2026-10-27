@@ -35,6 +35,12 @@ in
           "render-mode" = "multiple";
           separator = "│";
         };
+        breadcrumb = {
+          enable = true;
+          path = "full";
+          "max-depth" = 8;
+          "max-name-length" = 32;
+        };
         statusline = {
           left = [
             "mode"
