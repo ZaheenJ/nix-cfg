@@ -10,6 +10,7 @@
     ];
 
     settings = {
+      init.defaultBranch = "main";
       user.name = "ZaheenJ";
       user.email = "zaheen.jamil@gmail.com";
     };
