@@ -8,7 +8,10 @@
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -122,71 +125,12 @@
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
       formatter.aarch64-darwin = nixpkgs-darwin.legacyPackages.aarch64-darwin.nixfmt-tree;
 
-      # `nix flake check` gates. nushell-config parses every tracked .nu file with
-      # the *same* nushell nixpkgs ships, so a deprecation/removal (e.g. the
-      # 0.114 `str downcase` -> `str lowercase` rename) fails the check the next
-      # time the pin bumps, instead of silently degrading at runtime. `source`
-      # parses def bodies at parse time, so warnings surface without executing.
-      checks.${system} = {
-        cloud-ai-settings =
-          let
-            pkgs = import nixpkgs { inherit system; };
-            python = pkgs.python3.withPackages (ps: [ ps.tomlkit ]);
-          in
-          pkgs.runCommandLocal "check-cloud-ai-settings" { } ''
-            ${python}/bin/python3 -B ${./home/profiles/cloud-ai-tools}/test_merge_settings.py
-            touch $out
-          '';
-
-        pi-output-budget =
-          let
-            pkgs = import nixpkgs { inherit system; };
-          in
-          pkgs.runCommandLocal "check-pi-output-budget" { nativeBuildInputs = [ pkgs.nodejs ]; } ''
-            export HOME=$(mktemp -d)
-            export BILI_PACKAGE_DIR=${builtins.head inputs.self.nixosConfigurations.home-g16.config.home-manager.users.zaheenj.programs.pi-coding-agent.settings.packages}
-            node --test ${./pkgs/pi-extensions}/output-budget*.test.mjs
-            touch $out
-          '';
-
-        nushell-config =
-          let
-            pkgs = import nixpkgs { inherit system; };
-          in
-          pkgs.runCommandLocal "check-nushell-config" { nativeBuildInputs = [ pkgs.nushell ]; } ''
-            export HOME=$(mktemp -d)
-            rc=0
-            for f in ${./home/common/nushell}/*.nu ${./home/profiles/music}/*.nu; do
-              msg=$(nu --no-config-file --no-std-lib -c "let abbreviations = {}; source $f" 2>&1 >/dev/null) || rc=1
-              if [ -n "$msg" ]; then
-                echo "### $f"; echo "$msg"; echo; rc=1
-              fi
-            done
-            if [ $rc -ne 0 ]; then
-              echo "nushell config check failed — fix the deprecations/errors above." >&2
-              exit 1
-            fi
-            touch $out
-          '';
-
-        # fish-config: syntax-checks every tracked .fish file with `fish -n` (parse,
-        # don't execute) against nixpkgs' fish, so a removed builtin or syntax break
-        # fails `nix flake check` on the next pin bump instead of at shell startup.
-        fish-config =
-          let
-            pkgs = import nixpkgs { inherit system; };
-          in
-          pkgs.runCommandLocal "check-fish-config" { nativeBuildInputs = [ pkgs.fish ]; } ''
-            rc=0
-            for f in ${./home/common/fish}/*.fish; do
-              if ! fish -n "$f"; then echo "### $f failed fish -n"; rc=1; fi
-            done
-            if [ $rc -ne 0 ]; then
-              echo "fish config check failed — fix the syntax errors above." >&2
-              exit 1
-            fi
-            touch $out
-          '';
+      checks.${system} = import ./checks {
+        pkgs = inputs.self.nixosConfigurations.home-g16.pkgs;
+        piPackageDir = builtins.head inputs.self.nixosConfigurations.home-g16.config.home-manager.users.zaheenj.programs.pi-coding-agent.settings.packages;
+      };
+      checks.aarch64-darwin = import ./checks {
+        pkgs = inputs.self.darwinConfigurations.mandubumz-server.pkgs;
       };
     };
 }

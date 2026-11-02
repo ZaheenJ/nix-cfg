@@ -161,12 +161,14 @@ Day-to-day changes to home-g16 are applied on that machine with
   `nix search`. **Always do this even if the user provides the package name.** Wrong-but-plausible option names are the #1 failure mode.
 - Validation ladder (no root needed):
   1. **Format your code**: Run `nix fmt` *before* validating to ensure clean Nix code.
-  2. `nix flake check` — catches evaluation errors; on Linux it omits the
-     incompatible Darwin system.
+  2. `nix flake check` — catches evaluation errors and runs the native checks.
+     Both platforms check shell syntax and AI settings merges; Linux also
+     checks the Pi output-budget patch. Run on each host to cover its pin.
   3. Build the affected system: for NixOS,
      `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`;
-     for nix-darwin, build on the Mac. A real build catches what evaluation
-     does not.
+     for nix-darwin, run
+     `nix build .#darwinConfigurations.mandubumz-server.system` on the Mac.
+     A real build catches what evaluation does not.
   Then apply on the target machine with the appropriate rebuild command (user
   runs sudo).
   `build-vm` is NOT part of the regular flow — it's a backup debugging tool to
@@ -184,8 +186,9 @@ Day-to-day changes to home-g16 are applied on that machine with
 ## Repo layout
 
 ```
-flake.nix                 # NixOS/Darwin outputs, inputs, checks, formatters
+flake.nix                 # NixOS/Darwin outputs, inputs, check wiring, formatters
 flake.lock                # pinned inputs, including Darwin-specific nixpkgs
+checks/default.nix        # native checks using each host's configured packages
 hosts/home-g16/           # NixOS host, hardware, boot, and performance
 hosts/mandubumz-server/   # nix-darwin host modules
 modules/nixos/            # shared core, desktop, and capability modules
@@ -215,3 +218,6 @@ inventory/                # captured Arch system state (historical reference)
 - Prefer native NixOS/nix-darwin/Home Manager options over raw dotfiles; use
   `xdg.configFile` to ship verbatim configs only when no module exists.
 - Comment-light, idiomatic Nix; pin nothing without a reason.
+- Check implementations live in `checks/default.nix`; the flake supplies each
+  host's configured package set (including overlays) and the Linux Pi package
+  directory. The hardware input follows the Linux nixpkgs pin.
