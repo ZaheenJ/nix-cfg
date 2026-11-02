@@ -57,14 +57,6 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## TODO
 
-- **Finish Linux input-update validation (2026-11-02)**:
-  - `nix fmt`, native flake checks, and the patched NVIDIA 595.112.07 module
-    build against kernel 7.3 passed. The complete system build is pending.
-  - Serein `5aa2e486` reached its final fat-LTO build, but earlyoom sent
-    SIGTERM to `rustc` at the configured 8% available-RAM threshold while
-    desktop applications were running. Retry with more available memory or
-    agree on a lower-memory package override first; do not disable the
-    safety net or change optimization policy without the user's decision.
 - **scx_lavd scheduler retest**:
   - `services.scx` is disabled because it crashed and stalled the system during
     startup. Retest after relevant kernel or sched-ext updates; require a clean
@@ -97,9 +89,10 @@ Day-to-day changes to home-g16 are applied on that machine with
   - `home/hosts/home-g16/serein.nix` wraps only the laptop's Serein package;
     `local.serein.package` keeps terminal, niri, and desktop/URL launches aligned.
     Remove the workaround once an upstream fix is verified on this laptop.
-  - *Status (2026-11-01)*: Serein is updated to `5aa2e486`; no unwrapped
-    startup/media power test on this laptop has verified a fix. Keep the
-    Intel-only wrapper until that hardware check passes.
+  - *Status (2026-11-02)*: Serein `5aa2e486` and the complete Linux system
+    built successfully with the original optimization settings after freeing
+    RAM. No unwrapped startup/media power test on this laptop has verified a
+    fix. Keep the Intel-only wrapper until that hardware check passes.
 
 - **Pi output budget after Billion Context compression**:
   - Pi sizes output from stale pre-compression usage. On 2026-10-09, it
@@ -192,6 +185,9 @@ Day-to-day changes to home-g16 are applied on that machine with
   runs sudo).
   `build-vm` is NOT part of the regular flow — it's a backup debugging tool to
   separate "config bug" from "hardware bug" if a boot issue appears.
+- For memory-constrained updates, stage large uncached packages before the
+  complete system build to reduce evaluation-memory overhead. Keep earlyoom
+  enabled; Serein's fat-LTO build may require closing Firefox.
 - Don't pipe validation commands through `tail`/`head` before `&&` — the
   pipe masks the exit code. Run them bare or with `set -o pipefail`.
 - Bulk module-writing goes to the `nix-module-writer` subagent (using a lightweight model) to
