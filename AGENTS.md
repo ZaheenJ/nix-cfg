@@ -61,6 +61,13 @@ Day-to-day changes to home-g16 are applied on that machine with
   - `services.scx` is disabled because it crashed and stalled the system during
     startup. Retest after relevant kernel or sched-ext updates; require a clean
     boot and stable session before enabling it day-to-day.
+- **Intel LPMD evaluation**:
+  - As of 2026-11-01, the Linux pin includes `intel-lpmd`
+    `0.1.0-unstable-2026-09-23` and a native `services.intel-lpmd` module.
+    Packaging is no longer an upstream blocker.
+  - Leave it disabled until its interaction with power-profiles-daemon and
+    this laptop's battery/performance policy has been evaluated. The
+    AC/battery watcher still omits the old `intel_lpmd_control` calls.
 - **School profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
@@ -82,6 +89,9 @@ Day-to-day changes to home-g16 are applied on that machine with
   - `home/hosts/home-g16/serein.nix` wraps only the laptop's Serein package;
     `local.serein.package` keeps terminal, niri, and desktop/URL launches aligned.
     Remove the workaround once an upstream fix is verified on this laptop.
+  - *Status (2026-11-01)*: Serein is updated to `5aa2e486`; no unwrapped
+    startup/media power test on this laptop has verified a fix. Keep the
+    Intel-only wrapper until that hardware check passes.
 
 - **Pi output budget after Billion Context compression**:
   - Pi sizes output from stale pre-compression usage. On 2026-10-09, it
@@ -95,32 +105,32 @@ Day-to-day changes to home-g16 are applied on that machine with
     workaround once upstream repairs client-shrunk budgets above 200 tokens,
     then retain the regression coverage. Compression still happens between
     model requests, not inside uninterrupted thinking generation.
+  - *Status (2026-11-01)*: Published Billion Context 0.1.211 still restores
+    budgets above 200 only for the Dsh lane. A probe of its actual published
+    `restoreOutputBudget` left a native Pi budget of 3,312 unchanged despite
+    a known 65,536 ceiling. Retain the patched 0.1.178 pin and regression tests.
+    Audited source: [0.1.211 commit](https://github.com/ranxianglei/billion-context/tree/e226544f556712e33f3ef1d9fe5b4dc2b7715e15).
 
 - **KeePassXC Wayland Auto-Type on niri**:
   - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
     passkeys. The user manages the Firefox extension; browser passwords and
     passkeys work without Wayland Auto-Type or desktop portals.
-  - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) adds
-    portal-based Auto-Type in 2.8.0. As of 2026-10-08, it is in beta and pinned
-    nixpkgs has 2.7.12. The current niri GNOME/GTK portal setup does not provide
-    working GlobalShortcuts and RemoteDesktop support; revisit when compatible
-    backends are available. [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/)
-    is a suggested but unverified workaround on niri.
+  - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) shipped
+    portal-based Auto-Type in [2.8.0](https://github.com/keepassxreboot/keepassxc/releases/tag/2.8.0).
+    As of 2026-11-01, that release is available upstream but the updated Linux
+    pin still packages 2.7.12. The current niri GNOME/GTK portal setup has no
+    verified working GlobalShortcuts and RemoteDesktop support; revisit both
+    packaging and compatible backends. [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/)
+    remains an unverified workaround on niri.
 - **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
   - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
   - *Upstream PR*: [nushell/reedline#1192](https://github.com/nushell/reedline/pull/1192).
-  - *Status (2026-10-08)*: PR 1192 is merged and Nushell 0.116.0 has been
-    released, but both hosts' pinned nixpkgs inputs still package 0.115.1,
-    which predates the fix. Temporarily patched via `overlays/default.nix` +
-    `overlays/reedline-1192.patch`; remove the shared overlay once both hosts'
-    pinned nixpkgs inputs provide a Nushell release containing the fix.
-- **Intel LPMD**:
-  - Not implemented. As of 2026-10-08, the updated Linux nixpkgs pin has
-    neither an `intel-lpmd` package nor a `services.intel-lpmd` option.
-  - The AC/battery watcher omits the old `intel_lpmd_control` calls. Revisit if
-    upstream packaging lands or maintaining a custom package and service
-    becomes worthwhile.
+  - *Status (2026-11-01)*: PR 1192 is merged. The updated Linux pin provides
+    Nushell 0.116.1, which includes the fix; the unchanged Mac pin still has
+    0.115.1. `overlays/default.nix` now applies `overlays/reedline-1192.patch`
+    only below 0.116.0, so Linux uses upstream Nushell and the Mac keeps its
+    workaround. Remove the overlay and patch once the Mac pin catches up.
 - **NVIDIA open driver — battery NVPCF D0 wakeups**:
   - *Symptom*: On battery, each 1% charge drop wakes the otherwise idle dGPU
     from D3cold to D0 for about 22.6 seconds. Reproduced twice on this GU605MI;
@@ -130,8 +140,8 @@ Day-to-day changes to home-g16 are applied on that machine with
     battery percentage change, and the open driver's handler takes a runtime-PM
     reference even while the GPU is suspended.
   - *Upstream PR*: [NVIDIA/open-gpu-kernel-modules#1299](https://github.com/NVIDIA/open-gpu-kernel-modules/pull/1299).
-  - *Status (2026-10-08)*: PR 1299 is still open; the updated Linux pin uses
-    stable driver 595.104.02. Temporarily patched by
+  - *Status (2026-11-01)*: PR 1299 is still open; the updated Linux pin uses
+    stable driver 595.112.07. Temporarily patched by
     `overlays/nvidia-nvpcf-1299.nix`. The override follows nixpkgs' unpinned
     stable driver and should be removed once the PR is released upstream. An
     incompatible or already-applied patch will intentionally fail the build
@@ -152,7 +162,7 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Workflow rules
 
-- Update Linux inputs with `nix flake update nixpkgs nixos-hardware home-manager lanzaboote helix noctalia noctalia-greeter gaze`.
+- Update Linux inputs with `nix flake update nixpkgs nixos-hardware home-manager lanzaboote helix noctalia noctalia-greeter gaze serein`.
   Update Mac inputs with `nix flake update nixpkgs-darwin nix-darwin home-manager-darwin helix-darwin nix-plist-manager`.
   Home Manager and Helix have separate inputs for each host; keep their
   `nixpkgs` follows pointed at the matching host input.
