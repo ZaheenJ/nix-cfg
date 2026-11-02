@@ -57,6 +57,14 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## TODO
 
+- **Finish Linux input-update validation (2026-11-02)**:
+  - `nix fmt`, native flake checks, and the patched NVIDIA 595.112.07 module
+    build against kernel 7.3 passed. The complete system build is pending.
+  - Serein `5aa2e486` reached its final fat-LTO build, but earlyoom sent
+    SIGTERM to `rustc` at the configured 8% available-RAM threshold while
+    desktop applications were running. Retry with more available memory or
+    agree on a lower-memory package override first; do not disable the
+    safety net or change optimization policy without the user's decision.
 - **scx_lavd scheduler retest**:
   - `services.scx` is disabled because it crashed and stalled the system during
     startup. Retest after relevant kernel or sched-ext updates; require a clean
@@ -105,9 +113,10 @@ Day-to-day changes to home-g16 are applied on that machine with
     workaround once upstream repairs client-shrunk budgets above 200 tokens,
     then retain the regression coverage. Compression still happens between
     model requests, not inside uninterrupted thinking generation.
-  - *Status (2026-11-01)*: Published Billion Context 0.1.211 still restores
-    budgets above 200 only for the Dsh lane. A probe of its actual published
-    `restoreOutputBudget` left a native Pi budget of 3,312 unchanged despite
+  - *Status (2026-11-01)*: Updated Pi 1.4.0 still reproduces the 3,312-token
+    client-side clamp using stale usage. Published Billion Context 0.1.211
+    still restores budgets above 200 only for the Dsh lane. A probe of its
+    actual published `restoreOutputBudget` left a native Pi budget of 3,312 unchanged despite
     a known 65,536 ceiling. Retain the patched 0.1.178 pin and regression tests.
     Audited source: [0.1.211 commit](https://github.com/ranxianglei/billion-context/tree/e226544f556712e33f3ef1d9fe5b4dc2b7715e15).
 
