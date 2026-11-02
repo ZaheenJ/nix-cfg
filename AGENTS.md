@@ -207,6 +207,11 @@ inventory/                # captured Arch system state (historical reference)
   paths, displays, and hardware bindings live in `home/hosts/<host>.nix` or its
   companion directory. Profiles must remain usable from standalone
   home-manager on foreign distributions.
+- General niri keybindings live in
+  `home/profiles/niri-desktop/niri/keybindings.nix`, imported by `niri.nix`.
+  The laptop's outer Pi wrapper lives in `home/hosts/home-g16/pi-sandbox/pi.sh`;
+  `pi-sandbox.nix` supplies paths and dependencies and retains the short inner
+  wrapper and service configuration.
 - System hosts live in `hosts/`. NixOS hosts compose shared `modules/nixos/`
   modules; machine-specific config stays with the host (for example,
   `hosts/home-g16/hardware.nix`). The Darwin host currently has its own small
