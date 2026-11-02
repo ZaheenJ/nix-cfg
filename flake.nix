@@ -128,6 +128,16 @@
       # time the pin bumps, instead of silently degrading at runtime. `source`
       # parses def bodies at parse time, so warnings surface without executing.
       checks.${system} = {
+        cloud-ai-settings =
+          let
+            pkgs = import nixpkgs { inherit system; };
+            python = pkgs.python3.withPackages (ps: [ ps.tomlkit ]);
+          in
+          pkgs.runCommandLocal "check-cloud-ai-settings" { } ''
+            ${python}/bin/python3 -B ${./home/profiles/cloud-ai-tools}/test_merge_settings.py
+            touch $out
+          '';
+
         pi-output-budget =
           let
             pkgs = import nixpkgs { inherit system; };
