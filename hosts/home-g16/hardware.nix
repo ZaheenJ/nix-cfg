@@ -10,6 +10,12 @@
   ...
 }:
 {
+  # VIA keyboard (4d4b:3068) and RAWM mouse (1915:232a) hidraw access.
+  services.udev.extraRules = ''
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="4d4b", ATTRS{idProduct}=="3068", GROUP="users", MODE="0660"
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1915", ATTRS{idProduct}=="232a", GROUP="users", MODE="0660"
+  '';
+
   # NVIDIA/open-gpu-kernel-modules#1299 prevents ACPI NVPCF notifications
   # from waking an otherwise runtime-suspended dGPU on battery. Keep this
   # host-only and version-unpinned so it follows nixpkgs' stable driver.

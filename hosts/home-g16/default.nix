@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, pkgs, ... }:
 {
   imports = [
     # GU605MY = same platform as this GU605MI (4090 vs 4070, both Ada).
@@ -10,6 +10,7 @@
     ./boot.nix
     ./performance.nix
     ../../modules/nixos/core.nix
+    ../../modules/nixos/desktop.nix
     ../../modules/nixos/desktop-niri.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/tailscale.nix
@@ -17,6 +18,17 @@
   ];
 
   networking.hostName = "home-g16";
+
+  users.users.zaheenj = {
+    isNormalUser = true;
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+      "input"
+    ];
+    shell = pkgs.fish;
+  };
 
   system.stateVersion = "26.05";
 }

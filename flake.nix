@@ -98,7 +98,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           { nixpkgs.overlays = overlays; }
-          ./hosts/mandubu-server
+          ./hosts/mandubumz-server
           home-manager-darwin.darwinModules.home-manager
           {
             home-manager = {

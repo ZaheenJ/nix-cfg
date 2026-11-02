@@ -15,11 +15,10 @@ Day-to-day changes to home-g16 are applied on that machine with
   `hosts/home-g16/`; Home Manager host: `home/hosts/home-g16.nix`.
 - **mandubumz-server**: M3 Pro MacBook, 18 GB RAM, roughly 500 GB internal
   storage, `aarch64-darwin`. Flake output:
-  `darwinConfigurations.mandubumz-server`; system files remain under
-  `hosts/mandubu-server/`, with Home Manager in
+  `darwinConfigurations.mandubumz-server`; system files live under
+  `hosts/mandubumz-server/`, with Home Manager in
   `home/hosts/mandubumz-server.nix`. Uses the `base` and `cloud-ai-tools` profiles;
   SSH and Tailscale are enabled. The user has tested this configuration.
-  Deferred Mac work is in `MAC_MIGRATION.md`.
 
 ## Hard facts about home-g16
 
@@ -179,9 +178,8 @@ Day-to-day changes to home-g16 are applied on that machine with
 - The deal with the user: they manage at a high level; bring them decisions
   (especially boot/filesystem/kernel-adjacent), not minutiae. Commit early
   and often.
-- `inventory/`, `MAPPING.md`, and the archived migration checklist are
-  historical references. They are not imported or regenerated; consult them
-  only when a past decision needs context.
+- `inventory/` is historical reference. It is not imported or regenerated;
+  consult it only when a past decision needs context.
 
 ## Repo layout
 
@@ -189,14 +187,13 @@ Day-to-day changes to home-g16 are applied on that machine with
 flake.nix                 # NixOS/Darwin outputs, inputs, checks, formatters
 flake.lock                # pinned inputs, including Darwin-specific nixpkgs
 hosts/home-g16/           # NixOS host, hardware, boot, and performance
-hosts/mandubu-server/     # nix-darwin host module
-modules/nixos/            # shared NixOS system modules
+hosts/mandubumz-server/   # nix-darwin host modules
+modules/nixos/            # shared core, desktop, and capability modules
 home/common/              # shared Home Manager modules and assets
 home/profiles/            # reusable capability bundles
 home/hosts/               # identity, profile selection, host-only modules
 overlays/                 # package overrides shared by both outputs
 pkgs/                     # custom packages not in nixpkgs
-MAC_MIGRATION.md          # deferred macOS profiles and operational concerns
 inventory/                # captured Arch system state (historical reference)
 ```
 
@@ -210,7 +207,11 @@ inventory/                # captured Arch system state (historical reference)
 - System hosts live in `hosts/`. NixOS hosts compose shared `modules/nixos/`
   modules; machine-specific config stays with the host (for example,
   `hosts/home-g16/hardware.nix`). The Darwin host currently has its own small
-  module in `hosts/mandubu-server/default.nix`.
+  module in `hosts/mandubumz-server/default.nix`.
+- `modules/nixos/core.nix` owns base system defaults; `desktop.nix` owns
+  compositor-independent desktop services; `desktop-niri.nix` owns the niri
+  login and desktop integration. Hosts select these explicitly. Personal
+  accounts and peripheral rules belong to the host modules.
 - Prefer native NixOS/nix-darwin/Home Manager options over raw dotfiles; use
   `xdg.configFile` to ship verbatim configs only when no module exists.
 - Comment-light, idiomatic Nix; pin nothing without a reason.
