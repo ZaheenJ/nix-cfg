@@ -28,6 +28,9 @@
   home.homeDirectory = "/home/zaheenj";
   home.stateVersion = "26.05";
 
+  # Session paths and variables are loaded explicitly by the shared shell modules.
+  programs.nushell.loadSessionVariables = false;
+
   programs.ssh.settings.mandu = {
     hostname = "mandubumz-server";
     user = "mandubumz";

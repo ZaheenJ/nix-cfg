@@ -11,10 +11,9 @@
   ];
   boot.kernel.sysctl."kernel.printk" = "3 3 3 3";
 
-  # Quiet boot/shutdown: silence stage-1, kernel console, systemd unit
+  # Quiet boot/shutdown: silence kernel console, systemd unit
   # chatter (auto = only shown on errors/slowness, as on Arch), and the
   # getty greeting/help lines on VTs.
-  boot.initrd.verbose = false;
   boot.consoleLogLevel = 3;
   services.getty = {
     greetingLine = "";
