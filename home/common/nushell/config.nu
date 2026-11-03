@@ -78,8 +78,10 @@ $env.config.menus ++= [
     selected_text: green_reverse
     description_text: yellow
   }
-  source: { |buffer, position|
-    let before_cursor = ($buffer | str substring 0..$position)
+  source: { |buffer, place|
+    # Nushell before 0.116 passes the cursor offset instead of a place record.
+    let position = if ($place | describe) == "int" { $place } else { $place.cursor }
+    let before_cursor = ($buffer | str substring 0..<$position)
     let current_word = ($before_cursor | split row ' ' | last)
     let match = $abbreviations | columns | where $it == $current_word
     if ($match | is-empty) {

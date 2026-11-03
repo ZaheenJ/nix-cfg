@@ -12,18 +12,24 @@ in
     touch $out
   '';
 
-  # Source parses command definitions without executing their bodies.
   nushell-config =
     pkgs.runCommandLocal "check-nushell-config" { nativeBuildInputs = [ pkgs.nushell ]; }
       ''
         export HOME=$(mktemp -d)
         rc=0
-        for f in ${../home/common/nushell}/*.nu ${../home/profiles/music}/*.nu; do
-          msg=$(nu --no-config-file --no-std-lib -c "let abbreviations = {}; source $f" 2>&1 >/dev/null) || rc=1
+        check_nushell() {
+          local msg
+          msg=$(nu --no-config-file --no-std-lib -c "$2" 2>&1 >/dev/null) || rc=1
           if [ -n "$msg" ]; then
-            echo "### $f"; echo "$msg"; echo; rc=1
+            echo "### $1"; echo "$msg"; echo; rc=1
           fi
+        }
+        # Source parses command definitions without executing their bodies.
+        for f in ${../home/common/nushell}/*.nu ${../home/profiles/music}/*.nu; do
+          check_nushell "$f" "let abbreviations = {}; source $f"
         done
+        check_nushell "abbreviation menu" \
+          "let abbreviations = {g: 'git', gs: 'git status'}; source ${../home/common/nushell/config.nu}; source ${./nushell-menu.nu}"
         if [ $rc -ne 0 ]; then
           echo "nushell config check failed — fix the deprecations/errors above." >&2
           exit 1
