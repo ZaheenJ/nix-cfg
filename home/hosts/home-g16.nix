@@ -1,5 +1,5 @@
 # Home Manager profile for the personal ASUS laptop.
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
     ../profiles/base.nix
@@ -27,6 +27,8 @@
   home.username = "zaheenj";
   home.homeDirectory = "/home/zaheenj";
   home.stateVersion = "26.05";
+
+  home.packages = [ pkgs.bubblewrap ];
 
   # Session paths and variables are loaded explicitly by the shared shell modules.
   programs.nushell.loadSessionVariables = false;
