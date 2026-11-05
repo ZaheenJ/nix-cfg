@@ -20,6 +20,11 @@ in
     enableMcpIntegration = false;
   };
 
+  programs.nushell.shellAliases.codex_read_only_no_internet =
+    "codex --sandbox read-only --ask-for-approval never"
+    + " -c 'web_search=\"disabled\"' --disable apps --disable plugins --disable hooks"
+    + " -c 'mcp_servers.nixos.enabled=false'";
+
   programs.mcp = {
     enable = true;
     servers.nixos.command = "mcp-nixos";
