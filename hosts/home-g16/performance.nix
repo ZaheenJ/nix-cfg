@@ -71,11 +71,15 @@ in
     "/var/log".options = btrfsMountOptions;
   };
 
-  # Disabled after startup crashes and stalls; the retest is tracked in AGENTS.md.
+  # Follow the power profile selected by the laptop's AC/battery watcher.
   services.scx = {
-    enable = false;
+    enable = true;
+    package = pkgs.scx.rustscheds;
     scheduler = "scx_lavd";
+    extraArgs = [ "--autopower" ];
   };
+
+  systemd.services.scx.after = [ "power-profiles-daemon.service" ];
 
   services.ananicy = {
     enable = true;

@@ -58,9 +58,11 @@ Day-to-day changes to home-g16 are applied on that machine with
 ## TODO
 
 - **scx_lavd scheduler retest**:
-  - `services.scx` is disabled because it crashed and stalled the system during
-    startup. Retest after relevant kernel or sched-ext updates; require a clean
-    boot and stable session before enabling it day-to-day.
+  - Re-enabled in configuration on 2026-11-14 at the user's request with
+    `--autopower`. The AC/battery watcher selects PPD `performance` on AC and
+    `power-saver` on battery; scx_lavd follows that profile.
+  - Previous startup crashes/stalls still need a clean boot and stable session
+    to close this item. Confirm scheduler profile changes after unplug/replug.
 - **Intel LPMD evaluation**:
   - As of 2026-11-01, the Linux pin includes `intel-lpmd`
     `0.1.0-unstable-2026-09-23` and a native `services.intel-lpmd` module.
@@ -68,6 +70,23 @@ Day-to-day changes to home-g16 are applied on that machine with
   - Leave it disabled until its interaction with power-profiles-daemon and
     this laptop's battery/performance policy has been evaluated. The
     AC/battery watcher still omits the old `intel_lpmd_control` calls.
+  - *Status (2026-11-14)*: Evaluated `services.intel-lpmd.enable = false`;
+    neither `intel_lpmd.service` nor `intel-lpmd.service` is installed on the
+    running system, and this boot has no LPMD journal entries. There is no
+    running LPMD service to audit yet.
+- **KeePassXC Wayland Auto-Type on niri**:
+  - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
+    passkeys. The user manages the Firefox extension; browser passwords and
+    passkeys work without Wayland Auto-Type or desktop portals.
+  - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) shipped
+    portal-based Auto-Type in [2.8.0](https://github.com/keepassxreboot/keepassxc/releases/tag/2.8.0).
+  - *Status (2026-11-14)*: The current unstable package index now provides
+    2.8.0; this flake's unchanged Linux pin still has 2.7.12. Packaging is no
+    longer an upstream blocker. Recheck after updating the Linux inputs, then
+    verify compatible GlobalShortcuts and RemoteDesktop portal backends on
+    niri. The current GNOME/GTK setup has no verified working support;
+    [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/) remains an
+    unverified workaround.
 - **School profile scaffolding**:
   - Add the target-specific profile and flake output once the host details and
     requirements are known.
@@ -112,18 +131,11 @@ Day-to-day changes to home-g16 are applied on that machine with
     actual published `restoreOutputBudget` left a native Pi budget of 3,312 unchanged despite
     a known 65,536 ceiling. Retain the patched 0.1.178 pin and regression tests.
     Audited source: [0.1.211 commit](https://github.com/ranxianglei/billion-context/tree/e226544f556712e33f3ef1d9fe5b4dc2b7715e15).
+  - *Rechecked (2026-11-14)*: Current upstream
+    [restoreOutputBudget](https://github.com/ranxianglei/billion-context/blob/master/src/server/side-request.ts)
+    still gates restoration above 200 tokens on the Dsh lane. Keep the Pi
+    workaround; the pinned proxy's regression checks pass.
 
-- **KeePassXC Wayland Auto-Type on niri**:
-  - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
-    passkeys. The user manages the Firefox extension; browser passwords and
-    passkeys work without Wayland Auto-Type or desktop portals.
-  - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) shipped
-    portal-based Auto-Type in [2.8.0](https://github.com/keepassxreboot/keepassxc/releases/tag/2.8.0).
-    As of 2026-11-01, that release is available upstream but the updated Linux
-    pin still packages 2.7.12. The current niri GNOME/GTK portal setup has no
-    verified working GlobalShortcuts and RemoteDesktop support; revisit both
-    packaging and compatible backends. [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/)
-    remains an unverified workaround on niri.
 - **Reedline (Nushell) — Helix Normal Mode History Hint Completion**:
   - *Symptom*: Pressing `l` (or Right Arrow) on the last character in `helix_normal` mode does not complete the history autosuggestion (ghost text), unlike in `vi_normal` mode.
   - *Root Cause*: In `reedline/src/core_editor/editor.rs`, `is_cursor_at_buffer_end()` checks `!cursor.is_empty()` to avoid clobbering visual selections during hint insertion. Under Helix mode's selection-first model (`RestPolicy::BlockOverNewline`), the resting normal-mode cursor is always a 1-grapheme selection range (`anchor != head`), causing `is_cursor_at_buffer_end()` to unconditionally return `false` and reject the completion event.
@@ -148,6 +160,7 @@ Day-to-day changes to home-g16 are applied on that machine with
     stable driver and should be removed once the PR is released upstream. An
     incompatible or already-applied patch will intentionally fail the build
     rather than silently losing the workaround.
+  - *Rechecked (2026-11-14)*: PR 1299 remains open. Keep the local patch.
 
 ## User preferences (load-bearing)
 

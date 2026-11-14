@@ -1,4 +1,4 @@
-# Lower brightness and refresh rate on battery; restore them on AC.
+# Switch power profile, brightness, and refresh rate with the power source.
 { pkgs, ... }:
 let
   powerWatcher = pkgs.writeScript "power-watcher.fish" ''
@@ -6,9 +6,11 @@ let
 
     function apply --argument-names online
         if test "$online" = yes
+            ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set performance
             ${pkgs.brightnessctl}/bin/brightnessctl -d intel_backlight s 50%
             ${pkgs.niri}/bin/niri msg output eDP-1 mode "2560x1600@240.000"
         else
+            ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver
             ${pkgs.brightnessctl}/bin/brightnessctl -d intel_backlight s 10%
             ${pkgs.niri}/bin/niri msg output eDP-1 mode "2560x1600@60.000"
         end
@@ -34,7 +36,7 @@ in
 {
   systemd.user.services.power-watcher = {
     Unit = {
-      Description = "AC/battery brightness and refresh-rate switching";
+      Description = "AC/battery power profile, brightness, and refresh-rate switching";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
