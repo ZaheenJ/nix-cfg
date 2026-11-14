@@ -56,31 +56,26 @@ Day-to-day changes to home-g16 are applied on that machine with
 - zram swap; no swap partition; no hibernation.
 - Power policy: the AC/battery watcher selects PPD `performance` on AC and
   `power-saver` on battery. `scx_lavd --autopower` follows the active profile.
+  As of the 2026-11-14 Linux update, nixpkgs requires `services.scx-loader`;
+  the scheduler is managed by `scx_loader.service` (replacing `scx.service`).
+  Intel LPMD follows PPD natively: `OFF` in performance and `AUTO` in
+  balanced/power-saver. `Mode = -1` leaves CPU placement to lavd. The user
+  confirmed both services active and LPMD unplug/replug switching on 2026-11-14.
+  Keep the shipped Meteor Lake workload-proxy defaults; do not add manual
+  `intel_lpmd_control` calls to the AC/battery watcher.
 
 ## TODO
 
-- **Intel LPMD evaluation**:
-  - Enabled in configuration on 2026-11-14 with native PPD integration:
-    `PerformanceDef = -1`, `BalancedDef = 0`, `PowersaverDef = 0`. Low-power
-    tuning is off in performance and automatic in balanced/power-saver.
-  - `Mode = -1` leaves CPU placement to lavd while LPMD tunes power settings.
-    Keep the shipped Meteor Lake family 6/model 170 workload-proxy defaults;
-    do not add manual `intel_lpmd_control` calls to the AC/battery watcher.
-  - After applying, verify `intel_lpmd.service` starts with the model-specific
-    config, follows PPD changes, and improves battery use without hurting
-    responsiveness. CPU restriction modes and process classification need
-    separate evaluation alongside lavd.
 - **KeePassXC Wayland Auto-Type on niri**:
   - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
     passkeys. The user manages the Firefox extension; browser passwords and
     passkeys work without Wayland Auto-Type or desktop portals.
   - [PR #13359](https://github.com/keepassxreboot/keepassxc/pull/13359) shipped
     portal-based Auto-Type in [2.8.0](https://github.com/keepassxreboot/keepassxc/releases/tag/2.8.0).
-  - *Status (2026-11-14)*: The current unstable package index now provides
-    2.8.0; this flake's unchanged Linux pin still has 2.7.12. Packaging is no
-    longer an upstream blocker. Recheck after updating the Linux inputs, then
-    verify compatible GlobalShortcuts and RemoteDesktop portal backends on
-    niri. The current GNOME/GTK setup has no verified working support;
+  - *Status (2026-11-14)*: The updated Linux pin provides 2.8.0. Packaging is
+    no longer an upstream blocker. Verify compatible GlobalShortcuts and
+    RemoteDesktop portal backends on niri. The current GNOME/GTK setup has no
+    verified working support;
     [Pyrtal](https://github.com/hifi/xdg-desktop-portal-pyrtal/) remains an
     unverified workaround.
 - **School profile scaffolding**:

@@ -85,14 +85,16 @@ in
   };
 
   # Follow the power profile selected by the laptop's AC/battery watcher.
-  services.scx = {
+  services.scx-loader = {
     enable = true;
-    package = pkgs.scx.rustscheds;
-    scheduler = "scx_lavd";
-    extraArgs = [ "--autopower" ];
+    config = {
+      default_sched = "scx_lavd";
+      default_mode = "Auto";
+      scheds.scx_lavd.auto_mode = [ "--autopower" ];
+    };
   };
 
-  systemd.services.scx.after = [ "power-profiles-daemon.service" ];
+  systemd.services.scx_loader.after = [ "power-profiles-daemon.service" ];
 
   services.ananicy = {
     enable = true;
