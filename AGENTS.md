@@ -54,26 +54,22 @@ Day-to-day changes to home-g16 are applied on that machine with
   (gj1118's fork, via separate flake inputs for Linux and Darwin, for code
   folding, inline blame, and popup UI; retains SystemVerilog support).
 - zram swap; no swap partition; no hibernation.
+- Power policy: the AC/battery watcher selects PPD `performance` on AC and
+  `power-saver` on battery. `scx_lavd --autopower` follows the active profile.
 
 ## TODO
 
-- **scx_lavd scheduler retest**:
-  - Re-enabled in configuration on 2026-11-14 at the user's request with
-    `--autopower`. The AC/battery watcher selects PPD `performance` on AC and
-    `power-saver` on battery; scx_lavd follows that profile.
-  - Previous startup crashes/stalls still need a clean boot and stable session
-    to close this item. Confirm scheduler profile changes after unplug/replug.
 - **Intel LPMD evaluation**:
-  - As of 2026-11-01, the Linux pin includes `intel-lpmd`
-    `0.1.0-unstable-2026-09-23` and a native `services.intel-lpmd` module.
-    Packaging is no longer an upstream blocker.
-  - Leave it disabled until its interaction with power-profiles-daemon and
-    this laptop's battery/performance policy has been evaluated. The
-    AC/battery watcher still omits the old `intel_lpmd_control` calls.
-  - *Status (2026-11-14)*: Evaluated `services.intel-lpmd.enable = false`;
-    neither `intel_lpmd.service` nor `intel-lpmd.service` is installed on the
-    running system, and this boot has no LPMD journal entries. There is no
-    running LPMD service to audit yet.
+  - Enabled in configuration on 2026-11-14 with native PPD integration:
+    `PerformanceDef = -1`, `BalancedDef = 0`, `PowersaverDef = 0`. Low-power
+    tuning is off in performance and automatic in balanced/power-saver.
+  - `Mode = -1` leaves CPU placement to lavd while LPMD tunes power settings.
+    Keep the shipped Meteor Lake family 6/model 170 workload-proxy defaults;
+    do not add manual `intel_lpmd_control` calls to the AC/battery watcher.
+  - After applying, verify `intel_lpmd.service` starts with the model-specific
+    config, follows PPD changes, and improves battery use without hurting
+    responsiveness. CPU restriction modes and process classification need
+    separate evaluation alongside lavd.
 - **KeePassXC Wayland Auto-Type on niri**:
   - KeePassXC is declared in `home/profiles/password-manager.nix` for Daybreak
     passkeys. The user manages the Firefox extension; browser passwords and

@@ -28,6 +28,19 @@ in
 
   services.power-profiles-daemon.enable = true;
 
+  services.intel-lpmd = {
+    enable = true;
+    configOverrides = {
+      PerformanceDef = -1;
+      BalancedDef = 0;
+      PowersaverDef = 0;
+      # Keep CPU placement with lavd; LPMD only tunes power settings.
+      Mode = -1;
+    };
+  };
+
+  systemd.services.intel_lpmd.after = [ "power-profiles-daemon.service" ];
+
   # Performance and memory policy. zswap is disabled because this host uses
   # zram; the remaining parameters carry over the tuned desktop policy.
   boot.kernelParams = [
