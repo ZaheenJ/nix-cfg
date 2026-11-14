@@ -99,10 +99,11 @@ Day-to-day changes to home-g16 are applied on that machine with
   - `home/hosts/home-g16/serein.nix` wraps only the laptop's Serein package;
     `local.serein.package` keeps terminal, niri, and desktop/URL launches aligned.
     Remove the workaround once an upstream fix is verified on this laptop.
-  - *Status (2026-11-02)*: Serein `5aa2e486` and the complete Linux system
-    built successfully with the original optimization settings after freeing
-    RAM. No unwrapped startup/media power test on this laptop has verified a
-    fix. Keep the Intel-only wrapper until that hardware check passes.
+  - *Status (2026-11-14)*: Updated Serein `bedb57c0` and the complete Linux
+    system built successfully with the original optimization settings. Large
+    packages were staged separately to limit memory use. No unwrapped
+    startup/media power test on this laptop has verified a fix. Keep the
+    Intel-only wrapper until that hardware check passes.
 
 - **Pi output budget after Billion Context compression**:
   - Pi sizes output from stale pre-compression usage. On 2026-10-09, it
