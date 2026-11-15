@@ -63,6 +63,12 @@ Day-to-day changes to home-g16 are applied on that machine with
   confirmed both services active and LPMD unplug/replug switching on 2026-11-14.
   Keep the shipped Meteor Lake workload-proxy defaults; do not add manual
   `intel_lpmd_control` calls to the AC/battery watcher.
+- Linux update verified after reboot on 2026-11-14: kernel **7.3.4**;
+  `scx_loader`, `intel_lpmd`, and `gazed` active, `tzupdate` completed
+  successfully, and no failed system units. On the first switch, Polkit did
+  not recognize the already-installed scx-loader action; restarting Polkit
+  and the failed units resolved it. The simultaneous tzupdate API failure
+  also cleared on retry. No configuration workaround was needed.
 
 ## TODO
 
@@ -193,6 +199,9 @@ Day-to-day changes to home-g16 are applied on that machine with
 - For memory-constrained updates, stage large uncached packages before the
   complete system build to reduce evaluation-memory overhead. Keep earlyoom
   enabled; Serein's fat-LTO build may require closing Firefox.
+- The [2026-11-14 build-cache review](docs/build-caches.md) records packaged
+  alternatives, observed cache hits/misses, and trust tradeoffs. No extra
+  binary caches were enabled by that review.
 - Don't pipe validation commands through `tail`/`head` before `&&` — the
   pipe masks the exit code. Run them bare or with `set -o pipefail`.
 - Bulk module-writing goes to the `nix-module-writer` subagent (using a lightweight model) to
