@@ -49,6 +49,8 @@ Day-to-day changes to home-g16 are applied on that machine with
   keyring on auth. Gaze is enabled for the short-lived `sudo`, `login`, and
   `polkit-1` PAM consumers, but deliberately excluded from `greetd` so face
   auth cannot bypass the password needed to unlock the GNOME login keyring.
+  Noctalia and its greeter use nixpkgs packages through the native Home
+  Manager and NixOS modules; they have no separate flake inputs.
 - Shells: **fish** is the login shell; **nushell** is the primary interactive
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
   (gj1118's fork, via separate flake inputs for Linux and Darwin, for code
@@ -175,7 +177,7 @@ Day-to-day changes to home-g16 are applied on that machine with
 
 ## Workflow rules
 
-- Update Linux inputs with `nix flake update nixpkgs nixos-hardware home-manager lanzaboote helix noctalia noctalia-greeter gaze serein`.
+- Update Linux inputs with `nix flake update nixpkgs nixos-hardware home-manager lanzaboote helix gaze serein`.
   Update Mac inputs with `nix flake update nixpkgs-darwin nix-darwin home-manager-darwin helix-darwin nix-plist-manager`.
   Home Manager and Helix have separate inputs for each host; keep their
   `nixpkgs` follows pointed at the matching host input.
@@ -199,9 +201,6 @@ Day-to-day changes to home-g16 are applied on that machine with
 - For memory-constrained updates, stage large uncached packages before the
   complete system build to reduce evaluation-memory overhead. Keep earlyoom
   enabled; Serein's fat-LTO build may require closing Firefox.
-- The [2026-11-14 build-cache review](docs/build-caches.md) records packaged
-  alternatives, observed cache hits/misses, and trust tradeoffs. No extra
-  binary caches were enabled by that review.
 - Don't pipe validation commands through `tail`/`head` before `&&` — the
   pipe masks the exit code. Run them bare or with `set -o pipefail`.
 - Bulk module-writing goes to the `nix-module-writer` subagent (using a lightweight model) to

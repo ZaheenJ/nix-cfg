@@ -1,11 +1,5 @@
+{ pkgs, ... }:
 {
-  pkgs,
-  inputs,
-  ...
-}:
-{
-  imports = [ inputs.noctalia-greeter.nixosModules.default ];
-
   programs.niri.enable = true;
 
   # The greeter runs its own compositor; greetd launches the chosen Wayland

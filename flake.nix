@@ -38,14 +38,6 @@
       url = "github:gj1118/helix";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    noctalia-greeter = {
-      url = "github:noctalia-dev/noctalia-greeter";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Gaze face-auth package and NixOS module.
     gaze = {
       url = "github:GunduLabs/gaze";

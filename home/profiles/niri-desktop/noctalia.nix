@@ -1,8 +1,5 @@
 # Generic Noctalia shell, theme, and desktop behavior.
-{ inputs, ... }:
 {
-  imports = [ inputs.noctalia.homeModules.default ];
-
   programs.noctalia = {
     enable = true;
     settings = {
@@ -82,7 +79,6 @@
         settings_show_advanced = false;
         panel = {
           control_center_placement = "floating";
-          launcher_categories = false;
           open_near_click_control_center = true;
           transparency_mode = "glass";
         };
@@ -110,7 +106,6 @@
       };
 
       weather = {
-        auto_locate = true;
         unit = "imperial";
       };
 
