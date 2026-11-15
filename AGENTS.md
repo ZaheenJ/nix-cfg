@@ -51,6 +51,11 @@ Day-to-day changes to home-g16 are applied on that machine with
   auth cannot bypass the password needed to unlock the GNOME login keyring.
   Noctalia and its greeter use nixpkgs packages through the native Home
   Manager and NixOS modules; they have no separate flake inputs.
+  The 5.5.0 to 5.4.1 downgrade required a backed-up repair of the mutable
+  `~/.local/state/noctalia/settings.toml` (format 20 vs supported 16), after
+  checking that migrations 17–20 did not affect its contents. The packaged
+  binary now validates the full live configuration. For future downgrades,
+  check the saved settings too: build validation covers only `config.toml`.
 - Shells: **fish** is the login shell; **nushell** is the primary interactive
   shell (ghostty starts it). Plus starship, carapace, zoxide. Editor: **helix**
   (gj1118's fork, via separate flake inputs for Linux and Darwin, for code
